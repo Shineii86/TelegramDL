@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.4.0] - 2026-07-18
+
+### Added
+- Support for ALL Telegram link types:
+  - Public channels: `t.me/username`
+  - Private channels: `t.me/c/CHANNEL_ID/MSG_ID`
+  - Invite links: `t.me/+invitehash` and `t.me/joinchat/hash`
+  - Groups & Supergroups: `t.me/groupname/123`
+  - Bots: `t.me/botusername`
+  - Username only: `username` or `@username`
+  - Numeric IDs: `-1001234567890/123`
+  - Batch ranges: `t.me/username/1001-1010`
+  - Forwarded messages: `t.me/c/123/456?single`
+- Chat info display — shows channel/group/bot details when no message ID
+- Auto-join attempt for private channels/groups
+- Updated help with complete format table
+
+### Changed
+- Rewrote `parse_channel_username()` with 8 pattern matchers
+- Improved `save()` function with proper chat type detection
+- Updated UI help texts with all supported formats
+
+---
+
 ## [2.3.0] - 2026-07-18
 
 ### Added

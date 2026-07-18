@@ -161,36 +161,46 @@ def back_keyboard(target="menu_back"):
 WELCOME_MSG = """
 **Welcome to TelegramDL Bot!**
 
-Download restricted content from Telegram channels.
+Download restricted content from Telegram channels, groups, and bots.
 
 **How to use:**
-1. Send a Telegram link
+1. Send a Telegram link or username
 2. Bot downloads the content
 3. Files sent to you here
 
-**Supported links:**
-`t.me/username/123`
-`t.me/username/1001-1010` (batch)
-`t.me/c/CHANNEL_ID/123`
-`t.me/+invitehash`
+**Supported:**
+Channels · Groups · Supergroups · Bots
+Public · Private · Invite Links
 """
 
 
 HELP_DOWNLOAD = """
 **📥 Download Help**
 
-Send any Telegram message link to download.
+Send any Telegram link or username to download.
 
-**Supported formats:**
-- `https://t.me/username/123` — Single message
-- `https://t.me/username/1001-1010` — Batch range
-- `https://t.me/c/1234567890/123` — Private channel
-- `https://t.me/+invitehash` — Join & download
+**Supported Formats:**
+
+| Type | Format | Example |
+|------|--------|---------|
+| Public Channel | `t.me/username/123` | `t.me/durov/1` |
+| Batch Range | `t.me/username/1001-1010` | `t.me/durov/1-50` |
+| Private Channel | `t.me/c/1234567890/123` | `t.me/c/123456/1` |
+| Invite Link | `t.me/+invitehash` | `t.me/+abc123` |
+| Join Chat | `t.me/joinchat/hash` | `t.me/joinchat/xyz` |
+| Group | `t.me/groupname/123` | `t.me/mygroup/1` |
+| Supergroup | `t.me/groupname/123` | `t.me/supergroup/1` |
+| Bot Link | `t.me/botusername` | `t.me/botfather` |
+| Username Only | `username` | `durov` |
+| Numeric ID | `-1001234567890/123` | `-1001234567890/1` |
+| Forwarded | `t.me/c/123/456?single` | Auto-detected |
 
 **How it works:**
 1. Bot tries via bot token (public)
 2. If restricted → uses your session
 3. File sent to you
+
+**Note:** For restricted content, use /login first.
 """
 
 
@@ -253,15 +263,29 @@ Adjust bot behavior:
 
 
 HELP_FORMATS = """
-**🔗 Supported Formats**
+**🔗 All Supported Formats**
 
-| Format | Example |
-|--------|---------|
-| Public | `t.me/durov` |
-| Username | `durov` |
-| Private | `t.me/+invitehash` |
-| Channel ID | `t.me/c/123/456` |
-| Batch | `t.me/user/1-100` |
+**Channels:**
+- `t.me/username/123` — Public channel
+- `t.me/c/1234567890/123` — Private channel
+- `t.me/+invitehash` — Invite link
+- `t.me/joinchat/hash` — Old invite format
+
+**Groups & Supergroups:**
+- `t.me/groupname/123` — Public group
+- `t.me/c/GROUP_ID/123` — Private group
+- `-1001234567890/123` — Numeric group ID
+
+**Bots:**
+- `t.me/botusername` — Bot link
+- `@botusername` — Bot username
+
+**Users:**
+- `t.me/username` — User profile
+- `username` — Plain username
+
+**Batch:**
+- `t.me/username/1001-1010` — ID range
 """
 
 

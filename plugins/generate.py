@@ -67,20 +67,61 @@ def make_caption(msg, folder):
 
 
 def parse_channel_username(link):
+    """Parse ALL Telegram link types to extract chat username and message IDs.
+
+    Supported formats:
+    - t.me/username/1001-1010     → batch range
+    - t.me/username/123           → single message
+    - t.me/c/1234567890/123       → private channel msg
+    - t.me/c/1234567890           → private channel (no msg)
+    - t.me/+invitehash            → invite link
+    - t.me/joinchat/invitehash    → invite link (old format)
+    - t.me/username               → channel/group/bot (no msg)
+    - username                    → plain username
+    - -1001234567890              → numeric chat ID
+    - -1001234567890/123          → numeric chat ID + msg
+    """
     link = link.strip()
+
+    # 1. Batch: t.me/username/1001-1010
     batch_match = re.search(r't\.me/([^/]+)/(\d+)-(\d+)', link)
     if batch_match:
         return batch_match.group(1), int(batch_match.group(2)), int(batch_match.group(3))
-    single_match = re.search(r't\.me/(?:c/)?([^/]+)/(\d+)', link)
-    if single_match:
-        username = single_match.group(1)
-        msg_id = int(single_match.group(2))
-        if "/c/" in link:
-            username = f"-100{username}"
-        return username, msg_id, msg_id
-    invite_match = re.search(r't\.me/\+([^/]+)', link)
+
+    # 2. Private channel: t.me/c/1234567890/123 or t.me/c/1234567890
+    private_match = re.search(r't\.me/c/(\d+)(?:/(\d+))?', link)
+    if private_match:
+        chat_id = f"-100{private_match.group(1)}"
+        msg_id = int(private_match.group(2)) if private_match.group(2) else None
+        return chat_id, msg_id, msg_id
+
+    # 3. Invite link: t.me/+hash or t.me/joinchat/hash
+    invite_match = re.search(r't\.me/(?:\+|joinchat/)([^/]+)', link)
     if invite_match:
         return invite_match.group(1), None, None
+
+    # 4. Username with message: t.me/username/123
+    single_match = re.search(r't\.me/([^/]+)/(\d+)', link)
+    if single_match:
+        return single_match.group(1), int(single_match.group(2)), int(single_match.group(2))
+
+    # 5. Username only: t.me/username
+    username_match = re.search(r't\.me/([^/]+)', link)
+    if username_match:
+        return username_match.group(1), None, None
+
+    # 6. Numeric ID: -1001234567890 or -1001234567890/123
+    numeric_match = re.search(r'^(-?\d+)(?:/(\d+))?$', link)
+    if numeric_match:
+        chat_id = numeric_match.group(1)
+        msg_id = int(numeric_match.group(2)) if numeric_match.group(2) else None
+        return chat_id, msg_id, msg_id
+
+    # 7. Plain username (no t.me prefix)
+    if re.match(r'^[a-zA-Z0-9_]+$', link):
+        return link, None, None
+
+    # 8. Fallback - return as-is
     return link, None, None
 
 
@@ -304,34 +345,87 @@ async def save(client, message: Message):
     text = message.text.strip()
     user_id = message.from_user.id
 
-    if not text.startswith("http") and "t.me" not in text:
+    # Check if it looks like a Telegram link, username, or numeric ID
+    is_link = (
+        "t.me" in text or
+        text.startswith("http") or
+        re.match(r'^-?\d+', text) or
+        re.match(r'^[a-zA-Z0-9_]+$', text)
+    )
+
+    if not is_link:
         return
 
     if IS_BATCH.get(user_id):
         IS_BATCH[user_id] = False
-        await message.reply("Batch processing cancelled.")
+        await message.reply("**⏹ Cancelled**\nBatch processing stopped.", reply_markup=main_menu_keyboard())
         return
 
     chat_username, msg_start, msg_end = parse_channel_username(text)
 
+    # If no message ID → join channel / show channel info
     if msg_start is None:
+        await message.reply(
+            f"**📍 Chat Detected**\n\n"
+            f"**Target:** `{chat_username}`\n\n"
+            f"Attempting to resolve..."
+        )
         try:
             acc = await get_auth_client(user_id)
             if acc:
                 try:
-                    await acc.join_chat(text)
-                    await message.reply("Joined the channel successfully!")
+                    chat = await acc.get_chat(chat_username)
+                    chat_type = "Channel" if chat.type.name == "CHANNEL" else "Group" if chat.type.name in ("GROUP", "SUPERGROUP") else "User"
+                    member_count = getattr(chat, 'members_count', 'N/A')
+                    title = getattr(chat, 'title', chat_username)
+
+                    info = (
+                        f"**{chat_type}:** {title}\n"
+                        f"**Username:** @{chat_username}\n"
+                        f"**Members:** {member_count}\n"
+                        f"**ID:** `{chat.id}`\n\n"
+                        f"Send a message link to download content.\n"
+                        f"Example: `https://t.me/{chat_username}/123`"
+                    )
+                    await message.reply(info, reply_markup=main_menu_keyboard())
+
+                    if LOGIN_SYSTEM and acc != user_client:
+                        await acc.stop()
                 except Exception as e:
-                    await message.reply(f"Failed to join: {e}")
-                if LOGIN_SYSTEM and acc != user_client:
-                    await acc.stop()
+                    # Try joining as invite
+                    try:
+                        await acc.join_chat(chat_username)
+                        await message.reply(
+                            f"**✅ Joined Successfully!**\n\n"
+                            f"**Target:** `{chat_username}`",
+                            reply_markup=main_menu_keyboard()
+                        )
+                    except Exception as e2:
+                        await message.reply(
+                            f"**❌ Cannot Access**\n\n"
+                            f"**Target:** `{chat_username}`\n"
+                            f"**Error:** {e2}\n\n"
+                            f"Make sure you're a member of this channel/group.",
+                            reply_markup=main_menu_keyboard()
+                        )
+
+                    if LOGIN_SYSTEM and acc != user_client:
+                        try:
+                            await acc.stop()
+                        except:
+                            pass
             else:
-                await message.reply("No user session. Use /login first.")
+                await message.reply(
+                    "**🔐 Login Required**\n\n"
+                    "No user session found.\n"
+                    "Use /login to authenticate.",
+                    reply_markup=main_menu_keyboard()
+                )
         except Exception as e:
-            await message.reply(f"Error: {e}")
+            await message.reply(f"**Error:** {e}")
         return
 
-    # Try with bot client first
+    # Try with bot client first (public content)
     try:
         msg = await client.get_messages(chat_username, msg_start)
         if msg and not msg.empty:
@@ -340,7 +434,12 @@ async def save(client, message: Message):
                 media_obj = getattr(msg, msg.media.value, None) if msg.media else None
                 if media_obj and hasattr(media_obj, 'file_size'):
                     if media_obj.file_size > MAX_FILE_SIZE_MB * 1024 * 1024:
-                        await message.reply(f"File too large ({media_obj.file_size / 1024 / 1024:.1f}MB)")
+                        await message.reply(
+                            f"**📏 File Too Large**\n\n"
+                            f"Size: {media_obj.file_size / 1024 / 1024:.1f}MB\n"
+                            f"Limit: {MAX_FILE_SIZE_MB}MB",
+                            reply_markup=main_menu_keyboard()
+                        )
                         return
 
                 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -365,12 +464,12 @@ async def save(client, message: Message):
     except:
         pass
 
-    # Fallback to user session
+    # Fallback to user session (restricted content)
     acc = await get_auth_client(user_id)
     if not acc:
         await message.reply(
             "**🔐 Restricted Content**\n\n"
-            "Cannot access this channel.\n"
+            "Cannot access this content via bot.\n"
             "Use /login to authenticate.",
             reply_markup=main_menu_keyboard()
         )
