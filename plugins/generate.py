@@ -74,6 +74,8 @@ def parse_channel_username(link):
     - t.me/username/123           → single message
     - t.me/c/1234567890/123       → private channel msg
     - t.me/c/1234567890           → private channel (no msg)
+    - t.me/b/botusername/123      → bot chat msg
+    - t.me/b/botusername          → bot chat (no msg)
     - t.me/+invitehash            → invite link
     - t.me/joinchat/invitehash    → invite link (old format)
     - t.me/username               → channel/group/bot (no msg)
@@ -95,33 +97,40 @@ def parse_channel_username(link):
         msg_id = int(private_match.group(2)) if private_match.group(2) else None
         return chat_id, msg_id, msg_id
 
-    # 3. Invite link: t.me/+hash or t.me/joinchat/hash
+    # 3. Bot chat: t.me/b/botusername/123 or t.me/b/botusername
+    bot_match = re.search(r't\.me/b/([^/]+)(?:/(\d+))?', link)
+    if bot_match:
+        bot_username = bot_match.group(1)
+        msg_id = int(bot_match.group(2)) if bot_match.group(2) else None
+        return bot_username, msg_id, msg_id
+
+    # 4. Invite link: t.me/+hash or t.me/joinchat/hash
     invite_match = re.search(r't\.me/(?:\+|joinchat/)([^/]+)', link)
     if invite_match:
         return invite_match.group(1), None, None
 
-    # 4. Username with message: t.me/username/123
+    # 5. Username with message: t.me/username/123
     single_match = re.search(r't\.me/([^/]+)/(\d+)', link)
     if single_match:
         return single_match.group(1), int(single_match.group(2)), int(single_match.group(2))
 
-    # 5. Username only: t.me/username
+    # 6. Username only: t.me/username
     username_match = re.search(r't\.me/([^/]+)', link)
     if username_match:
         return username_match.group(1), None, None
 
-    # 6. Numeric ID: -1001234567890 or -1001234567890/123
+    # 7. Numeric ID: -1001234567890 or -1001234567890/123
     numeric_match = re.search(r'^(-?\d+)(?:/(\d+))?$', link)
     if numeric_match:
         chat_id = numeric_match.group(1)
         msg_id = int(numeric_match.group(2)) if numeric_match.group(2) else None
         return chat_id, msg_id, msg_id
 
-    # 7. Plain username (no t.me prefix)
+    # 8. Plain username (no t.me prefix)
     if re.match(r'^[a-zA-Z0-9_]+$', link):
         return link, None, None
 
-    # 8. Fallback - return as-is
+    # 9. Fallback - return as-is
     return link, None, None
 
 

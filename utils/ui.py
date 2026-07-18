@@ -186,21 +186,15 @@ Send any Telegram link or username to download.
 | Public Channel | `t.me/username/123` | `t.me/durov/1` |
 | Batch Range | `t.me/username/1001-1010` | `t.me/durov/1-50` |
 | Private Channel | `t.me/c/1234567890/123` | `t.me/c/123456/1` |
+| Bot Chat | `t.me/b/botusername/123` | `t.me/b/botfather/1` |
 | Invite Link | `t.me/+invitehash` | `t.me/+abc123` |
 | Join Chat | `t.me/joinchat/hash` | `t.me/joinchat/xyz` |
 | Group | `t.me/groupname/123` | `t.me/mygroup/1` |
 | Supergroup | `t.me/groupname/123` | `t.me/supergroup/1` |
-| Bot Link | `t.me/botusername` | `t.me/botfather` |
 | Username Only | `username` | `durov` |
 | Numeric ID | `-1001234567890/123` | `-1001234567890/1` |
-| Forwarded | `t.me/c/123/456?single` | Auto-detected |
 
-**How it works:**
-1. Bot tries via bot token (public)
-2. If restricted → uses your session
-3. File sent to you
-
-**Note:** For restricted content, use /login first.
+**Note:** For bot chats, use Plus Messenger or similar app to get the message ID.
 """
 
 
@@ -277,8 +271,9 @@ HELP_FORMATS = """
 - `-1001234567890/123` — Numeric group ID
 
 **Bots:**
+- `t.me/b/botusername/123` — Bot chat (use Plus Messenger to get ID)
+- `t.me/b/botusername` — Bot chat (no specific message)
 - `t.me/botusername` — Bot link
-- `@botusername` — Bot username
 
 **Users:**
 - `t.me/username` — User profile
