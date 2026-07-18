@@ -78,19 +78,6 @@ async def cancel_cmd(client, message: Message):
     await message.reply("**Download cancelled.**")
 
 
-@bot.on_message(filters.command("batch") & filters.private)
-async def batch_cmd(client, message: Message):
-    args = message.text.split(maxsplit=1)
-    if len(args) < 2:
-        await message.reply(
-            "**📦 Batch Download**\n\n"
-            "Usage: `/batch <channel_url>`\n\n"
-            "Downloads all media from a channel.",
-            reply_markup=batch_keyboard()
-        )
-        return
-
-
 @bot.on_message(filters.command("backup") & filters.private)
 async def backup_cmd(client, message: Message):
     args = message.text.split(maxsplit=1)

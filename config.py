@@ -15,7 +15,8 @@ DB_URI = environ.get("DB_URI", "")
 DB_NAME = environ.get("DB_NAME", "telegramdl")
 
 # Bot settings
-ADMINS = int(environ.get("ADMINS", "0"))
+ADMINS_RAW = environ.get("ADMINS", "")
+ADMINS = [int(x.strip()) for x in ADMINS_RAW.split(",") if x.strip().isdigit()] if ADMINS_RAW else []
 CHANNEL_ID = environ.get("CHANNEL_ID", "")
 WAITING_TIME = int(environ.get("WAITING_TIME", "10"))
 ERROR_MESSAGE = environ.get("ERROR_MESSAGE", "true").lower() == "true"

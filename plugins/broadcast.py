@@ -9,8 +9,10 @@ from database.db import db
 from config import ADMINS
 
 
-@bot.on_message(filters.command("broadcast") & filters.user(ADMINS))
+@bot.on_message(filters.command("broadcast"))
 async def broadcast_cmd(client, message: Message):
+    if not ADMINS or message.from_user.id not in ADMINS:
+        return
     if not message.reply_to_message:
         await message.reply("**Usage:** Reply to a message with `/broadcast` to send it to all users.")
         return

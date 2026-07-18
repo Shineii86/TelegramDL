@@ -434,8 +434,8 @@ async def save(client, message: Message):
     is_link = (
         "t.me" in text or
         text.startswith("http") or
-        re.match(r'^-?\d+', text) or
-        re.match(r'^[a-zA-Z0-9_]+$', text)
+        re.match(r'^-100\d{6,}$', text) or
+        re.match(r'^-100\d{6,}/\d+$', text)
     )
 
     if not is_link:
@@ -448,7 +448,63 @@ async def save(client, message: Message):
 
     chat_username, msg_start, msg_end = parse_channel_username(text)
 
-    # If no message ID → join channel / show channel info
+    # Detect story links
+    is_story = '/s/' in text and 't.me/' in text
+
+    if is_story:
+        story_id = msg_start
+        await message.reply(
+            f"**📖 Story Detected**\n\n"
+            f"**Target:** `{chat_username}`\n"
+            f"**Story ID:** {story_id}\n\n"
+            f"Attempting to download..."
+        )
+        try:
+            acc = await get_auth_client(user_id)
+            if acc:
+                try:
+                    # Try to get story via user client
+                    # In Pyrogram, stories require getting the user first
+                    user = await acc.get_users(chat_username)
+                    if hasattr(acc, 'get_story'):
+                        story = await acc.get_story(user.id, story_id)
+                        if story and story.media:
+                            await handle_single(client, acc, message, chat_username, story_id, forward=False)
+                        else:
+                            await message.reply("**❌ Story Not Found**\n\nThis story may not exist or is no longer available.")
+                    else:
+                        await message.reply(
+                            "**📖 Story Download**\n\n"
+                            "Stories require the user client to be connected.\n"
+                            "Please use /login to authenticate first.",
+                            reply_markup=main_menu_keyboard()
+                        )
+                except Exception as e:
+                    await message.reply(
+                        f"**❌ Story Error**\n\n"
+                        f"**Error:** {e}\n\n"
+                        "Stories may not be accessible via this method.\n"
+                        "Try using Plus Messenger to get story IDs.",
+                        reply_markup=main_menu_keyboard()
+                    )
+                finally:
+                    if LOGIN_SYSTEM and acc != user_client:
+                        try:
+                            await acc.stop()
+                        except:
+                            pass
+            else:
+                await message.reply(
+                    "**🔐 Login Required**\n\n"
+                    "Stories require user authentication.\n"
+                    "Use /login to authenticate.",
+                    reply_markup=main_menu_keyboard()
+                )
+        except Exception as e:
+            await message.reply(f"**Error:** {e}")
+        return
+
+    # If no message ID → show channel info
     if msg_start is None:
         await message.reply(
             f"**📍 Chat Detected**\n\n"
@@ -491,7 +547,6 @@ async def save(client, message: Message):
                         reply_markup=main_menu_keyboard()
                     )
                 except Exception as e:
-                    # Try joining as invite
                     try:
                         await acc.join_chat(chat_username)
                         await message.reply(
@@ -507,7 +562,6 @@ async def save(client, message: Message):
                             f"Make sure you're a member of this channel/group.",
                             reply_markup=main_menu_keyboard()
                         )
-
                     if LOGIN_SYSTEM and acc != user_client:
                         try:
                             await acc.stop()
