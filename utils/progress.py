@@ -1,5 +1,4 @@
 import time
-import asyncio
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 

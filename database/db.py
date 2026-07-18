@@ -34,7 +34,20 @@ class Database:
         return self.users.find({})
 
 
+class MockDatabase:
+    """Fallback when no DB_URI is configured. All operations are no-ops."""
+    async def add_user(self, id, name): pass
+    async def is_user_exist(self, id): return False
+    async def set_session(self, id, session): pass
+    async def get_session(self, id): return None
+    async def delete_user(self, id): pass
+    async def total_users_count(self): return 0
+    async def get_all_users(self):
+        if False:
+            yield
+
+
 if DB_URI:
     db = Database(DB_URI, DB_NAME)
 else:
-    db = None
+    db = MockDatabase()

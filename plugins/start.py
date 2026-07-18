@@ -1,10 +1,8 @@
-import os
-import time
 from pyrogram import filters
 from pyrogram.types import Message, CallbackQuery
-from bot import bot, user_client
+from bot import bot
 from database.db import db
-from config import ADMINS, LOGIN_SYSTEM, OUTPUT_DIR, WAITING_TIME, MAX_FILE_SIZE_MB, TYPE_FILTER, CAPTION_ENABLED, FORWARD_MODE, USE_CHECKPOINT, KEEP_ALIVE
+from config import LOGIN_SYSTEM, WAITING_TIME, MAX_FILE_SIZE_MB, TYPE_FILTER, CAPTION_ENABLED, FORWARD_MODE, USE_CHECKPOINT
 from utils.ui import (
     main_menu_keyboard, download_keyboard, backup_keyboard, batch_keyboard,
     settings_keyboard, settings_delay_keyboard, settings_size_keyboard,
@@ -78,19 +76,6 @@ async def cancel_cmd(client, message: Message):
     await message.reply("**Download cancelled.**")
 
 
-@bot.on_message(filters.command("backup") & filters.private)
-async def backup_cmd(client, message: Message):
-    args = message.text.split(maxsplit=1)
-    if len(args) < 2:
-        await message.reply(
-            "**☁️ Backup**\n\n"
-            "Usage: `/backup <channel_url>`\n\n"
-            "Backs up channel to a backup channel.",
-            reply_markup=backup_keyboard()
-        )
-        return
-
-
 # ============ CALLBACK HANDLERS ============
 
 @bot.on_callback_query(filters.regex("^menu_"))
@@ -153,14 +138,11 @@ async def download_callbacks(client, callback: CallbackQuery):
             "**📥 Download**\n\nSend me a Telegram message link:\n\n"
             "Example: `https://t.me/username/123`"
         )
+        await callback.answer()
 
     elif data in ("dl_filter_photo", "dl_filter_video", "dl_filter_audio", "dl_filter_all"):
         filter_type = data.split("_")[-1]
-        if filter_type == "all":
-            filter_type = "all"
         await callback.answer(f"Type filter set to: {filter_type}", show_alert=True)
-
-    await callback.answer()
 
 
 @bot.on_callback_query(filters.regex("^bk_"))
@@ -172,14 +154,13 @@ async def backup_callbacks(client, callback: CallbackQuery):
             "**☁️ Backup**\n\nSend me a channel link to backup:\n\n"
             "Example: `https://t.me/username`"
         )
+        await callback.answer()
 
     elif data == "bk_mode_bot":
         await callback.answer("Bot upload mode selected!", show_alert=True)
 
     elif data == "bk_mode_user":
         await callback.answer("User upload mode selected!", show_alert=True)
-
-    await callback.answer()
 
 
 @bot.on_callback_query(filters.regex("^batch_"))
@@ -192,14 +173,13 @@ async def batch_callbacks(client, callback: CallbackQuery):
             "Send me a channel link with message range:\n\n"
             "Example: `https://t.me/username/1001-1010`"
         )
+        await callback.answer()
 
     elif data == "batch_forward":
         await callback.answer("Forward mode selected (faster)!", show_alert=True)
 
     elif data == "batch_download":
         await callback.answer("Download mode selected!", show_alert=True)
-
-    await callback.answer()
 
 
 @bot.on_callback_query(filters.regex("^set_"))
@@ -211,12 +191,14 @@ async def settings_callbacks(client, callback: CallbackQuery):
             "**⏱ Set Delay**\n\nChoose delay between downloads:",
             reply_markup=settings_delay_keyboard()
         )
+        await callback.answer()
 
     elif data == "set_size":
         await callback.message.edit_text(
             "**📏 Set Max File Size**\n\nChoose file size limit:",
             reply_markup=settings_size_keyboard()
         )
+        await callback.answer()
 
     elif data == "set_type":
         await callback.answer("Send /batch <link> to download", show_alert=True)
@@ -229,8 +211,6 @@ async def settings_callbacks(client, callback: CallbackQuery):
 
     elif data == "set_checkpoint":
         await callback.answer("Checkpoint: ON", show_alert=True)
-
-    await callback.answer()
 
 
 @bot.on_callback_query(filters.regex("^delay_"))
@@ -314,8 +294,8 @@ async def confirm_callbacks(client, callback: CallbackQuery):
     if len(parts) >= 2:
         action = parts[1]
         await callback.answer(f"Confirmed: {action}", show_alert=True)
-
-    await callback.answer()
+    else:
+        await callback.answer()
 
 
 @bot.on_callback_query(filters.regex("^cancel_"))

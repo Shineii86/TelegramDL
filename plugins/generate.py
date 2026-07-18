@@ -1,10 +1,9 @@
 import os
 import re
-import time
 import asyncio
 import logging
 from pyrogram import filters
-from pyrogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram.types import Message, CallbackQuery
 from pyrogram.enums import MessageMediaType
 from pyrogram.errors import (
     FloodWait, UserNotParticipant, ChannelPrivate,
@@ -14,10 +13,11 @@ from pyrogram.errors import (
 from bot import bot, user_client, start_user_client
 from database.db import db
 from utils.progress import DownloadProgress
-from utils.ui import progress_keyboard, stop_keyboard, confirm_keyboard, main_menu_keyboard
+from utils.ui import stop_keyboard, main_menu_keyboard
 from config import (
     API_ID, API_HASH, LOGIN_SYSTEM, OUTPUT_DIR,
-    WAITING_TIME, ERROR_MESSAGE, CHANNEL_ID, MAX_FILE_SIZE_MB
+    WAITING_TIME, ERROR_MESSAGE, CHANNEL_ID, MAX_FILE_SIZE_MB,
+    KEEP_ORIGINAL_CAPTION
 )
 
 logger = logging.getLogger(__name__)
@@ -322,7 +322,7 @@ async def handle_single(client, acc, message, chat_id, msg_id, forward=False, pr
             await client.send_message(message.chat.id, f"Failed to download #{msg_id}")
             return
 
-        caption = make_caption(msg, folder) if msg.caption else (msg.caption or "")
+        caption = msg.caption if (KEEP_ORIGINAL_CAPTION and msg.caption) else make_caption(msg, folder)
         caption_entities = msg.caption_entities if msg.caption_entities else None
         sent = await send_with_metadata(client, message.chat.id, file_path, caption, msg, caption_entities)
 
@@ -345,7 +345,7 @@ async def handle_single(client, acc, message, chat_id, msg_id, forward=False, pr
             await client.send_message(message.chat.id, f"Error: {str(e)}")
 
 
-@bot.on_callback_query(filters.regex("cancel_download"))
+@bot.on_callback_query(filters.regex("^cancel_download$"))
 async def cancel_callback(client, callback: CallbackQuery):
     user_id = callback.from_user.id
     IS_BATCH[user_id] = True
@@ -441,10 +441,8 @@ async def save(client, message: Message):
     if not is_link:
         return
 
-    if IS_BATCH.get(user_id):
-        IS_BATCH[user_id] = False
-        await message.reply("**⏹ Cancelled**\nBatch processing stopped.", reply_markup=main_menu_keyboard())
-        return
+    # Clear any stale batch cancel flag
+    IS_BATCH.pop(user_id, None)
 
     chat_username, msg_start, msg_end = parse_channel_username(text)
 
@@ -463,28 +461,46 @@ async def save(client, message: Message):
             acc = await get_auth_client(user_id)
             if acc:
                 try:
-                    # Try to get story via user client
-                    # In Pyrogram, stories require getting the user first
-                    user = await acc.get_users(chat_username)
-                    if hasattr(acc, 'get_story'):
-                        story = await acc.get_story(user.id, story_id)
-                        if story and story.media:
-                            await handle_single(client, acc, message, chat_username, story_id, forward=False)
+                    # Use Kurigram's get_stories API
+                    story = await acc.get_stories(chat_username, story_id)
+                    if story:
+                        # Download story media
+                        os.makedirs(OUTPUT_DIR, exist_ok=True)
+                        ext = "jpg" if hasattr(story, 'photo') and story.photo else "mp4"
+                        file_path = os.path.join(OUTPUT_DIR, f"story_{story_id}.{ext}")
+                        
+                        if hasattr(story, 'download'):
+                            await story.download(file_name=file_path)
                         else:
-                            await message.reply("**❌ Story Not Found**\n\nThis story may not exist or is no longer available.")
+                            await acc.download_media(story, file_name=file_path)
+                        
+                        # Send to user
+                        caption = f"📖 Story #{story_id} from @{chat_username}"
+                        if hasattr(story, 'caption') and story.caption:
+                            caption = story.caption
+                        
+                        if ext == "jpg":
+                            await client.send_photo(message.chat.id, file_path, caption=caption)
+                        else:
+                            await client.send_video(message.chat.id, file_path, caption=caption)
+                        
+                        try:
+                            os.remove(file_path)
+                        except:
+                            pass
                     else:
                         await message.reply(
-                            "**📖 Story Download**\n\n"
-                            "Stories require the user client to be connected.\n"
-                            "Please use /login to authenticate first.",
+                            "**❌ Story Not Found**\n\n"
+                            "This story may not exist or is no longer available.\n"
+                            "Stories expire after 24 hours.",
                             reply_markup=main_menu_keyboard()
                         )
                 except Exception as e:
                     await message.reply(
                         f"**❌ Story Error**\n\n"
                         f"**Error:** {e}\n\n"
-                        "Stories may not be accessible via this method.\n"
-                        "Try using Plus Messenger to get story IDs.",
+                        "Stories require user authentication.\n"
+                        "Make sure you're following this user.",
                         reply_markup=main_menu_keyboard()
                     )
                 finally:
@@ -603,7 +619,7 @@ async def save(client, message: Message):
                 os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
                 await client.download_media(msg, file_name=file_path)
-                caption = make_caption(msg, folder) if msg.caption else (msg.caption or "")
+                caption = msg.caption if (KEEP_ORIGINAL_CAPTION and msg.caption) else make_caption(msg, folder)
                 await send_with_metadata(client, message.chat.id, file_path, caption, msg)
 
                 try:

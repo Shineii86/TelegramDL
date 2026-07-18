@@ -1,4 +1,3 @@
-import os
 from os import environ
 
 # Telegram API Credentials

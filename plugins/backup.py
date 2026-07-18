@@ -1,16 +1,13 @@
 import os
 import asyncio
 import logging
-from datetime import datetime
 from pyrogram import filters
 from pyrogram.types import Message
 from pyrogram.enums import MessageMediaType
-from pyrogram.errors import FloodWait, UserNotParticipant, ChannelPrivate
+from pyrogram.errors import FloodWait
 
 from bot import bot, user_client, start_user_client
 from database.db import db
-from utils.session import SessionStats
-from utils.keepalive import KeepAlive
 from utils.progress import DownloadProgress
 from utils.checkpoint import load_checkpoint, save_checkpoint
 from config import (

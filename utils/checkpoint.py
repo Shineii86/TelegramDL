@@ -1,6 +1,5 @@
 import os
 import json
-import time
 
 CHECKPOINT_FILE = "checkpoint.json"
 
