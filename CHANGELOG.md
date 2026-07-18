@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.3.0] - 2026-07-18
+
+### Added
+- Modern UI/UX with inline keyboards and callback buttons
+- Main menu with navigation buttons (Download, Backup, Batch, Login, Settings, Help)
+- Help menu with topic-specific sections and back buttons
+- Settings menu with delay, file size, type filter, captions options
+- Delay selector with preset buttons (3s, 5s, 10s, 15s, 20s, 30s)
+- File size selector with preset buttons (500MB, 1GB, 2GB, 5GB, 10GB, No Limit)
+- Login menu with login/logout buttons
+- Confirm/Cancel dialogs for dangerous actions
+- Stop button for batch downloads
+- Back navigation on all sub-menus
+- Message templates for all user interactions (utils/ui.py)
+
+### Changed
+- Rewrote plugins/start.py with full callback handler system
+- Updated plugins/generate.py with modern UI messages
+- Updated help messages with formatted sections
+- All messages now have inline keyboard navigation
+
+---
+
 ## [2.2.0] - 2026-07-18
 
 ### Added

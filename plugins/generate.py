@@ -11,6 +11,7 @@ from pyrogram.errors import FloodWait, UserNotParticipant, ChannelPrivate
 from bot import bot, user_client, start_user_client
 from database.db import db
 from utils.progress import DownloadProgress
+from utils.ui import progress_keyboard, stop_keyboard, confirm_keyboard, main_menu_keyboard
 from config import (
     API_ID, API_HASH, LOGIN_SYSTEM, OUTPUT_DIR,
     WAITING_TIME, ERROR_MESSAGE, CHANNEL_ID, MAX_FILE_SIZE_MB
@@ -223,7 +224,10 @@ async def cancel_callback(client, callback: CallbackQuery):
     user_id = callback.from_user.id
     IS_BATCH[user_id] = True
     await callback.answer("Download cancelled!")
-    await callback.message.edit_text("**Download Cancelled by User**")
+    await callback.message.edit_text(
+        "**❌ Download Cancelled**\n\nProcess stopped by user.",
+        reply_markup=main_menu_keyboard()
+    )
 
 
 @bot.on_message(filters.command("batch") & filters.private)
@@ -250,7 +254,14 @@ async def batch_cmd(client, message: Message):
         return
 
     total = msg_end - msg_start + 1
-    await message.reply(f"Starting batch download...\nTotal: {total} files")
+    await message.reply(
+        f"**📦 Batch Download**\n\n"
+        f"**Channel:** `{chat_username}`\n"
+        f"**Range:** {msg_start} → {msg_end}\n"
+        f"**Total:** {total} files\n\n"
+        f"Starting...",
+        reply_markup=stop_keyboard()
+    )
 
     IS_BATCH[user_id] = False
 
@@ -263,7 +274,7 @@ async def batch_cmd(client, message: Message):
     for msg_id in range(msg_start, msg_end + 1):
         if IS_BATCH.get(user_id):
             await progress.finish()
-            await message.reply("Batch cancelled.")
+            await message.reply("**⏹ Batch Cancelled**\nProcess stopped by user.", reply_markup=main_menu_keyboard())
             break
 
         await handle_single(client, acc, message, chat_username, msg_id, forward=True, progress=progress)
@@ -357,7 +368,12 @@ async def save(client, message: Message):
     # Fallback to user session
     acc = await get_auth_client(user_id)
     if not acc:
-        await message.reply("Cannot access restricted content.\nUse /login to authenticate.")
+        await message.reply(
+            "**🔐 Restricted Content**\n\n"
+            "Cannot access this channel.\n"
+            "Use /login to authenticate.",
+            reply_markup=main_menu_keyboard()
+        )
         return
 
     if msg_start == msg_end:
@@ -375,7 +391,7 @@ async def save(client, message: Message):
         for msg_id in range(msg_start, msg_end + 1):
             if IS_BATCH.get(user_id):
                 await progress.finish()
-                await message.reply("Batch cancelled.")
+                await message.reply("**⏹ Batch Cancelled**\nProcess stopped by user.", reply_markup=main_menu_keyboard())
                 break
 
             await handle_single(client, acc, message, chat_username, msg_id, forward=True, progress=progress)
