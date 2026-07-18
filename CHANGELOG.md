@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.5.0] - 2026-07-18
+
+### Added
+- Thumbnail preservation — downloads and re-uploads thumbnails for documents, videos, audio
+- Caption entities preservation — preserves bold, italic, code, links, etc. in captions
+- Video metadata — duration, width, height preserved on upload
+- Audio metadata — duration preserved on upload
+- Broadcast command (`/broadcast`) — admin broadcast to all registered users
+- Broadcast progress tracking — shows success/blocked/deleted counts
+- Auto-cleanup of blocked/deactivated users from database
+- UsernameNotOccupied error handling — clear message for non-existent usernames
+- UsernameInvalid error handling — clear message for invalid usernames
+- Session validation on login — checks if user already has active session
+- Already logged in detection — prevents duplicate login attempts
+
+### Changed
+- Upgraded `send_with_metadata()` with thumbnail and metadata support
+- Updated `handle_single()` to pass caption_entities
+- Updated error handling in save function with specific error types
+
+---
+
 ## [2.4.0] - 2026-07-18
 
 ### Added

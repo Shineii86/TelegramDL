@@ -6,7 +6,10 @@ import logging
 from pyrogram import filters
 from pyrogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from pyrogram.enums import MessageMediaType
-from pyrogram.errors import FloodWait, UserNotParticipant, ChannelPrivate
+from pyrogram.errors import (
+    FloodWait, UserNotParticipant, ChannelPrivate,
+    UsernameNotOccupied, UsernameInvalid, PeerIdInvalid
+)
 
 from bot import bot, user_client, start_user_client
 from database.db import db
@@ -173,28 +176,94 @@ async def forward_single(client, dest_chat, msg):
     return False
 
 
-async def send_with_metadata(client, chat_id, file_path, caption, msg):
+async def send_with_metadata(client, chat_id, file_path, caption, msg, caption_entities=None):
+    """Send file with metadata: thumbnail, duration, dimensions, caption entities."""
     for attempt in range(3):
         try:
+            # Download thumbnail if available
+            thumb = None
+            try:
+                if msg.media == MessageMediaType.VIDEO and msg.video.thumbs:
+                    thumb = await client.download_media(msg.video.thumbs[0].file_id)
+                elif msg.media == MessageMediaType.DOCUMENT and msg.document.thumbs:
+                    thumb = await client.download_media(msg.document.thumbs[0].file_id)
+                elif msg.media == MessageMediaType.AUDIO and msg.audio.thumbs:
+                    thumb = await client.download_media(msg.audio.thumbs[0].file_id)
+            except:
+                thumb = None
+
             if file_path.endswith((".jpg", ".jpeg", ".png", ".webp")):
-                await client.send_photo(chat_id, file_path, caption=caption)
+                await client.send_photo(
+                    chat_id, file_path,
+                    caption=caption,
+                    caption_entities=caption_entities
+                )
             elif file_path.endswith((".mp4", ".mkv", ".avi")):
                 duration = 0
+                width = 0
+                height = 0
                 if msg.media == MessageMediaType.VIDEO:
                     vid = getattr(msg, "video", None)
-                    if vid and hasattr(vid, "duration"):
-                        duration = vid.duration
-                await client.send_video(chat_id, file_path, caption=caption, duration=duration)
+                    if vid:
+                        duration = getattr(vid, "duration", 0) or 0
+                        width = getattr(vid, "width", 0) or 0
+                        height = getattr(vid, "height", 0) or 0
+                await client.send_video(
+                    chat_id, file_path,
+                    caption=caption,
+                    caption_entities=caption_entities,
+                    duration=duration,
+                    width=width,
+                    height=height,
+                    thumb=thumb
+                )
             elif file_path.endswith((".mp3", ".ogg", ".wav")):
-                await client.send_audio(chat_id, file_path, caption=caption)
+                duration = 0
+                if msg.media == MessageMediaType.AUDIO:
+                    aud = getattr(msg, "audio", None)
+                    if aud:
+                        duration = getattr(aud, "duration", 0) or 0
+                await client.send_audio(
+                    chat_id, file_path,
+                    caption=caption,
+                    caption_entities=caption_entities,
+                    duration=duration,
+                    thumb=thumb
+                )
+            elif file_path.endswith((".gif",)):
+                await client.send_animation(
+                    chat_id, file_path,
+                    caption=caption,
+                    caption_entities=caption_entities
+                )
             else:
-                await client.send_document(chat_id, file_path, caption=caption)
+                await client.send_document(
+                    chat_id, file_path,
+                    caption=caption,
+                    caption_entities=caption_entities,
+                    thumb=thumb
+                )
+
+            # Cleanup thumbnail
+            if thumb and os.path.exists(thumb):
+                try:
+                    os.remove(thumb)
+                except:
+                    pass
+
             return True
         except FloodWait as e:
             await asyncio.sleep(e.value + 5)
         except Exception as e:
             logger.error(f"Send failed (attempt {attempt+1}): {e}")
             await asyncio.sleep(5)
+
+    # Cleanup thumbnail on failure
+    if thumb and os.path.exists(thumb):
+        try:
+            os.remove(thumb)
+        except:
+            pass
     return False
 
 
@@ -248,7 +317,8 @@ async def handle_single(client, acc, message, chat_id, msg_id, forward=False, pr
             return
 
         caption = make_caption(msg, folder) if msg.caption else (msg.caption or "")
-        sent = await send_with_metadata(client, message.chat.id, file_path, caption, msg)
+        caption_entities = msg.caption_entities if msg.caption_entities else None
+        sent = await send_with_metadata(client, message.chat.id, file_path, caption, msg, caption_entities)
 
         try:
             os.remove(file_path)
@@ -400,6 +470,20 @@ async def save(client, message: Message):
 
                     if LOGIN_SYSTEM and acc != user_client:
                         await acc.stop()
+                except UsernameNotOccupied:
+                    await message.reply(
+                        f"**❌ Username Not Found**\n\n"
+                        f"**Target:** `{chat_username}`\n\n"
+                        f"This username doesn't exist. Check the spelling.",
+                        reply_markup=main_menu_keyboard()
+                    )
+                except UsernameInvalid:
+                    await message.reply(
+                        f"**❌ Invalid Username**\n\n"
+                        f"**Target:** `{chat_username}`\n\n"
+                        f"This is not a valid Telegram username.",
+                        reply_markup=main_menu_keyboard()
+                    )
                 except Exception as e:
                     # Try joining as invite
                     try:

@@ -48,6 +48,18 @@ async def login_cmd(client, message: Message):
     if not LOGIN_SYSTEM:
         await message.reply("Login system is disabled. Bot uses a global session.")
         return
+
+    user_id = message.from_user.id
+    existing = await db.get_session(user_id)
+    if existing:
+        await message.reply(
+            "**🔐 Already Logged In**\n\n"
+            "You have an active session.\n"
+            "Use /logout first to login again.",
+            reply_markup=login_keyboard()
+        )
+        return
+
     await message.reply("**🔐 Login**\n\nChoose an option:", reply_markup=login_keyboard())
 
 
