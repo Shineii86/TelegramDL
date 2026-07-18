@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.2.0] - 2026-07-18
+
+### Added
+- Live progress messages — real-time progress bar with percentage in Telegram
+- Download counter — shows downloaded/skipped/failed/total counts
+- ETA calculation — estimated time remaining based on average speed
+- File preview — shows file info (type, size) before download
+- Cancel button — inline keyboard button to cancel batch downloads
+- Progress bar — visual Unicode progress bar (█░) in messages
+- Elapsed time tracking — shows how long download has been running
+
+### Changed
+- Rewrote utils/progress.py with DownloadProgress class
+- Updated plugins/generate.py with live progress and cancel support
+- Updated plugins/backup.py with progress tracking
+
+---
+
 ## [2.1.0] - 2026-07-18
 
 ### Added

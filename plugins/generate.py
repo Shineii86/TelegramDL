@@ -4,12 +4,13 @@ import time
 import asyncio
 import logging
 from pyrogram import filters
-from pyrogram.types import Message
+from pyrogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from pyrogram.enums import MessageMediaType
 from pyrogram.errors import FloodWait, UserNotParticipant, ChannelPrivate
 
 from bot import bot, user_client, start_user_client
 from database.db import db
+from utils.progress import DownloadProgress
 from config import (
     API_ID, API_HASH, LOGIN_SYSTEM, OUTPUT_DIR,
     WAITING_TIME, ERROR_MESSAGE, CHANNEL_ID, MAX_FILE_SIZE_MB
@@ -18,15 +19,7 @@ from config import (
 logger = logging.getLogger(__name__)
 
 IS_BATCH = {}
-USER_STATUS = {}
-SEMAPHORE = asyncio.Semaphore(3)
-
-
-def progress_callback(current, total, user_id, msg_id):
-    pct = current / total * 100
-    status_file = f"progress_{user_id}_{msg_id}.txt"
-    with open(status_file, "w") as f:
-        f.write(str(int(pct)))
+USER_PROGRESS = {}
 
 
 def get_message_type(msg):
@@ -154,7 +147,7 @@ async def send_with_metadata(client, chat_id, file_path, caption, msg):
     return False
 
 
-async def handle_single(client, acc, message, chat_id, msg_id, forward=False):
+async def handle_single(client, acc, message, chat_id, msg_id, forward=False, progress=None):
     try:
         if isinstance(chat_id, str) and (chat_id.isdigit() or chat_id.startswith("-100")):
             chat_id = int(chat_id)
@@ -178,6 +171,12 @@ async def handle_single(client, acc, message, chat_id, msg_id, forward=False):
                     f"Skipped #{msg_id}: too large ({media_obj.file_size / 1024 / 1024:.1f}MB)"
                 )
                 return
+
+        # File preview
+        if media_obj and hasattr(media_obj, 'file_size'):
+            size_mb = media_obj.file_size / 1024 / 1024
+            if progress:
+                progress.update(current_file=f"#{msg_id} ({msg_type}, {size_mb:.1f}MB)")
 
         # Forward mode (fastest)
         if forward:
@@ -204,10 +203,6 @@ async def handle_single(client, acc, message, chat_id, msg_id, forward=False):
             os.remove(file_path)
         except:
             pass
-        try:
-            os.remove(f"progress_{message.chat.id}_{msg_id}.txt")
-        except:
-            pass
 
         if not sent:
             await client.send_message(message.chat.id, f"Failed to send #{msg_id}")
@@ -223,68 +218,12 @@ async def handle_single(client, acc, message, chat_id, msg_id, forward=False):
             await client.send_message(message.chat.id, f"Error: {str(e)}")
 
 
-async def handle_album(client, acc, message, chat_id, first_msg_id, last_msg_id):
-    """Handle album (grouped messages)."""
-    try:
-        if isinstance(chat_id, str) and (chat_id.isdigit() or chat_id.startswith("-100")):
-            chat_id = int(chat_id)
-
-        messages = []
-        for mid in range(first_msg_id, last_msg_id + 1):
-            msg = await acc.get_messages(chat_id, mid)
-            if msg and msg.media and msg.grouped_id:
-                messages.append(msg)
-            elif msg and not messages:
-                messages.append(msg)
-
-        if not messages:
-            return
-
-        media_list = []
-        for msg in messages:
-            msg_type = get_message_type(msg)
-            if msg_type:
-                folder = get_folder(msg_type)
-                ext = get_ext(msg_type)
-                file_name = f"{msg.id}.{ext}" if ext else str(msg.id)
-                file_path = os.path.join(OUTPUT_DIR, folder, file_name)
-                os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
-                success = await download_with_retry(acc, msg, file_path)
-                if success:
-                    media_list.append(file_path)
-
-        if media_list:
-            caption = make_caption(messages[0], get_folder(get_message_type(messages[0]))) if messages[0].caption else ""
-            try:
-                await client.send_media_group(message.chat.id, [
-                    (await _media_input(client, f, caption if i == 0 else ""))
-                    for i, f in enumerate(media_list)
-                ])
-            except:
-                for f in media_list:
-                    await client.send_document(message.chat.id, f)
-
-            for f in media_list:
-                try:
-                    os.remove(f)
-                except:
-                    pass
-
-    except Exception as e:
-        logger.error(f"Album error: {e}")
-
-
-async def _media_input(client, file_path, caption):
-    from pyrogram.types import InputMediaPhoto, InputMediaVideo, InputMediaDocument, InputMediaAudio
-    if file_path.endswith((".jpg", ".jpeg", ".png", ".webp")):
-        return InputMediaPhoto(file_path, caption=caption)
-    elif file_path.endswith((".mp4", ".mkv")):
-        return InputMediaVideo(file_path, caption=caption)
-    elif file_path.endswith((".mp3", ".ogg")):
-        return InputMediaAudio(file_path, caption=caption)
-    else:
-        return InputMediaDocument(file_path, caption=caption)
+@bot.on_callback_query(filters.regex("cancel_download"))
+async def cancel_callback(client, callback: CallbackQuery):
+    user_id = callback.from_user.id
+    IS_BATCH[user_id] = True
+    await callback.answer("Download cancelled!")
+    await callback.message.edit_text("**Download Cancelled by User**")
 
 
 @bot.on_message(filters.command("batch") & filters.private)
@@ -310,25 +249,37 @@ async def batch_cmd(client, message: Message):
         await message.reply("No user session. Use /login first.")
         return
 
-    await message.reply(f"Starting batch download from {msg_start} to {msg_end}...")
+    total = msg_end - msg_start + 1
+    await message.reply(f"Starting batch download...\nTotal: {total} files")
 
     IS_BATCH[user_id] = False
-    count = 0
 
+    # Create progress tracker
+    progress = DownloadProgress(client, message.chat.id)
+    await progress.create(total)
+    USER_PROGRESS[user_id] = progress
+
+    count = 0
     for msg_id in range(msg_start, msg_end + 1):
         if IS_BATCH.get(user_id):
+            await progress.finish()
             await message.reply("Batch cancelled.")
             break
 
-        await handle_single(client, acc, message, chat_username, msg_id, forward=True)
-        count += 1
+        await handle_single(client, acc, message, chat_username, msg_id, forward=True, progress=progress)
 
-        if count % 10 == 0:
-            await message.reply(f"Progress: {count}/{msg_end - msg_start + 1}")
+        count += 1
+        done = progress.downloaded + progress.skipped + progress.failed + count
+        progress.update(downloaded=count)
+        await progress.update_message()
 
         await asyncio.sleep(WAITING_TIME)
 
-    await message.reply(f"Batch complete! Processed {count} messages.")
+    if not IS_BATCH.get(user_id):
+        progress.update(downloaded=count)
+        await progress.finish()
+
+    USER_PROGRESS.pop(user_id, None)
 
     if LOGIN_SYSTEM and acc != user_client:
         try:
@@ -412,13 +363,34 @@ async def save(client, message: Message):
     if msg_start == msg_end:
         await handle_single(client, acc, message, chat_username, msg_start, forward=True)
     else:
+        total = msg_end - msg_start + 1
         IS_BATCH[user_id] = False
+
+        # Create progress tracker
+        progress = DownloadProgress(client, message.chat.id)
+        await progress.create(total)
+        USER_PROGRESS[user_id] = progress
+
+        count = 0
         for msg_id in range(msg_start, msg_end + 1):
             if IS_BATCH.get(user_id):
+                await progress.finish()
                 await message.reply("Batch cancelled.")
                 break
-            await handle_single(client, acc, message, chat_username, msg_id, forward=True)
+
+            await handle_single(client, acc, message, chat_username, msg_id, forward=True, progress=progress)
+
+            count += 1
+            progress.update(downloaded=count)
+            await progress.update_message()
+
             await asyncio.sleep(WAITING_TIME)
+
+        if not IS_BATCH.get(user_id):
+            progress.update(downloaded=count)
+            await progress.finish()
+
+        USER_PROGRESS.pop(user_id, None)
 
     if LOGIN_SYSTEM and acc != user_client:
         try:
