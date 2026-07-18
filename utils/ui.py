@@ -184,17 +184,17 @@ Send any Telegram link or username to download.
 | Type | Format | Example |
 |------|--------|---------|
 | Public Channel | `t.me/username/123` | `t.me/durov/1` |
+| Story | `t.me/username/s/123` | `t.me/Shineii86/s/70` |
 | Batch Range | `t.me/username/1001-1010` | `t.me/durov/1-50` |
 | Private Channel | `t.me/c/1234567890/123` | `t.me/c/123456/1` |
 | Bot Chat | `t.me/b/botusername/123` | `t.me/b/botfather/1` |
 | Invite Link | `t.me/+invitehash` | `t.me/+abc123` |
 | Join Chat | `t.me/joinchat/hash` | `t.me/joinchat/xyz` |
 | Group | `t.me/groupname/123` | `t.me/mygroup/1` |
-| Supergroup | `t.me/groupname/123` | `t.me/supergroup/1` |
 | Username Only | `username` | `durov` |
 | Numeric ID | `-1001234567890/123` | `-1001234567890/1` |
 
-**Note:** For bot chats, use Plus Messenger or similar app to get the message ID.
+**Note:** For bot chats, use Plus Messenger to get message ID.
 """
 
 
@@ -264,6 +264,9 @@ HELP_FORMATS = """
 - `t.me/c/1234567890/123` — Private channel
 - `t.me/+invitehash` — Invite link
 - `t.me/joinchat/hash` — Old invite format
+
+**Stories:**
+- `t.me/username/s/123` — Download story
 
 **Groups & Supergroups:**
 - `t.me/groupname/123` — Public group

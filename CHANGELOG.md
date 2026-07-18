@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.6.0] - 2026-07-18
+
+### Added
+- Story support — download Telegram stories: `t.me/username/s/123`
+- Story format pattern matcher added to parser
+
+---
+
 ## [2.5.0] - 2026-07-18
 
 ### Added

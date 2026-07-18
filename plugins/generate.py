@@ -75,6 +75,7 @@ def parse_channel_username(link):
     Supported formats:
     - t.me/username/1001-1010     → batch range
     - t.me/username/123           → single message
+    - t.me/username/s/123         → story
     - t.me/c/1234567890/123       → private channel msg
     - t.me/c/1234567890           → private channel (no msg)
     - t.me/b/botusername/123      → bot chat msg
@@ -93,36 +94,41 @@ def parse_channel_username(link):
     if batch_match:
         return batch_match.group(1), int(batch_match.group(2)), int(batch_match.group(3))
 
-    # 2. Private channel: t.me/c/1234567890/123 or t.me/c/1234567890
+    # 2. Story: t.me/username/s/123
+    story_match = re.search(r't\.me/([^/]+)/s/(\d+)', link)
+    if story_match:
+        return story_match.group(1), int(story_match.group(2)), int(story_match.group(2))
+
+    # 3. Private channel: t.me/c/1234567890/123 or t.me/c/1234567890
     private_match = re.search(r't\.me/c/(\d+)(?:/(\d+))?', link)
     if private_match:
         chat_id = f"-100{private_match.group(1)}"
         msg_id = int(private_match.group(2)) if private_match.group(2) else None
         return chat_id, msg_id, msg_id
 
-    # 3. Bot chat: t.me/b/botusername/123 or t.me/b/botusername
+    # 4. Bot chat: t.me/b/botusername/123 or t.me/b/botusername
     bot_match = re.search(r't\.me/b/([^/]+)(?:/(\d+))?', link)
     if bot_match:
         bot_username = bot_match.group(1)
         msg_id = int(bot_match.group(2)) if bot_match.group(2) else None
         return bot_username, msg_id, msg_id
 
-    # 4. Invite link: t.me/+hash or t.me/joinchat/hash
+    # 5. Invite link: t.me/+hash or t.me/joinchat/hash
     invite_match = re.search(r't\.me/(?:\+|joinchat/)([^/]+)', link)
     if invite_match:
         return invite_match.group(1), None, None
 
-    # 5. Username with message: t.me/username/123
+    # 6. Username with message: t.me/username/123
     single_match = re.search(r't\.me/([^/]+)/(\d+)', link)
     if single_match:
         return single_match.group(1), int(single_match.group(2)), int(single_match.group(2))
 
-    # 6. Username only: t.me/username
+    # 7. Username only: t.me/username
     username_match = re.search(r't\.me/([^/]+)', link)
     if username_match:
         return username_match.group(1), None, None
 
-    # 7. Numeric ID: -1001234567890 or -1001234567890/123
+    # 8. Numeric ID: -1001234567890 or -1001234567890/123
     numeric_match = re.search(r'^(-?\d+)(?:/(\d+))?$', link)
     if numeric_match:
         chat_id = numeric_match.group(1)
