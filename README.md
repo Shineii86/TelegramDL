@@ -25,9 +25,9 @@
 
 **Download Restricted Telegram Content via Bot · Save Locally · Backup to Channel**
 
-Open notebook in Google Colab, fill credentials, run — done. Handles restricted channels with user session authentication.
+Open notebook in Google Colab, fill credentials, run — done. Handles restricted channels, groups, bots, and stories with user session authentication.
 
-**Tags:** `telegram` `restricted-content` `bot` `downloader` `colab` `kurigram` `pyrogram` `backup`
+**Tags:** `telegram` `restricted-content` `bot` `downloader` `colab` `kurigram` `pyrogram` `backup` `stories` `groups` `bots`
 
 </div>
 
@@ -47,8 +47,9 @@ Open notebook in Google Colab, fill credentials, run — done. Handles restricte
 | [📂 Project Structure](#-project-structure) | Repository layout |
 | [🚀 Quick Start](#-quick-start) | Get running in 3 steps |
 | [⚙️ Configuration](#%EF%B8%8F-configuration) | All settings explained |
-| [🔗 Supported Formats](#-supported-formats) | URL types |
+| [🔗 Supported Formats](#-supported-formats) | ALL URL types |
 | [🧠 How It Works](#-how-it-works) | Step-by-step flow |
+| [🤖 Bot Commands](#-bot-commands) | All commands |
 | [🔋 Colab Guide](#-colab-guide) | Tips & optimizations |
 | [❓ FAQ](#-faq) | Common questions |
 | [🐛 Troubleshooting](#-troubleshooting) | Fix common issues |
@@ -61,7 +62,7 @@ Open notebook in Google Colab, fill credentials, run — done. Handles restricte
 
 ## 📖 Overview
 
-TelegramDL is a **Telegram Restricted Content Downloader** that lets you download photos, videos, audio, and documents from any Telegram channel — including **restricted and private channels**. Built with Kurigram (Pyrogram fork) and Google Colab notebook for easy usage.
+TelegramDL is a **Telegram Restricted Content Downloader** that lets you download photos, videos, audio, documents, and stories from any Telegram source — including **channels, groups, supergroups, bots, and stories**. Built with Kurigram (Pyrogram fork) and Google Colab notebook for easy usage.
 
 > [!NOTE]
 > **Why TelegramDL?** Telegram doesn't allow downloading from restricted channels. TelegramDL solves this by using a two-tier approach: bot token for public content, user session for restricted content.
@@ -78,12 +79,17 @@ TelegramDL is a **Telegram Restricted Content Downloader** that lets you downloa
 | 📱 **Local Download** | Save to Colab/Drive/storage |
 | ☁️ **Channel Backup** | Backup to private Telegram channel |
 | 📦 **Batch Download** | Download message ID ranges |
-| 🔗 **All URL Formats** | Public, private, invite links |
+| 📖 **Stories** | Download Telegram stories |
+| 👥 **Groups & Supergroups** | Download from groups |
+| 🤖 **Bot Chats** | Download from bot conversations |
+| 🔗 **All URL Formats** | Public, private, invite, bot, story links |
+| 🎨 **Modern UI** | Inline keyboards with callback buttons |
+| 📊 **Live Progress** | Real-time progress bar with ETA |
+| ❌ **Cancel Button** | Stop batch downloads anytime |
+| 🖼️ **Thumbnail Preservation** | Keeps thumbnails for videos/documents |
+| 📝 **Caption Formatting** | Preserves bold, italic, links |
 | 💾 **Resume Support** | Checkpoint system for Colab disconnects |
-| 📅 **Date Filter** | Download by date range |
-| 🏷️ **Type Filter** | Photos, videos, audio only |
-| 📏 **File Size Filter** | Skip large files (default 2GB) |
-| 📊 **Progress Tracking** | Real-time download progress |
+| 📢 **Broadcast** | Admin broadcast to all users |
 
 ---
 
@@ -102,6 +108,9 @@ TelegramDL is a **Telegram Restricted Content Downloader** that lets you downloa
 | Channel Backup | ✅ |
 | Local Download | ✅ |
 | Restricted Content | ✅ |
+| Stories | ✅ |
+| Groups | ✅ |
+| Bot Chats | ✅ |
 
 </td>
 <td width="50%" valign="top">
@@ -113,7 +122,8 @@ TelegramDL is a **Telegram Restricted Content Downloader** that lets you downloa
 | Two-Tier Access | ✅ |
 | FloodWait Handling | ✅ |
 | Rate Limit Protection | ✅ |
-| Retry Logic | ✅ |
+| Retry Logic (3x) | ✅ |
+| Cancel Button | ✅ |
 
 </td>
 </tr>
@@ -129,6 +139,8 @@ TelegramDL is a **Telegram Restricted Content Downloader** that lets you downloa
 |---------|:------:|
 | Resume Checkpoint | ✅ |
 | Auto-Save Progress | ✅ |
+| Keep-Alive | ✅ |
+| Session Stats | ✅ |
 | Colab Optimized | ✅ |
 
 </td>
@@ -139,9 +151,43 @@ TelegramDL is a **Telegram Restricted Content Downloader** that lets you downloa
 | Feature | Status |
 |---------|:------:|
 | Original Caption | ✅ |
+| Caption Formatting | ✅ |
+| Thumbnail Preservation | ✅ |
+| Video Metadata | ✅ |
 | Date Filter | ✅ |
 | Type Filter | ✅ |
 | File Size Filter | ✅ |
+
+</td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+### 🎨 UI Features
+
+| Feature | Status |
+|---------|:------:|
+| Inline Keyboards | ✅ |
+| Callback Buttons | ✅ |
+| Live Progress Bar | ✅ |
+| ETA Calculation | ✅ |
+| Cancel Button | ✅ |
+| Back Navigation | ✅ |
+
+</td>
+<td width="50%" valign="top">
+
+### 🔧 Admin Features
+
+| Feature | Status |
+|---------|:------:|
+| Broadcast | ✅ |
+| User Management | ✅ |
+| Auto-Cleanup | ✅ |
+| Error Handling | ✅ |
 
 </td>
 </tr>
@@ -160,7 +206,7 @@ TelegramDL/
 ├── .env.example              # Environment template
 ├── requirements.txt          # Python dependencies
 ├── gen_session.py            # Session string generator
-├── TelegramDL.ipynb          # Main Colab notebook (3 cells)
+├── TelegramDL.ipynb          # Main Colab notebook (4 cells)
 ├── Dockerfile                # Docker deployment
 ├── Procfile                  # Heroku/Koyeb
 ├── runtime.txt               # Python version
@@ -171,8 +217,10 @@ TelegramDL/
 │
 ├── plugins/
 │   ├── __init__.py
-│   ├── start.py              # /start, /help, /login, /logout, /cancel
-│   └── generate.py           # Core save/download logic
+│   ├── start.py              # /start, /help, /login, /logout, /cancel + callbacks
+│   ├── generate.py           # Core save/download logic
+│   ├── backup.py             # Backup command
+│   └── broadcast.py          # Admin broadcast
 │
 ├── database/
 │   ├── __init__.py
@@ -180,7 +228,10 @@ TelegramDL/
 │
 └── utils/
     ├── __init__.py
-    ├── progress.py           # Progress bar
+    ├── ui.py                 # Inline keyboards & message templates
+    ├── progress.py           # Live progress bar with ETA
+    ├── session.py            # Session time tracking
+    ├── keepalive.py          # Idle prevention
     ├── checkpoint.py         # Resume support
     ├── media.py              # Media type detection
     ├── filters.py            # Date/type filters
@@ -234,6 +285,13 @@ TelegramDL/
 # Get session string → copy to Step 2
 ```
 
+### Docker
+
+```bash
+docker build -t telegramdl .
+docker run -e API_ID=xxx -e API_HASH=xxx -e BOT_TOKEN=xxx telegramdl
+```
+
 ---
 
 ## ⚙️ Configuration
@@ -256,6 +314,14 @@ TelegramDL/
 | `OUTPUT_DIR` | `./downloads` | Download directory |
 | `MAX_FILE_SIZE_MB` | `2048` | Skip files larger than this |
 | `TYPE_FILTER` | `all` | `all`, `photo`, `video`, `audio` |
+| `CAPTION_ENABLED` | `true` | Add captions to uploads |
+| `KEEP_ORIGINAL_CAPTION` | `true` | Preserve source caption |
+| `FORWARD_MODE` | `true` | Use forwarding (faster) |
+| `BACKUP_CHANNEL` | — | Custom backup channel |
+| `KEEP_ALIVE` | `true` | Prevent idle timeout |
+| `KEEP_ALIVE_INTERVAL` | `30` | Keep-alive ping interval (min) |
+| `SESSION_LIMIT_HOURS` | `12` | Colab session limit |
+| `USE_CHECKPOINT` | `true` | Save progress for resume |
 
 ---
 
@@ -263,12 +329,17 @@ TelegramDL/
 
 | Format | Example | Works Without Member? |
 |:------:|---------|:---------------------:|
-| **Public URL** | `https://t.me/durov` | ✅ Yes (bot) |
-| **Username** | `durov` | ✅ Yes (bot) |
-| **Private Invite** | `https://t.me/+invitehash` | ✅ Auto-join |
+| **Public Channel** | `https://t.me/durov/123` | ✅ Yes (bot) |
+| **Story** | `https://t.me/Shineii86/s/70` | ✅ Yes (bot) |
+| **Batch Range** | `https://t.me/username/1001-1010` | Depends |
 | **Private Channel** | `https://t.me/c/3821170490/123` | ⚠️ Need user session |
-| **Channel ID** | `-1003983952160` | ⚠️ Need user session |
-| **Batch Range** | `https://t.me/username/1001-1010` | Depends on channel |
+| **Bot Chat** | `https://t.me/b/botfather/4321` | ⚠️ Need user session |
+| **Group** | `https://t.me/groupname/123` | ⚠️ Need user session |
+| **Private Group** | `https://t.me/c/GROUP_ID/123` | ⚠️ Need user session |
+| **Invite Link** | `https://t.me/+invitehash` | ✅ Auto-join |
+| **Join Chat** | `https://t.me/joinchat/hash` | ✅ Auto-join |
+| **Username** | `durov` | ✅ Yes (bot) |
+| **Numeric ID** | `-1003983952160/123` | ⚠️ Need user session |
 
 ---
 
@@ -295,7 +366,38 @@ flowchart TD
 | Tier | Client | When Used |
 |:----:|--------|-----------|
 | **Tier 1** | Bot Token | Public channels, unrestricted content |
-| **Tier 2** | User Session | Private channels, restricted content |
+| **Tier 2** | User Session | Private channels, restricted content, stories |
+
+---
+
+## 🤖 Bot Commands
+
+| Command | Description |
+|---------|-------------|
+| `/start` | Start the bot, show main menu |
+| `/help` | Show help with topic sections |
+| `/settings` | View/adjust bot settings |
+| `/login` | Login with your phone number |
+| `/logout` | Logout from your session |
+| `/batch <url>` | Batch download from channel |
+| `/backup <url>` | Backup channel to backup channel |
+| `/cancel` | Cancel ongoing download |
+| `/broadcast` | Admin: broadcast to all users |
+
+### Inline Keyboard Navigation
+
+```
+Main Menu:
+📥 Download    ☁️ Backup
+📦 Batch       🔐 Login
+⚙️ Settings    ❓ Help
+
+Settings Menu:
+⏱ Delay       📏 File Size
+🏷 Type Filter  📝 Captions
+🔄 Forward     💾 Checkpoint
+       🔙 Back
+```
 
 ---
 
@@ -319,6 +421,7 @@ flowchart TD
 | **Adjust WAITING_TIME** | Increase if getting FloodWait errors |
 | **Mount Google Drive** | For persistent storage across sessions |
 | **Use File Size Filter** | Skip large files to save time/storage |
+| **Use Forward Mode** | Faster than download+upload |
 
 ---
 
@@ -334,6 +437,24 @@ Built-in delays (default 10s) protect your account. Bot token handles public con
 <summary><b>Can I download from private channels?</b></summary>
 
 Yes, if you're a member. Generate a session string using the bot's /login command or Step 4 in Colab.
+</details>
+
+<details>
+<summary><b>Can I download stories?</b></summary>
+
+Yes! Send a story link: `https://t.me/username/s/123`
+</details>
+
+<details>
+<summary><b>Can I download from groups?</b></summary>
+
+Yes! Send a group link: `https://t.me/groupname/123`
+</details>
+
+<details>
+<summary><b>Can I download from bot chats?</b></summary>
+
+Yes! Send a bot chat link: `https://t.me/b/botusername/123` (use Plus Messenger to get message ID)
 </details>
 
 <details>
@@ -366,6 +487,8 @@ Only if LOGIN_SYSTEM=true. If false, set STRING_SESSION directly and skip DB_URI
 | `Bot can't access` | Restricted content | Set STRING_SESSION |
 | `File too large` | Exceeds limit | Increase MAX_FILE_SIZE_MB |
 | `Login failed` | Wrong credentials | Check API_ID, API_HASH |
+| `Username not found` | Non-existent username | Check spelling |
+| `Story not found` | Story expired or private | Check if story is still available |
 
 ---
 
