@@ -15,8 +15,6 @@ Description:
     Advanced Telegram Restricted Content Downloader with Premium System,
     yt-dlp Integration, File Splitting, Custom Bots & More.
 
-Version:    2.0.0
-Python:     3.10+
 Framework:  Kurigram (Pyrogram Fork)
 
 Disclaimer:
@@ -25,6 +23,8 @@ Disclaimer:
 """
 
 from os import environ
+
+__version__ = "2.0.0"
 
 # Telegram API Credentials
 API_ID = int(environ.get("API_ID", "0"))

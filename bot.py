@@ -15,8 +15,6 @@ Description:
     Advanced Telegram Restricted Content Downloader with Premium System,
     yt-dlp Integration, File Splitting, Custom Bots & More.
 
-Version:    2.0.0
-Python:     3.10+
 Framework:  Kurigram (Pyrogram Fork)
 
 Disclaimer:
@@ -28,7 +26,7 @@ import os
 import logging
 from pyrogram import Client
 
-from config import API_ID, API_HASH, BOT_TOKEN, STRING_SESSION, LOGIN_SYSTEM
+from config import API_ID, API_HASH, BOT_TOKEN, STRING_SESSION, LOGIN_SYSTEM, __version__
 
 logging.basicConfig(
     level=logging.INFO,
@@ -85,7 +83,7 @@ async def stop_user_client():
 
 def main():
     os.makedirs("downloads", exist_ok=True)
-    logger.info("Starting TelegramDL Bot...")
+    logger.info(f"Starting TelegramDL v{__version__}...")
     bot.run()
 
 

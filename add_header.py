@@ -13,7 +13,6 @@ Author: Shinei Nouzen (Shineii86)
 import os
 import sys
 import argparse
-from pathlib import Path
 
 HEADER = '''#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
@@ -32,8 +31,6 @@ Description:
     Advanced Telegram Restricted Content Downloader with Premium System,
     yt-dlp Integration, File Splitting, Custom Bots & More.
 
-Version:    2.0.0
-Python:     3.10+
 Framework:  Kurigram (Pyrogram Fork)
 
 Disclaimer:
@@ -43,30 +40,15 @@ Disclaimer:
 
 '''
 
-# Files to skip (auto-generated or special)
-SKIP_FILES = [
-    '__init__.py',
-    'header.py',
-    'add_header.py',
-    'gen_session.py',
-]
-
-SKIP_DIRS = [
-    '.git',
-    '__pycache__',
-    'venv',
-    '.venv',
-    'node_modules',
-]
+SKIP_FILES = ['__init__.py', 'header.py', 'add_header.py', 'gen_session.py']
+SKIP_DIRS = ['.git', '__pycache__', 'venv', '.venv', 'node_modules']
 
 
 def has_header(content: str) -> bool:
-    """Check if file already has the header."""
     return 'TelegramDL - Advanced Telegram Downloader Bot' in content
 
 
 def add_header_to_file(filepath: str, dry_run: bool = False) -> bool:
-    """Add header to a single file."""
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
             content = f.read()
@@ -74,7 +56,6 @@ def add_header_to_file(filepath: str, dry_run: bool = False) -> bool:
         if has_header(content):
             return False
 
-        # Remove shebang if present (will be added in header)
         if content.startswith('#!/'):
             lines = content.split('\n')
             content = '\n'.join(lines[1:]).lstrip()
@@ -93,17 +74,13 @@ def add_header_to_file(filepath: str, dry_run: bool = False) -> bool:
 
 
 def find_python_files(directory: str) -> list:
-    """Find all Python files in directory."""
     files = []
     for root, dirs, filenames in os.walk(directory):
-        # Skip directories
         dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
-
         for filename in filenames:
             if filename.endswith('.py') and filename not in SKIP_FILES:
                 filepath = os.path.join(root, filename)
                 files.append(filepath)
-
     return sorted(files)
 
 
@@ -124,7 +101,6 @@ def main():
         print()
 
     if args.file:
-        # Process single file
         if not os.path.exists(args.file):
             print(f'❌ File not found: {args.file}')
             sys.exit(1)
@@ -135,7 +111,6 @@ def main():
         else:
             print('  ⏭️  Header already exists')
     else:
-        # Process all files
         files = find_python_files(args.dir)
         print(f'📁 Found {len(files)} Python files')
         print()
