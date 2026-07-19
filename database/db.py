@@ -27,6 +27,12 @@ class Database:
                 "thumbnail": None,
                 "caption": None,
                 "dump_chat": None,
+                "bot_token": None,
+                "bot_client": None,
+                "rename_tag": None,
+                "delete_words": [],
+                "replace_words": {},
+                "topic_id": None,
             }},
             upsert=True
         )
@@ -206,6 +212,68 @@ class Database:
             return user.get("total_saves", 0)
         return 0
 
+    # ============ CUSTOM BOT ============
+
+    async def set_bot_token(self, id, bot_token):
+        await self.users.update_one({"id": id}, {"$set": {"bot_token": bot_token}})
+
+    async def get_bot_token(self, id):
+        user = await self.users.find_one({"id": id})
+        if user:
+            return user.get("bot_token")
+        return None
+
+    async def delete_bot_token(self, id):
+        await self.users.update_one({"id": id}, {"$set": {"bot_token": None}})
+
+    # ============ RENAME TAG ============
+
+    async def set_rename_tag(self, id, tag):
+        await self.users.update_one({"id": id}, {"$set": {"rename_tag": tag}})
+
+    async def get_rename_tag(self, id):
+        user = await self.users.find_one({"id": id})
+        if user:
+            return user.get("rename_tag")
+        return None
+
+    async def delete_rename_tag(self, id):
+        await self.users.update_one({"id": id}, {"$set": {"rename_tag": None}})
+
+    # ============ WORD RULES ============
+
+    async def set_delete_words(self, id, words):
+        await self.users.update_one({"id": id}, {"$set": {"delete_words": words}})
+
+    async def get_delete_words(self, id):
+        user = await self.users.find_one({"id": id})
+        if user:
+            return user.get("delete_words", [])
+        return []
+
+    async def set_replace_words(self, id, replacements):
+        await self.users.update_one({"id": id}, {"$set": {"replace_words": replacements}})
+
+    async def get_replace_words(self, id):
+        user = await self.users.find_one({"id": id})
+        if user:
+            return user.get("replace_words", {})
+        return {}
+
+    # ============ TOPIC GROUP ============
+
+    async def set_topic_id(self, id, topic_id):
+        await self.users.update_one({"id": id}, {"$set": {"topic_id": topic_id}})
+
+    async def get_topic_id(self, id):
+        user = await self.users.find_one({"id": id})
+        if user:
+            return user.get("topic_id")
+        return None
+
+    async def delete_topic_id(self, id):
+        await self.users.update_one({"id": id}, {"$set": {"topic_id": None}})
+
 
 class MockDatabase:
     """Fallback when no DB_URI is configured. All operations are no-ops."""
@@ -239,6 +307,19 @@ class MockDatabase:
     async def delete_dump_chat(self, id): pass
     async def add_traffic(self, id, size): pass
     async def get_total_saves(self, id): return 0
+    async def set_bot_token(self, id, bot_token): pass
+    async def get_bot_token(self, id): return None
+    async def delete_bot_token(self, id): pass
+    async def set_rename_tag(self, id, tag): pass
+    async def get_rename_tag(self, id): return None
+    async def delete_rename_tag(self, id): pass
+    async def set_delete_words(self, id, words): pass
+    async def get_delete_words(self, id): return []
+    async def set_replace_words(self, id, replacements): pass
+    async def get_replace_words(self, id): return {}
+    async def set_topic_id(self, id, topic_id): pass
+    async def get_topic_id(self, id): return None
+    async def delete_topic_id(self, id): pass
 
 
 if DB_URI:

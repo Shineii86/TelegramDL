@@ -145,6 +145,13 @@ def parse_channel_username(link):
 
 
 async def get_auth_client(user_id):
+    # First try custom bot
+    from plugins.custom_bot import get_user_bot
+    custom_bot = await get_user_bot(user_id)
+    if custom_bot:
+        return custom_bot
+
+    # Then try user session
     if LOGIN_SYSTEM:
         session = await db.get_session(user_id)
         if session:
@@ -156,6 +163,15 @@ async def get_auth_client(user_id):
     else:
         await start_user_client()
         return user_client
+
+
+async def auto_join_channel(client, channel):
+    """Try to join a channel if access denied."""
+    try:
+        await client.join_chat(channel)
+        return True
+    except:
+        return False
 
 
 async def download_with_retry(client, msg, dest):
@@ -691,6 +707,26 @@ async def save(client, message: Message):
                 await client.send_message(message.chat.id, msg.text)
                 return
     except:
+        # Auto-join if bot can't access
+        try:
+            acc = await get_auth_client(user_id)
+            if acc:
+                joined = await auto_join_channel(acc, chat_username)
+                if joined:
+                    await message.reply("**✅ Joined Channel**\n\nRetrying download...")
+                    try:
+                        if acc != client:
+                            await acc.stop()
+                    except:
+                        pass
+                    return
+                try:
+                    if acc != client:
+                        await acc.stop()
+                except:
+                    pass
+        except:
+            pass
         pass
 
     # Fallback to user session (restricted content)
