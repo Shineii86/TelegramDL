@@ -1,26 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TelegramDL - Advanced Telegram Downloader Bot
+============================================================================
+    PROJECT:  TelegramDL - Advanced Telegram Downloader Bot
+    AUTHOR:   Shinei Nouzen (Shineii86)
+    LICENSE:  MIT License (c) 2024-2026
+    REPO:     https://github.com/Shineii86/TelegramDL
+============================================================================
+    DESCRIPTION:
+        Main entry point. Initializes Bot and User clients,
+        registers plugins, and starts the event loop.
 
-Copyright (c) 2024-2026 Shinei Nouzen (Shineii86)
-Licensed under the MIT License
-
-Author:    Shinei Nouzen
-GitHub:    https://github.com/Shineii86/TelegramDL
-Telegram:  https://t.me/Shineii86
-Email:     ikx7a@hotmail.com
-
-Description:
-    Advanced Telegram Restricted Content Downloader with Premium System,
-    yt-dlp Integration, File Splitting, Custom Bots & More.
-
-Framework:  Kurigram (Pyrogram Fork)
-
-Disclaimer:
-    This bot is for educational purposes only.
-    Use responsibly and respect Telegram's Terms of Service.
+    CLIENTS:
+        - Bot:        Handles public content via bot token
+        - UserClient: Handles restricted content via session string
+============================================================================
 """
+
+# ===========================================================================
+#   IMPORTS
+# ===========================================================================
 
 import os
 import logging
@@ -28,13 +27,23 @@ from pyrogram import Client
 
 from config import API_ID, API_HASH, BOT_TOKEN, STRING_SESSION, LOGIN_SYSTEM, __version__
 
+# ===========================================================================
+#   LOGGING CONFIGURATION
+# ===========================================================================
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
-# Global user client for restricted content (when LOGIN_SYSTEM=false)
+# ===========================================================================
+#   GLOBAL USER CLIENT
+# ---------------------------------------------------------------------------
+#   Used for restricted content when LOGIN_SYSTEM=false.
+#   Initialized once at import, started/stopped with bot lifecycle.
+# ===========================================================================
+
 user_client = None
 
 if not LOGIN_SYSTEM and STRING_SESSION:
@@ -49,6 +58,17 @@ if not LOGIN_SYSTEM and STRING_SESSION:
     except Exception as e:
         logger.error(f"Failed to initialize user client: {e}")
         user_client = None
+
+# ===========================================================================
+#   BOT CLASS
+# ---------------------------------------------------------------------------
+#   Extends Pyrogram Client with custom configuration.
+#   Plugins are auto-loaded from plugins/ directory.
+#
+#   CONFIG:
+#       workers=150       — Max concurrent handlers
+#       sleep_threshold=5 — Sleep after this many pending tasks
+# ===========================================================================
 
 
 class Bot(Client):
@@ -66,8 +86,24 @@ class Bot(Client):
 
 bot = Bot()
 
+# ===========================================================================
+#   CLIENT LIFECYCLE MANAGEMENT
+# ---------------------------------------------------------------------------
+#   start_user_client():  Start user client for restricted content
+#   stop_user_client():   Stop user client gracefully
+# ===========================================================================
+
 
 async def start_user_client():
+    """Start user client if initialized and not connected.
+
+    Returns:
+        None
+
+    Tip:
+        Called automatically when bot starts. Only runs if
+        LOGIN_SYSTEM=false and STRING_SESSION is provided.
+    """
     global user_client
     if user_client and not user_client.is_connected:
         await user_client.start()
@@ -75,17 +111,47 @@ async def start_user_client():
 
 
 async def stop_user_client():
+    """Stop user client gracefully.
+
+    Returns:
+        None
+    """
     global user_client
     if user_client and user_client.is_connected:
         await user_client.stop()
         logger.info("User client stopped")
 
+# ===========================================================================
+#   MAIN ENTRY POINT
+# ---------------------------------------------------------------------------
+#   Creates downloads directory and starts the bot.
+#   Bot runs until interrupted (Ctrl+C).
+# ===========================================================================
+
 
 def main():
+    """Start TelegramDL bot.
+
+    Returns:
+        None
+
+    Process:
+        1. Create downloads directory
+        2. Log version info
+        3. Start bot (blocking)
+    """
     os.makedirs("downloads", exist_ok=True)
     logger.info(f"Starting TelegramDL v{__version__}...")
     bot.run()
 
 
+# ===========================================================================
+#   SCRIPT ENTRY POINT
+# ===========================================================================
+
 if __name__ == "__main__":
     main()
+
+# ===========================================================================
+#   END OF BOT
+# ===========================================================================

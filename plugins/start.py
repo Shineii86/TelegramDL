@@ -1,26 +1,50 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TelegramDL - Advanced Telegram Downloader Bot
+============================================================================
+    PROJECT:  TelegramDL - Advanced Telegram Downloader Bot
+    AUTHOR:   Shinei Nouzen (Shineii86)
+    LICENSE:  MIT License (c) 2024-2026
+    REPO:     https://github.com/Shineii86/TelegramDL
+============================================================================
+    DESCRIPTION:
+        Handles user interaction: /start, /help, /login, /settings,
+        /myplan, thumbnails, captions, admin commands, and all
+        inline keyboard callback handlers.
 
-Copyright (c) 2024-2026 Shinei Nouzen (Shineii86)
-Licensed under the MIT License
+    COMMANDS:
+        /start         — Welcome message & main menu
+        /help          — Help topics
+        /settings      — View/adjust settings
+        /login         — Login with phone number
+        /logout        — Logout from session
+        /cancel        — Cancel ongoing download
+        /myplan        — View plan & usage
+        /set_thumb     — Set custom thumbnail
+        /view_thumb    — View thumbnail
+        /del_thumb     — Delete thumbnail
+        /set_caption   — Set custom caption
+        /view_caption  — View caption
+        /del_caption   — Delete caption
+        /ban           — Ban user (admin)
+        /unban         — Unban user (admin)
+        /add_premium   — Add premium (admin)
+        /remove_premium — Remove premium (admin)
 
-Author:    Shinei Nouzen
-GitHub:    https://github.com/Shineii86/TelegramDL
-Telegram:  https://t.me/Shineii86
-Email:     ikx7a@hotmail.com
-
-Description:
-    Advanced Telegram Restricted Content Downloader with Premium System,
-    yt-dlp Integration, File Splitting, Custom Bots & More.
-
-Framework:  Kurigram (Pyrogram Fork)
-
-Disclaimer:
-    This bot is for educational purposes only.
-    Use responsibly and respect Telegram's Terms of Service.
+    FEATURE: START_COMMAND
+    FEATURE: HELP_COMMAND
+    FEATURE: SETTINGS_COMMAND
+    FEATURE: LOGIN_COMMAND
+    FEATURE: THUMBNAIL_COMMANDS
+    FEATURE: CAPTION_COMMANDS
+    FEATURE: ADMIN_COMMANDS
+    FEATURE: CALLBACK_HANDLERS
+============================================================================
 """
+
+# ===========================================================================
+#   IMPORTS
+# ===========================================================================
 
 from datetime import datetime
 from pyrogram import filters
@@ -43,9 +67,31 @@ from utils.ui import (
     CAPTION_SET, CAPTION_DELETED, ABOUT_MSG
 )
 
+# ===========================================================================
+#   FEATURE: START_COMMAND
+# ---------------------------------------------------------------------------
+#   /start — Welcome message & main menu
+#   - Registers new user in database
+#   - Shows main menu with inline keyboard
+# ===========================================================================
+
 
 @bot.on_message(filters.command("start") & filters.private)
 async def start(client, message: Message):
+    """Handle /start command.
+
+    Args:
+        client: Bot client instance
+        message: User message object
+
+    Returns:
+        None
+
+    Process:
+        1. Get user ID and name
+        2. Add user to database if new
+        3. Send welcome message with menu
+    """
     user_id = message.from_user.id
     name = message.from_user.first_name
 
@@ -54,14 +100,53 @@ async def start(client, message: Message):
 
     await message.reply(WELCOME_MSG, reply_markup=main_menu_keyboard())
 
+# ===========================================================================
+#   FEATURE: HELP_COMMAND
+# ---------------------------------------------------------------------------
+#   /help — Help topics menu
+# ===========================================================================
+
 
 @bot.on_message(filters.command("help") & filters.private)
 async def help_cmd(client, message: Message):
+    """Handle /help command.
+
+    Args:
+        client: Bot client instance
+        message: User message object
+
+    Returns:
+        None
+    """
     await message.reply("**❓ Help Menu**\n\nChoose a topic:", reply_markup=help_keyboard())
+
+# ===========================================================================
+#   FEATURE: SETTINGS_COMMAND
+# ---------------------------------------------------------------------------
+#   /settings — View/adjust bot settings
+#   Shows delay, file size, filters, forward mode, checkpoint, dump chat
+# ===========================================================================
 
 
 @bot.on_message(filters.command("settings") & filters.private)
 async def settings_cmd(client, message: Message):
+    """Handle /settings command.
+
+    Args:
+        client: Bot client instance
+        message: User message object
+
+    Returns:
+        None
+
+    Displays:
+        - Current delay
+        - Max file size
+        - Type filter
+        - Forward mode
+        - Checkpoint status
+        - Dump chat
+    """
     dump_chat = await db.get_dump_chat(message.from_user.id)
     text = SETTINGS_INFO.format(
         delay=WAITING_TIME,
@@ -73,9 +158,33 @@ async def settings_cmd(client, message: Message):
     )
     await message.reply(text, reply_markup=settings_keyboard())
 
+# ===========================================================================
+#   FEATURE: LOGIN_COMMAND
+# ---------------------------------------------------------------------------
+#   /login — Login with phone number for restricted content
+#   Requires LOGIN_SYSTEM=true
+#
+#   TIP: Each user authenticates with their own phone number
+#        This prevents bans on the main bot token
+# ===========================================================================
+
 
 @bot.on_message(filters.command("login") & filters.private)
 async def login_cmd(client, message: Message):
+    """Handle /login command.
+
+    Args:
+        client: Bot client instance
+        message: User message object
+
+    Returns:
+        None
+
+    Process:
+        1. Check if LOGIN_SYSTEM is enabled
+        2. Check if user already has session
+        3. Show login options
+    """
     if not LOGIN_SYSTEM:
         await message.reply("Login system is disabled. Bot uses a global session.")
         return
@@ -93,24 +202,83 @@ async def login_cmd(client, message: Message):
 
     await message.reply("**🔐 Login**\n\nChoose an option:", reply_markup=login_keyboard())
 
+# ===========================================================================
+#   FEATURE: LOGOUT_COMMAND
+# ---------------------------------------------------------------------------
+#   /logout — Remove session from database
+# ===========================================================================
+
 
 @bot.on_message(filters.command("logout") & filters.private)
 async def logout_cmd(client, message: Message):
+    """Handle /logout command.
+
+    Args:
+        client: Bot client instance
+        message: User message object
+
+    Returns:
+        None
+    """
     user_id = message.from_user.id
     await db.set_session(user_id, None)
     await message.reply("**Logged out successfully!** Session removed.")
 
+# ===========================================================================
+#   FEATURE: CANCEL_COMMAND
+# ---------------------------------------------------------------------------
+#   /cancel — Cancel ongoing download
+#   Sets IS_BATCH flag to True to stop processing
+#
+#   NOTE: Uses global IS_BATCH dict from generate.py
+# ===========================================================================
+
 
 @bot.on_message(filters.command("cancel") & filters.private)
 async def cancel_cmd(client, message: Message):
+    """Handle /cancel command.
+
+    Args:
+        client: Bot client instance
+        message: User message object
+
+    Returns:
+        None
+
+    Note:
+        Sets IS_BATCH flag to stop batch processing
+    """
     from plugins.generate import IS_BATCH
     user_id = message.from_user.id
     IS_BATCH[user_id] = True
     await message.reply("**Download cancelled.**")
 
+# ===========================================================================
+#   FEATURE: MYPLAN_COMMAND
+# ---------------------------------------------------------------------------
+#   /myplan — View plan details and usage stats
+#   Shows: plan type, expiry, daily usage, total saves, limits
+# ===========================================================================
+
 
 @bot.on_message(filters.command("myplan") & filters.private)
 async def myplan_cmd(client, message: Message):
+    """Handle /myplan command.
+
+    Args:
+        client: Bot client instance
+        message: User message object
+
+    Returns:
+        None
+
+    Displays:
+        - Plan type (Free/Premium)
+        - Expiry date
+        - Daily usage/limit
+        - Total saves
+        - File size limits
+    """
     user_id = message.from_user.id
     is_premium = await db.is_premium(user_id)
     daily_usage = await db.get_daily_usage(user_id)
@@ -141,11 +309,31 @@ async def myplan_cmd(client, message: Message):
     )
     await message.reply(text, reply_markup=myplan_keyboard())
 
+# ===========================================================================
+#   FEATURE: THUMBNAIL_COMMANDS
+# ---------------------------------------------------------------------------
+#   /set_thumb   — Set custom thumbnail (reply to photo)
+#   /view_thumb  — View current thumbnail
+#   /del_thumb   — Delete thumbnail
+#
+#   TIP: Thumbnails are per-user and stored in MongoDB
+# ===========================================================================
 
-# ============ THUMBNAIL COMMANDS ============
 
 @bot.on_message(filters.command("set_thumb") & filters.private)
 async def set_thumb_cmd(client, message: Message):
+    """Set custom thumbnail from replied photo.
+
+    Args:
+        client: Bot client instance
+        message: Must reply to a photo
+
+    Returns:
+        None
+
+    Usage:
+        Reply to a photo with /set_thumb
+    """
     if not message.reply_to_message or not message.reply_to_message.photo:
         await message.reply("**Reply to a photo** to set as your thumbnail.")
         return
@@ -156,6 +344,15 @@ async def set_thumb_cmd(client, message: Message):
 
 @bot.on_message(filters.command("view_thumb") & filters.private)
 async def view_thumb_cmd(client, message: Message):
+    """View current thumbnail.
+
+    Args:
+        client: Bot client instance
+        message: User message object
+
+    Returns:
+        None
+    """
     file_id = await db.get_thumbnail(message.from_user.id)
     if file_id:
         await message.reply_photo(file_id, caption="**Your current thumbnail:**")
@@ -165,14 +362,53 @@ async def view_thumb_cmd(client, message: Message):
 
 @bot.on_message(filters.command("del_thumb") & filters.private)
 async def del_thumb_cmd(client, message: Message):
+    """Delete custom thumbnail.
+
+    Args:
+        client: Bot client instance
+        message: User message object
+
+    Returns:
+        None
+    """
     await db.delete_thumbnail(message.from_user.id)
     await message.reply(THUMBNAIL_DELETED)
 
+# ===========================================================================
+#   FEATURE: CAPTION_COMMANDS
+# ---------------------------------------------------------------------------
+#   /set_caption <text>  — Set custom caption template
+#   /view_caption        — View current caption
+#   /del_caption         — Delete caption
+#
+#   PLACEHOLDERS:
+#     {filename} — Original filename
+#     {size}     — File size (human readable)
+#     {date}     — Upload date (YYYY-MM-DD)
+#
+#   TIP: Example: "📁 {filename} | Size: {size}"
+# ===========================================================================
 
-# ============ CAPTION COMMANDS ============
 
 @bot.on_message(filters.command("set_caption") & filters.private)
 async def set_caption_cmd(client, message: Message):
+    """Set custom caption template.
+
+    Args:
+        client: Bot client instance
+        message: Must include caption text after command
+
+    Returns:
+        None
+
+    Placeholders:
+        {filename} — Original filename
+        {size}     — File size
+        {date}     — Upload date
+
+    Usage:
+        /set_caption 📁 {filename} | Size: {size}
+    """
     args = message.text.split(maxsplit=1)
     if len(args) < 2:
         await message.reply(
@@ -190,6 +426,15 @@ async def set_caption_cmd(client, message: Message):
 
 @bot.on_message(filters.command("view_caption") & filters.private)
 async def view_caption_cmd(client, message: Message):
+    """View current caption template.
+
+    Args:
+        client: Bot client instance
+        message: User message object
+
+    Returns:
+        None
+    """
     caption = await db.get_caption(message.from_user.id)
     if caption:
         await message.reply(f"**Your current caption:**\n\n`{caption}`")
@@ -199,14 +444,43 @@ async def view_caption_cmd(client, message: Message):
 
 @bot.on_message(filters.command("del_caption") & filters.private)
 async def del_caption_cmd(client, message: Message):
+    """Delete custom caption.
+
+    Args:
+        client: Bot client instance
+        message: User message object
+
+    Returns:
+        None
+    """
     await db.delete_caption(message.from_user.id)
     await message.reply(CAPTION_DELETED)
 
+# ===========================================================================
+#   FEATURE: ADMIN_COMMANDS
+# ---------------------------------------------------------------------------
+#   /ban <user_id>          — Ban user from bot
+#   /unban <user_id>        — Unban user
+#   /add_premium <id> <days> — Add premium subscription
+#   /remove_premium <id>    — Remove premium
+#
+#   NOTE: Only ADMINS from config can use these commands
+# ===========================================================================
 
-# ============ ADMIN COMMANDS ============
 
 @bot.on_message(filters.command("ban") & filters.private)
 async def ban_cmd(client, message: Message):
+    """Ban a user from using the bot.
+
+    Args:
+        client: Bot client instance
+        message: Must include user_id
+
+    Returns:
+        None
+
+    Admin Only: Yes
+    """
     if message.from_user.id not in ADMINS:
         return
     args = message.text.split(maxsplit=1)
@@ -223,6 +497,17 @@ async def ban_cmd(client, message: Message):
 
 @bot.on_message(filters.command("unban") & filters.private)
 async def unban_cmd(client, message: Message):
+    """Unban a user.
+
+    Args:
+        client: Bot client instance
+        message: Must include user_id
+
+    Returns:
+        None
+
+    Admin Only: Yes
+    """
     if message.from_user.id not in ADMINS:
         return
     args = message.text.split(maxsplit=1)
@@ -239,6 +524,20 @@ async def unban_cmd(client, message: Message):
 
 @bot.on_message(filters.command("add_premium") & filters.private)
 async def add_premium_cmd(client, message: Message):
+    """Add premium subscription to user.
+
+    Args:
+        client: Bot client instance
+        message: Must include user_id and days
+
+    Returns:
+        None
+
+    Admin Only: Yes
+
+    Usage:
+        /add_premium 123456 30  (adds 30 days premium)
+    """
     if message.from_user.id not in ADMINS:
         return
     args = message.text.split(maxsplit=1)
@@ -260,6 +559,17 @@ async def add_premium_cmd(client, message: Message):
 
 @bot.on_message(filters.command("remove_premium") & filters.private)
 async def remove_premium_cmd(client, message: Message):
+    """Remove premium subscription from user.
+
+    Args:
+        client: Bot client instance
+        message: Must include user_id
+
+    Returns:
+        None
+
+    Admin Only: Yes
+    """
     if message.from_user.id not in ADMINS:
         return
     args = message.text.split(maxsplit=1)
@@ -273,11 +583,47 @@ async def remove_premium_cmd(client, message: Message):
     except ValueError:
         await message.reply("Invalid user ID.")
 
+# ===========================================================================
+#   FEATURE: CALLBACK_HANDLERS
+# ---------------------------------------------------------------------------
+#   All inline keyboard callback handlers organized by prefix:
+#     menu_*     — Main menu navigation
+#     dl_*       — Download actions
+#     bk_*       — Backup actions
+#     batch_*    — Batch download actions
+#     set_*      — Settings actions
+#     delay_*    — Delay selection
+#     size_*     — File size selection
+#     thumb_*    — Thumbnail actions
+#     caption_*  — Caption actions
+#     plan_*     — Plan actions
+#     help_*     — Help topics
+#     login_*    — Login actions
+#     logout_*   — Logout actions
+#     confirm_*  — Confirmation actions
+#     cancel_*   — Cancel actions
+#     stop_*     — Stop actions
+#
+#   NOTE: Callback data format is "prefix_action"
+# ===========================================================================
 
-# ============ CALLBACK HANDLERS ============
 
 @bot.on_callback_query(filters.regex("^menu_"))
 async def menu_callbacks(client, callback: CallbackQuery):
+    """Handle main menu callbacks.
+
+    Args:
+        client: Bot client instance
+        callback: Callback query object
+
+    Returns:
+        None
+
+    Callbacks:
+        menu_back, menu_download, menu_backup, menu_batch,
+        menu_login, menu_settings, menu_myplan, menu_thumbnail,
+        menu_caption, menu_about, menu_help
+    """
     data = callback.data
 
     if data == "menu_back":
@@ -376,6 +722,19 @@ async def menu_callbacks(client, callback: CallbackQuery):
 
 @bot.on_callback_query(filters.regex("^dl_"))
 async def download_callbacks(client, callback: CallbackQuery):
+    """Handle download callbacks.
+
+    Args:
+        client: Bot client instance
+        callback: Callback query object
+
+    Returns:
+        None
+
+    Callbacks:
+        dl_send_link, dl_filter_photo, dl_filter_video,
+        dl_filter_audio, dl_filter_all
+    """
     data = callback.data
 
     if data == "dl_send_link":
@@ -392,6 +751,18 @@ async def download_callbacks(client, callback: CallbackQuery):
 
 @bot.on_callback_query(filters.regex("^bk_"))
 async def backup_callbacks(client, callback: CallbackQuery):
+    """Handle backup callbacks.
+
+    Args:
+        client: Bot client instance
+        callback: Callback query object
+
+    Returns:
+        None
+
+    Callbacks:
+        bk_send_link, bk_mode_bot, bk_mode_user
+    """
     data = callback.data
 
     if data == "bk_send_link":
@@ -410,6 +781,18 @@ async def backup_callbacks(client, callback: CallbackQuery):
 
 @bot.on_callback_query(filters.regex("^batch_"))
 async def batch_callbacks(client, callback: CallbackQuery):
+    """Handle batch download callbacks.
+
+    Args:
+        client: Bot client instance
+        callback: Callback query object
+
+    Returns:
+        None
+
+    Callbacks:
+        batch_send_link, batch_forward, batch_download
+    """
     data = callback.data
 
     if data == "batch_send_link":
@@ -429,6 +812,19 @@ async def batch_callbacks(client, callback: CallbackQuery):
 
 @bot.on_callback_query(filters.regex("^set_"))
 async def settings_callbacks(client, callback: CallbackQuery):
+    """Handle settings callbacks.
+
+    Args:
+        client: Bot client instance
+        callback: Callback query object
+
+    Returns:
+        None
+
+    Callbacks:
+        set_delay, set_size, set_type, set_forward,
+        set_checkpoint, set_dump
+    """
     data = callback.data
 
     if data == "set_delay":
@@ -465,6 +861,18 @@ async def settings_callbacks(client, callback: CallbackQuery):
 
 @bot.on_callback_query(filters.regex("^delay_"))
 async def delay_callbacks(client, callback: CallbackQuery):
+    """Handle delay selection callbacks.
+
+    Args:
+        client: Bot client instance
+        callback: Callback query with delay value
+
+    Returns:
+        None
+
+    Callback Format:
+        delay_5, delay_10, delay_15, etc.
+    """
     delay = callback.data.split("_")[1]
     await callback.answer(f"Delay set to {delay}s!", show_alert=True)
     await callback.message.edit_text(
@@ -475,6 +883,18 @@ async def delay_callbacks(client, callback: CallbackQuery):
 
 @bot.on_callback_query(filters.regex("^size_"))
 async def size_callbacks(client, callback: CallbackQuery):
+    """Handle file size selection callbacks.
+
+    Args:
+        client: Bot client instance
+        callback: Callback query with size value
+
+    Returns:
+        None
+
+    Callback Format:
+        size_500, size_1000, size_2048, size_0 (no limit)
+    """
     size = callback.data.split("_")[1]
     if size == "0":
         size_text = "No Limit"
@@ -489,6 +909,18 @@ async def size_callbacks(client, callback: CallbackQuery):
 
 @bot.on_callback_query(filters.regex("^thumb_"))
 async def thumbnail_callbacks(client, callback: CallbackQuery):
+    """Handle thumbnail callbacks.
+
+    Args:
+        client: Bot client instance
+        callback: Callback query object
+
+    Returns:
+        None
+
+    Callbacks:
+        thumb_set, thumb_view, thumb_delete
+    """
     data = callback.data
 
     if data == "thumb_set":
@@ -519,6 +951,18 @@ async def thumbnail_callbacks(client, callback: CallbackQuery):
 
 @bot.on_callback_query(filters.regex("^caption_"))
 async def caption_callbacks(client, callback: CallbackQuery):
+    """Handle caption callbacks.
+
+    Args:
+        client: Bot client instance
+        callback: Callback query object
+
+    Returns:
+        None
+
+    Callbacks:
+        caption_set, caption_view, caption_delete
+    """
     data = callback.data
 
     if data == "caption_set":
@@ -553,6 +997,18 @@ async def caption_callbacks(client, callback: CallbackQuery):
 
 @bot.on_callback_query(filters.regex("^plan_"))
 async def plan_callbacks(client, callback: CallbackQuery):
+    """Handle plan callbacks.
+
+    Args:
+        client: Bot client instance
+        callback: Callback query object
+
+    Returns:
+        None
+
+    Callbacks:
+        plan_stats
+    """
     data = callback.data
 
     if data == "plan_stats":
@@ -575,6 +1031,19 @@ async def plan_callbacks(client, callback: CallbackQuery):
 
 @bot.on_callback_query(filters.regex("^help_"))
 async def help_callbacks(client, callback: CallbackQuery):
+    """Handle help topic callbacks.
+
+    Args:
+        client: Bot client instance
+        callback: Callback query object
+
+    Returns:
+        None
+
+    Callbacks:
+        help_download, help_backup, help_batch, help_login,
+        help_thumbnail, help_caption, help_settings, help_formats
+    """
     data = callback.data
 
     if data == "help_download":
@@ -599,6 +1068,18 @@ async def help_callbacks(client, callback: CallbackQuery):
 
 @bot.on_callback_query(filters.regex("^login_"))
 async def login_callbacks(client, callback: CallbackQuery):
+    """Handle login callbacks.
+
+    Args:
+        client: Bot client instance
+        callback: Callback query object
+
+    Returns:
+        None
+
+    Callbacks:
+        login_start
+    """
     data = callback.data
 
     if data == "login_start":
@@ -613,6 +1094,18 @@ async def login_callbacks(client, callback: CallbackQuery):
 
 @bot.on_callback_query(filters.regex("^logout_"))
 async def logout_callbacks(client, callback: CallbackQuery):
+    """Handle logout callbacks.
+
+    Args:
+        client: Bot client instance
+        callback: Callback query object
+
+    Returns:
+        None
+
+    Callbacks:
+        logout_confirm
+    """
     data = callback.data
 
     if data == "logout_confirm":
@@ -628,6 +1121,18 @@ async def logout_callbacks(client, callback: CallbackQuery):
 
 @bot.on_callback_query(filters.regex("^confirm_"))
 async def confirm_callbacks(client, callback: CallbackQuery):
+    """Handle confirmation callbacks.
+
+    Args:
+        client: Bot client instance
+        callback: Callback query with action
+
+    Returns:
+        None
+
+    Callback Format:
+        confirm_action_name
+    """
     data = callback.data
     parts = data.split("_")
 
@@ -640,6 +1145,18 @@ async def confirm_callbacks(client, callback: CallbackQuery):
 
 @bot.on_callback_query(filters.regex("^cancel_"))
 async def cancel_callbacks(client, callback: CallbackQuery):
+    """Handle cancel callbacks.
+
+    Args:
+        client: Bot client instance
+        callback: Callback query with action
+
+    Returns:
+        None
+
+    Callback Format:
+        cancel_action_name
+    """
     data = callback.data
     action = data.replace("cancel_", "")
     await callback.answer(f"Cancelled: {action}", show_alert=True)
@@ -648,8 +1165,24 @@ async def cancel_callbacks(client, callback: CallbackQuery):
 
 @bot.on_callback_query(filters.regex("^stop_"))
 async def stop_callbacks(client, callback: CallbackQuery):
+    """Handle stop callbacks.
+
+    Args:
+        client: Bot client instance
+        callback: Callback query object
+
+    Returns:
+        None
+
+    Note:
+        Sets IS_BATCH flag to stop batch processing
+    """
     from plugins.generate import IS_BATCH
     user_id = callback.from_user.id
     IS_BATCH[user_id] = True
     await callback.answer("Stopping...", show_alert=True)
     await callback.message.edit_text("**⏹ Stopping...**\nProcess will stop after current file.")
+
+# ===========================================================================
+#   END OF START PLUGIN
+# ===========================================================================
