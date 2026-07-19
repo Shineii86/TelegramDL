@@ -11,12 +11,12 @@ from config import (
 from utils.ui import (
     main_menu_keyboard, download_keyboard, backup_keyboard, batch_keyboard,
     settings_keyboard, settings_delay_keyboard, settings_size_keyboard,
-    thumbnail_keyboard, caption_keyboard, myplan_keyboard,
+    thumbnail_keyboard, caption_keyboard, myplan_keyboard, about_keyboard,
     login_keyboard, help_keyboard, back_keyboard,
     WELCOME_MSG, HELP_DOWNLOAD, HELP_BACKUP, HELP_BATCH, HELP_LOGIN,
     HELP_THUMBNAIL, HELP_CAPTION, HELP_SETTINGS, HELP_FORMATS,
     SETTINGS_INFO, MYPLAN_INFO, THUMBNAIL_SET, THUMBNAIL_DELETED,
-    CAPTION_SET, CAPTION_DELETED
+    CAPTION_SET, CAPTION_DELETED, ABOUT_MSG
 )
 
 
@@ -340,6 +340,9 @@ async def menu_callbacks(client, callback: CallbackQuery):
             "**📝 Caption Settings**\n\nManage your custom caption:",
             reply_markup=caption_keyboard()
         )
+
+    elif data == "menu_about":
+        await callback.message.edit_text(ABOUT_MSG, reply_markup=about_keyboard())
 
     elif data == "menu_help":
         await callback.message.edit_text("**❓ Help Menu**\n\nChoose a topic:", reply_markup=help_keyboard())

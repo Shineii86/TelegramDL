@@ -20,6 +20,7 @@ def main_menu_keyboard():
             InlineKeyboardButton("📝 Caption", callback_data="menu_caption"),
         ],
         [
+            InlineKeyboardButton("ℹ️ About", callback_data="menu_about"),
             InlineKeyboardButton("❓ Help", callback_data="menu_help"),
         ],
     ])
@@ -195,6 +196,19 @@ def login_keyboard():
 def back_keyboard(target="menu_back"):
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("🔙 Back", callback_data=target)],
+    ])
+
+
+def about_keyboard():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("👨‍💻 Developer", url="https://t.me/Shineii86")],
+        [InlineKeyboardButton("📂 GitHub", url="https://github.com/Shineii86/TelegramDL")],
+        [
+            InlineKeyboardButton("📢 Updates Channel", url="https://t.me/Shineii86"),
+            InlineKeyboardButton("💬 Support Group", url="https://t.me/Shineii86"),
+        ],
+        [InlineKeyboardButton("⭐ Star on GitHub", url="https://github.com/Shineii86/TelegramDL")],
+        [InlineKeyboardButton("🔙 Back", callback_data="menu_back")],
     ])
 
 
@@ -459,4 +473,88 @@ CAPTION_DELETED = """
 
 Your custom caption has been removed.
 Original captions will be used.
+"""
+
+
+ABOUT_MSG = """
+**ℹ️ About TelegramDL**
+
+**Version:** 3.0.0
+**Library:** Kurigram (Pyrogram Fork)
+**Developer:** [@Shineii86](https://t.me/Shineii86)
+
+**Features:**
+- 📥 Download restricted content
+- 📦 Batch download with progress
+- 🖼 Custom thumbnails per user
+- 📝 Custom captions with placeholders
+- ⭐ Premium system with daily limits
+- 📢 Dump chat auto-forward
+- 🚫 Ban/unban system
+- 🔐 Secure login system
+
+**Supported Content:**
+- Public & Private Channels
+- Groups & Supergroups
+- Bot Chats
+- Stories
+- Invite Links
+
+**Stats:**
+- 🔗 11+ link formats supported
+- 📊 Rich progress bar with ETA
+- 💾 Checkpoint resume support
+
+**Credits:**
+Built with ❤️ by [@Shineii86](https://t.me/Shineii86)
+Source: [GitHub](https://github.com/Shineii86/TelegramDL)
+"""
+
+
+PROJECT_MSG = """
+**📂 TelegramDL Project**
+
+An open-source Telegram downloader bot built with Kurigram.
+
+**What it does:**
+Download any content from Telegram — channels, groups, bots, even restricted content.
+
+**How it works:**
+1. User logs in with their phone number
+2. Bot uses user's session to access content
+3. Content is re-uploaded to user via bot
+
+**Tech Stack:**
+- **Language:** Python 3.10+
+- **Library:** Kurigram (Pyrogram Fork)
+- **Database:** MongoDB (Motor async)
+- **Deployment:** Colab, Docker, Koyeb, Heroku
+
+**Open Source:**
+- Free to use
+- Free to modify
+- Free to deploy
+- No ads, no limits (for self-host)
+
+**License:** MIT
+"""
+
+
+DEV_MSG = """
+**👨‍💻 Developer**
+
+**Name:** Shinei Nouzen
+**Username:** [@Shineii86](https://t.me/Shineii86)
+**GitHub:** [Shineii86](https://github.com/Shineii86)
+
+**Other Projects:**
+- TelegramDL — Download bot
+- More coming soon...
+
+**Contact:**
+- Telegram: [@Shineii86](https://t.me/Shineii86)
+- GitHub Issues: [Report Bug](https://github.com/Shineii86/TelegramDL/issues)
+
+**Support:**
+If you like this bot, ⭐ star the repo on GitHub!
 """
