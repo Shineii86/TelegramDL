@@ -81,6 +81,7 @@ ADMINS = [int(x.strip()) for x in ADMINS_RAW.split(",") if x.strip().isdigit()] 
 CHANNEL_ID = environ.get("CHANNEL_ID", "")
 WAITING_TIME = int(environ.get("WAITING_TIME", "10"))
 ERROR_MESSAGE = environ.get("ERROR_MESSAGE", "true").lower() == "true"
+ADMIN_CONTACT = environ.get("ADMIN_CONTACT", "https://t.me/Shineii86")
 
 # ===========================================================================
 #   DOWNLOAD SETTINGS

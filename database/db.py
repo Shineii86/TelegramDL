@@ -27,6 +27,7 @@
         FEATURE: RENAME_TAG
         FEATURE: WORD_RULES
         FEATURE: TOPIC_GROUP
+        FEATURE: PAYMENT_SYSTEM
 ============================================================================
 """
 
@@ -707,9 +708,133 @@ class Database:
         """
         await self.users.update_one({"id": id}, {"$set": {"topic_id": None}})
 
-# ===========================================================================
-#   MOCK DATABASE
-# ---------------------------------------------------------------------------
+    # =======================================================================
+    #   FEATURE: PAYMENT_SYSTEM
+    # =======================================================================
+
+    async def create_payment_request(self, user_id, request_id, plan, days, price):
+        """Create a new payment request.
+
+        Args:
+            user_id: Telegram user ID
+            request_id: Unique request identifier
+            plan: Plan name (weekly/monthly/yearly/lifetime)
+            days: Number of premium days
+            price: Plan price
+
+        Returns:
+            None
+        """
+        await self.users.insert_one({
+            "payment_request": True,
+            "user_id": user_id,
+            "request_id": request_id,
+            "plan": plan,
+            "days": days,
+            "price": price,
+            "status": "pending",
+            "created_at": datetime.now()
+        })
+
+    async def get_payment_request(self, request_id):
+        """Get payment request by ID.
+
+        Args:
+            request_id: Unique request identifier
+
+        Returns:
+            dict: Payment request or None
+        """
+        return await self.users.find_one({
+            "payment_request": True,
+            "request_id": request_id
+        })
+
+    async def update_payment_status(self, request_id, status):
+        """Update payment request status.
+
+        Args:
+            request_id: Unique request identifier
+            status: New status (approved/rejected/pending)
+
+        Returns:
+            None
+        """
+        await self.users.update_one(
+            {"payment_request": True, "request_id": request_id},
+            {"$set": {"status": status, "updated_at": datetime.now()}}
+        )
+
+    async def get_pending_payments(self):
+        """Get all pending payment requests.
+
+        Returns:
+            list: List of pending requests
+        """
+        cursor = self.users.find({
+            "payment_request": True,
+            "status": "pending"
+        })
+        return await cursor.to_list(length=50)
+
+    async def add_payment_history(self, user_id, request_id, plan, days, price, status):
+        """Add entry to payment history.
+
+        Args:
+            user_id: Telegram user ID
+            request_id: Unique request identifier
+            plan: Plan name
+            days: Number of premium days
+            price: Plan price
+            status: Payment status (approved/rejected)
+
+        Returns:
+            None
+        """
+        await self.users.insert_one({
+            "payment_history": True,
+            "user_id": user_id,
+            "request_id": request_id,
+            "plan": plan,
+            "days": days,
+            "price": price,
+            "status": status,
+            "created_at": datetime.now()
+        })
+
+    async def get_payment_history(self, user_id=None):
+        """Get payment history.
+
+        Args:
+            user_id: Optional user ID to filter by
+
+        Returns:
+            list: List of payment history entries
+        """
+        query = {"payment_history": True}
+        if user_id:
+            query["user_id"] = user_id
+        cursor = self.users.find(query).sort("created_at", -1)
+        return await cursor.to_list(length=50)
+
+    async def get_user_payments(self, user_id):
+        """Get all payments for a user.
+
+        Args:
+            user_id: Telegram user ID
+
+        Returns:
+            list: List of user's payments
+        """
+        cursor = self.users.find({
+            "payment_history": True,
+            "user_id": user_id
+        }).sort("created_at", -1)
+        return await cursor.to_list(length=20)
+
+    # =======================================================================
+    #   MOCK DATABASE
+    # =======================================================================
 #   Fallback when no DB_URI is configured.
 #   All operations are no-ops.
 #
@@ -762,6 +887,13 @@ class MockDatabase:
     async def set_topic_id(self, id, topic_id): pass
     async def get_topic_id(self, id): return None
     async def delete_topic_id(self, id): pass
+    async def create_payment_request(self, user_id, request_id, plan, days, price): pass
+    async def get_payment_request(self, request_id): return None
+    async def update_payment_status(self, request_id, status): pass
+    async def get_pending_payments(self): return []
+    async def add_payment_history(self, user_id, request_id, plan, days, price, status): pass
+    async def get_payment_history(self, user_id=None): return []
+    async def get_user_payments(self, user_id): return []
 
 # ===========================================================================
 #   DATABASE INSTANCE

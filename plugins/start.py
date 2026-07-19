@@ -31,6 +31,9 @@
         /add_premium   — Add premium (admin)
         /remove_premium — Remove premium (admin)
 
+    SEE ALSO:
+        plugins/payment.py — /premium, /pay, /payment, /history, /approve, /reject, /pending
+
     FEATURE: START_COMMAND
     FEATURE: HELP_COMMAND
     FEATURE: SETTINGS_COMMAND
