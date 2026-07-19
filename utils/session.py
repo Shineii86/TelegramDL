@@ -1,32 +1,55 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TelegramDL - Advanced Telegram Downloader Bot
+============================================================================
+    PROJECT:  TelegramDL - Advanced Telegram Downloader Bot
+    AUTHOR:   Shinei Nouzen (Shineii86)
+    LICENSE:  MIT License (c) 2024-2026
+    REPO:     https://github.com/Shineii86/TelegramDL
+============================================================================
+    DESCRIPTION:
+        Session time tracking for Colab deployments.
+        Tracks elapsed time and warns before session expires.
 
-Copyright (c) 2024-2026 Shinei Nouzen (Shineii86)
-Licensed under the MIT License
+    CLASS:
+        SessionStats — Session time tracker
 
-Author:    Shinei Nouzen
-GitHub:    https://github.com/Shineii86/TelegramDL
-Telegram:  https://t.me/Shineii86
-Email:     ikx7a@hotmail.com
-
-Description:
-    Advanced Telegram Restricted Content Downloader with Premium System,
-    yt-dlp Integration, File Splitting, Custom Bots & More.
-
-Framework:  Kurigram (Pyrogram Fork)
-
-Disclaimer:
-    This bot is for educational purposes only.
-    Use responsibly and respect Telegram's Terms of Service.
+    FEATURES:
+        FEATURE: TIME_TRACKING
+        FEATURE: EXPIRY_WARNING
+        FEATURE: PROGRESS_DISPLAY
+============================================================================
 """
 
+# ===========================================================================
+#   IMPORTS
+# ===========================================================================
+
 import time
+
+# ===========================================================================
+#   FEATURE: SESSION_STATS
+# ---------------------------------------------------------------------------
+#   Tracks session time and displays statistics
+#   Used primarily for Google Colab deployments
+#
+#   NOTE: Helps prevent unexpected session termination
+# ===========================================================================
 
 
 class SessionStats:
     def __init__(self, session_limit_hours=12):
+        """Initialize session tracker.
+
+        Args:
+            session_limit_hours: Session duration limit in hours
+
+        Returns:
+            None
+
+        Note:
+            Default limit is 12 hours (Colab free tier)
+        """
         self.start_time = time.time()
         self.session_limit = session_limit_hours * 3600
         self.downloaded = 0
@@ -35,15 +58,47 @@ class SessionStats:
         self.total = 0
 
     def elapsed(self):
+        """Get elapsed time in seconds.
+
+        Returns:
+            float: Seconds since start
+        """
         return time.time() - self.start_time
 
     def remaining(self):
+        """Get remaining time in seconds.
+
+        Returns:
+            float: Seconds remaining (0 if expired)
+        """
         return max(0, self.session_limit - self.elapsed())
 
     def is_session_low(self, threshold_minutes=30):
+        """Check if session time is low.
+
+        Args:
+            threshold_minutes: Warning threshold in minutes
+
+        Returns:
+            bool: True if below threshold
+
+        Note:
+            Default threshold is 30 minutes
+        """
         return self.remaining() < threshold_minutes * 60
 
     def eta(self, files_done):
+        """Calculate ETA for remaining files.
+
+        Args:
+            files_done: Number of files processed
+
+        Returns:
+            float: ETA in seconds
+
+        Formula:
+            elapsed / done * remaining
+        """
         if files_done == 0:
             return 0
         avg = self.elapsed() / files_done
@@ -51,6 +106,14 @@ class SessionStats:
         return avg * remaining_files
 
     def format_time(self, seconds):
+        """Format seconds to human readable time.
+
+        Args:
+            seconds: Time in seconds
+
+        Returns:
+            str: Formatted time
+        """
         if seconds < 60:
             return f"{int(seconds)}s"
         elif seconds < 3600:
@@ -61,11 +124,33 @@ class SessionStats:
             return f"{h}h {m}m"
 
     def progress_bar(self, percent, length=20):
+        """Generate progress bar.
+
+        Args:
+            percent: Completion percentage
+            length: Bar length
+
+        Returns:
+            str: Progress bar string
+        """
         filled = int(length * percent / 100)
         bar = "█" * filled + "░" * (length - filled)
         return bar
 
     def print_stats(self):
+        """Print session statistics to console.
+
+        Displays:
+            - Elapsed time
+            - Remaining time
+            - Usage percentage with bar
+            - Download/Skipped/Failed counts
+            - ETA
+            - Warning messages
+
+        Note:
+            Shows warnings at 2h, 1h, and 30min
+        """
         elapsed = self.elapsed()
         remaining = self.remaining()
         usage = (elapsed / self.session_limit) * 100 if self.session_limit > 0 else 0
@@ -93,3 +178,7 @@ class SessionStats:
             print("  ⚠️  WARNING: Less than 1 hour remaining")
         elif remaining < 7200:
             print("  💡 TIP: Less than 2 hours remaining")
+
+# ===========================================================================
+#   END OF SESSION MODULE
+# ===========================================================================

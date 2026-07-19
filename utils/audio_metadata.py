@@ -1,42 +1,67 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TelegramDL - Advanced Telegram Downloader Bot
+============================================================================
+    PROJECT:  TelegramDL - Advanced Telegram Downloader Bot
+    AUTHOR:   Shinei Nouzen (Shineii86)
+    LICENSE:  MIT License (c) 2024-2026
+    REPO:     https://github.com/Shineii86/TelegramDL
+============================================================================
+    DESCRIPTION:
+        Audio metadata embedding using mutagen.
+        Supports MP3, M4A, FLAC formats.
 
-Copyright (c) 2024-2026 Shinei Nouzen (Shineii86)
-Licensed under the MIT License
+    FUNCTIONS:
+        embed_audio_metadata — Embed metadata into audio
+        extract_audio_thumbnail — Extract album art
 
-Author:    Shinei Nouzen
-GitHub:    https://github.com/Shineii86/TelegramDL
-Telegram:  https://t.me/Shineii86
-Email:     ikx7a@hotmail.com
-
-Description:
-    Advanced Telegram Restricted Content Downloader with Premium System,
-    yt-dlp Integration, File Splitting, Custom Bots & More.
-
-Framework:  Kurigram (Pyrogram Fork)
-
-Disclaimer:
-    This bot is for educational purposes only.
-    Use responsibly and respect Telegram's Terms of Service.
+    FEATURES:
+        FEATURE: MP3_METADATA
+        FEATURE: M4A_METADATA
+        FEATURE: FLAC_METADATA
+        FEATURE: ALBUM_ART
+============================================================================
 """
+
+# ===========================================================================
+#   IMPORTS
+# ===========================================================================
 
 import os
 import logging
 
 logger = logging.getLogger(__name__)
 
+# ===========================================================================
+#   FEATURE: AUDIO_METADATA
+# ---------------------------------------------------------------------------
+#   Embeds metadata into audio files using mutagen.
+#   Supports MP3 (ID3), M4A (MP4), FLAC (Vorbis).
+#
+#   NOTE: mutagen is optional dependency
+# ===========================================================================
+
 
 def embed_audio_metadata(file_path, title=None, artist=None, album=None, thumbnail_path=None):
-    """Embed metadata into audio file (MP3, M4A, etc.).
-    
+    """Embed metadata into audio file.
+
     Args:
         file_path: Path to audio file
         title: Song title
         artist: Artist name
         album: Album name
-        thumbnail_path: Path to thumbnail image for album art
+        thumbnail_path: Path to thumbnail for album art
+
+    Returns:
+        bool: True if successful
+
+    Supported Formats:
+        - .mp3 — ID3 tags
+        - .m4a/.aac/.mp4 — MP4 atoms
+        - .flac — Vorbis comments
+
+    Note:
+        Silently fails if mutagen not installed
     """
     try:
         from mutagen.mp3 import MP3
@@ -65,7 +90,21 @@ def embed_audio_metadata(file_path, title=None, artist=None, album=None, thumbna
 
 
 def _embed_mp3(file_path, title, artist, album, thumbnail_path):
-    """Embed metadata into MP3 file."""
+    """Embed metadata into MP3 file.
+
+    Args:
+        file_path: Path to MP3 file
+        title: Song title
+        artist: Artist name
+        album: Album name
+        thumbnail_path: Path to thumbnail
+
+    Returns:
+        bool: True if successful
+
+    Note:
+        Uses ID3v2.3 tags
+    """
     from mutagen.mp3 import MP3
     from mutagen.id3 import ID3, APIC, TIT2, TPE1, TALB
     
@@ -96,7 +135,21 @@ def _embed_mp3(file_path, title, artist, album, thumbnail_path):
 
 
 def _embed_m4a(file_path, title, artist, album, thumbnail_path):
-    """Embed metadata into M4A/AAC file."""
+    """Embed metadata into M4A/AAC file.
+
+    Args:
+        file_path: Path to M4A file
+        title: Song title
+        artist: Artist name
+        album: Album name
+        thumbnail_path: Path to thumbnail
+
+    Returns:
+        bool: True if successful
+
+    Note:
+        Uses iTunes-style atoms
+    """
     from mutagen.mp4 import MP4, MP4Cover
     
     audio = MP4(file_path)
@@ -117,7 +170,21 @@ def _embed_m4a(file_path, title, artist, album, thumbnail_path):
 
 
 def _embed_flac(file_path, title, artist, album, thumbnail_path):
-    """Embed metadata into FLAC file."""
+    """Embed metadata into FLAC file.
+
+    Args:
+        file_path: Path to FLAC file
+        title: Song title
+        artist: Artist name
+        album: Album name
+        thumbnail_path: Path to thumbnail
+
+    Returns:
+        bool: True if successful
+
+    Note:
+        Uses Vorbis comments
+    """
     from mutagen.flac import FLAC, Picture
     
     audio = FLAC(file_path)
@@ -143,7 +210,18 @@ def _embed_flac(file_path, title, artist, album, thumbnail_path):
 
 
 def extract_audio_thumbnail(audio_path, output_path=None):
-    """Extract album art from audio file."""
+    """Extract album art from audio file.
+
+    Args:
+        audio_path: Path to audio file
+        output_path: Output path (optional)
+
+    Returns:
+        str: Output path or None
+
+    Note:
+        Only works with MP3 files containing APIC tags
+    """
     try:
         from mutagen.mp3 import MP3
         from mutagen.id3 import ID3
@@ -162,3 +240,7 @@ def extract_audio_thumbnail(audio_path, output_path=None):
         logger.error(f"Failed to extract thumbnail: {e}")
     
     return None
+
+# ===========================================================================
+#   END OF AUDIO_METADATA MODULE
+# ===========================================================================

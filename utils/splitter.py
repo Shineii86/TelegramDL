@@ -1,26 +1,30 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TelegramDL - Advanced Telegram Downloader Bot
+============================================================================
+    PROJECT:  TelegramDL - Advanced Telegram Downloader Bot
+    AUTHOR:   Shinei Nouzen (Shineii86)
+    LICENSE:  MIT License (c) 2024-2026
+    REPO:     https://github.com/Shineii86/TelegramDL
+============================================================================
+    DESCRIPTION:
+        File splitting utility for files >2GB.
+        Splits into 1.9GB parts for Telegram upload.
 
-Copyright (c) 2024-2026 Shinei Nouzen (Shineii86)
-Licensed under the MIT License
+    FUNCTIONS:
+        split_file     — Split file into parts
+        cleanup_parts  — Remove part files after upload
+        get_part_name  — Generate part filename
 
-Author:    Shinei Nouzen
-GitHub:    https://github.com/Shineii86/TelegramDL
-Telegram:  https://t.me/Shineii86
-Email:     ikx7a@hotmail.com
-
-Description:
-    Advanced Telegram Restricted Content Downloader with Premium System,
-    yt-dlp Integration, File Splitting, Custom Bots & More.
-
-Framework:  Kurigram (Pyrogram Fork)
-
-Disclaimer:
-    This bot is for educational purposes only.
-    Use responsibly and respect Telegram's Terms of Service.
+    FEATURES:
+        FEATURE: FILE_SPLITTING
+        FEATURE: PART_CLEANUP
+============================================================================
 """
+
+# ===========================================================================
+#   IMPORTS
+# ===========================================================================
 
 import os
 import math
@@ -29,13 +33,44 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# ===========================================================================
+#   CONSTANTS
+# ---------------------------------------------------------------------------
+#   PART_SIZE: Maximum part size (1.9GB)
+#   NOTE: Slightly under 2GB to account for metadata
+# ===========================================================================
+
 PART_SIZE = int(1.9 * 1024 * 1024 * 1024)  # 1.9GB per part
+
+# ===========================================================================
+#   FEATURE: FILE_SPLITTING
+# ---------------------------------------------------------------------------
+#   Splits files into parts for Telegram upload.
+#   Files <2GB are returned as-is.
+#
+#   NOTE: Uses chunked reading for memory efficiency
+# ===========================================================================
 
 
 async def split_file(file_path, max_size=PART_SIZE):
-    """Split a file into parts if it exceeds max_size.
-    
-    Returns list of part file paths.
+    """Split file into parts if it exceeds max_size.
+
+    Args:
+        file_path: Path to file
+        max_size: Maximum part size (default: 1.9GB)
+
+    Returns:
+        list: List of part file paths
+
+    Process:
+        1. Check file size
+        2. Calculate number of parts
+        3. Create parts directory
+        4. Read and write chunks
+        5. Return part paths
+
+    Note:
+        Files under max_size returned as single-item list
     """
     file_size = os.path.getsize(file_path)
     
@@ -80,12 +115,34 @@ async def split_file(file_path, max_size=PART_SIZE):
 
 
 def get_part_name(base_name, part_num, total_parts, ext):
-    """Generate part filename."""
+    """Generate part filename.
+
+    Args:
+        base_name: Original filename (without extension)
+        part_num: Part number (1-indexed)
+        total_parts: Total number of parts
+        ext: File extension
+
+    Returns:
+        str: Part filename (e.g., "video_part1.mp4")
+    """
     return f"{base_name}_part{part_num}{ext}"
 
 
 def cleanup_parts(part_paths, original_path):
-    """Cleanup part files after upload."""
+    """Cleanup part files after upload.
+
+    Args:
+        part_paths: List of part file paths
+        original_path: Original file path
+
+    Returns:
+        None
+
+    Note:
+        Only removes part files, not original
+        Also removes parts directory if empty
+    """
     for p in part_paths:
         if p != original_path and os.path.exists(p):
             try:
@@ -100,3 +157,7 @@ def cleanup_parts(part_paths, original_path):
             os.rmdir(part_dir)
         except:
             pass
+
+# ===========================================================================
+#   END OF SPLITTER MODULE
+# ===========================================================================

@@ -1,35 +1,58 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TelegramDL - Advanced Telegram Downloader Bot
+============================================================================
+    PROJECT:  TelegramDL - Advanced Telegram Downloader Bot
+    AUTHOR:   Shinei Nouzen (Shineii86)
+    LICENSE:  MIT License (c) 2024-2026
+    REPO:     https://github.com/Shineii86/TelegramDL
+============================================================================
+    DESCRIPTION:
+        ZIP archive creation utility.
 
-Copyright (c) 2024-2026 Shinei Nouzen (Shineii86)
-Licensed under the MIT License
+    FUNCTIONS:
+        create_zip — Create ZIP from files
 
-Author:    Shinei Nouzen
-GitHub:    https://github.com/Shineii86/TelegramDL
-Telegram:  https://t.me/Shineii86
-Email:     ikx7a@hotmail.com
-
-Description:
-    Advanced Telegram Restricted Content Downloader with Premium System,
-    yt-dlp Integration, File Splitting, Custom Bots & More.
-
-Framework:  Kurigram (Pyrogram Fork)
-
-Disclaimer:
-    This bot is for educational purposes only.
-    Use responsibly and respect Telegram's Terms of Service.
+    FEATURES:
+        FEATURE: ZIP_CREATION
+============================================================================
 """
+
+# ===========================================================================
+#   IMPORTS
+# ===========================================================================
 
 import os
 
+# ===========================================================================
+#   FEATURE: ZIP_CREATION
+# ---------------------------------------------------------------------------
+#   Creates ZIP archives from files
+#   Used for batch downloads
+# ===========================================================================
+
 
 def create_zip(files, zip_name):
-    """Create a zip archive from files."""
+    """Create a zip archive from files.
+
+    Args:
+        files: List of file paths
+        zip_name: Output ZIP filename
+
+    Returns:
+        str: Path to created ZIP file
+
+    Note:
+        Only includes existing files
+        Uses DEFLATED compression
+    """
     import zipfile
     with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
         for file in files:
             if os.path.exists(file):
                 zipf.write(file, os.path.basename(file))
     return zip_name
+
+# ===========================================================================
+#   END OF ARCHIVE MODULE
+# ===========================================================================

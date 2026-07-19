@@ -1,34 +1,63 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TelegramDL - Advanced Telegram Downloader Bot
+============================================================================
+    PROJECT:  TelegramDL - Advanced Telegram Downloader Bot
+    AUTHOR:   Shinei Nouzen (Shineii86)
+    LICENSE:  MIT License (c) 2024-2026
+    REPO:     https://github.com/Shineii86/TelegramDL
+============================================================================
+    DESCRIPTION:
+        Download progress tracker with rich progress bar,
+        speed calculation, and ETA estimation.
 
-Copyright (c) 2024-2026 Shinei Nouzen (Shineii86)
-Licensed under the MIT License
+    CLASS:
+        DownloadProgress — Main progress tracker
 
-Author:    Shinei Nouzen
-GitHub:    https://github.com/Shineii86/TelegramDL
-Telegram:  https://t.me/Shineii86
-Email:     ikx7a@hotmail.com
-
-Description:
-    Advanced Telegram Restricted Content Downloader with Premium System,
-    yt-dlp Integration, File Splitting, Custom Bots & More.
-
-Framework:  Kurigram (Pyrogram Fork)
-
-Disclaimer:
-    This bot is for educational purposes only.
-    Use responsibly and respect Telegram's Terms of Service.
+    FEATURES:
+        FEATURE: PROGRESS_BAR
+        FEATURE: SPEED_CALCULATION
+        FEATURE: ETA_ESTIMATION
+        FEATURE: RATE_LIMITING
+============================================================================
 """
+
+# ===========================================================================
+#   IMPORTS
+# ===========================================================================
 
 import time
 import os
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
+# ===========================================================================
+#   FEATURE: DOWNLOAD_PROGRESS
+# ---------------------------------------------------------------------------
+#   Tracks download progress with:
+#   - Visual progress bar
+#   - Speed calculation (msg/s)
+#   - ETA estimation
+#   - Rate limiting (2s between updates)
+#
+#   NOTE: Rate limiting prevents Telegram API flood
+# ===========================================================================
+
 
 class DownloadProgress:
     def __init__(self, client, chat_id, message_id=None):
+        """Initialize progress tracker.
+
+        Args:
+            client: Pyrogram client
+            chat_id: Chat ID to send updates
+            message_id: Optional message ID to edit
+
+        Returns:
+            None
+
+        Note:
+            Starts timer on initialization
+        """
         self.client = client
         self.chat_id = chat_id
         self.message_id = message_id
@@ -42,9 +71,31 @@ class DownloadProgress:
         self.last_update = 0
 
     def set_total(self, total):
+        """Set total file count.
+
+        Args:
+            total: Total number of files
+
+        Returns:
+            None
+        """
         self.total = total
 
     def update(self, downloaded=None, skipped=None, failed=None, current_file=None):
+        """Update progress counters.
+
+        Args:
+            downloaded: Downloaded count
+            skipped: Skipped count
+            failed: Failed count
+            current_file: Current file description
+
+        Returns:
+            None
+
+        Note:
+            Only updates provided values (None skips)
+        """
         if downloaded is not None:
             self.downloaded = downloaded
         if skipped is not None:
@@ -55,6 +106,14 @@ class DownloadProgress:
             self.current_file = current_file
 
     def get_eta(self):
+        """Calculate estimated time remaining.
+
+        Returns:
+            float: ETA in seconds
+
+        Formula:
+            elapsed / done * remaining
+        """
         done = self.downloaded + self.skipped + self.failed
         if done == 0:
             return 0
@@ -64,6 +123,11 @@ class DownloadProgress:
         return avg * remaining
 
     def get_speed(self):
+        """Calculate processing speed.
+
+        Returns:
+            float: Messages per second
+        """
         done = self.downloaded + self.skipped + self.failed
         if done == 0:
             return 0
@@ -71,6 +135,14 @@ class DownloadProgress:
         return done / elapsed if elapsed > 0 else 0
 
     def format_time(self, seconds):
+        """Format seconds to human readable time.
+
+        Args:
+            seconds: Time in seconds
+
+        Returns:
+            str: Formatted time (e.g., "5m 30s", "1h 15m")
+        """
         if seconds < 60:
             return f"{int(seconds)}s"
         elif seconds < 3600:
@@ -81,6 +153,14 @@ class DownloadProgress:
             return f"{h}h {m}m"
 
     def format_size(self, size):
+        """Format bytes to human readable size.
+
+        Args:
+            size: Size in bytes
+
+        Returns:
+            str: Formatted size (e.g., "1.5 MB")
+        """
         if size < 1024:
             return f"{size:.1f} B"
         elif size < 1024 * 1024:
@@ -91,11 +171,34 @@ class DownloadProgress:
             return f"{size / 1024 / 1024 / 1024:.2f} GB"
 
     def get_progress_bar(self, percent, length=15):
+        """Generate visual progress bar.
+
+        Args:
+            percent: Completion percentage (0-100)
+            length: Bar length in characters
+
+        Returns:
+            str: Progress bar (e.g., "██████░░░░░░░░░")
+        """
         filled = int(length * percent / 100)
         bar = "█" * filled + "░" * (length - filled)
         return bar
 
     def build_message(self):
+        """Build progress message text.
+
+        Returns:
+            str: Formatted progress message
+
+        Includes:
+            - Progress bar with percentage
+            - Speed (msg/s)
+            - Done/Total count
+            - Skipped/Failed counts
+            - Elapsed time
+            - ETA
+            - Current file
+        """
         done = self.downloaded + self.skipped + self.failed
         if self.total > 0:
             percent = done / self.total * 100
@@ -125,11 +228,27 @@ class DownloadProgress:
         return text
 
     def get_cancel_keyboard(self):
+        """Get cancel button keyboard.
+
+        Returns:
+            InlineKeyboardMarkup: Cancel button
+        """
         return InlineKeyboardMarkup([
             [InlineKeyboardButton("❌ Cancel", callback_data="cancel_download")]
         ])
 
     async def create(self, total=None):
+        """Create initial progress message.
+
+        Args:
+            total: Total file count (optional)
+
+        Returns:
+            Message: Status message
+
+        Note:
+            Sends message with cancel button
+        """
         if total:
             self.total = total
         self.start_time = time.time()
@@ -141,6 +260,15 @@ class DownloadProgress:
         return self.status_msg
 
     async def update_message(self):
+        """Update progress message.
+
+        Returns:
+            None
+
+        Note:
+            Rate limited to 1 update per 2 seconds
+            to prevent Telegram API flood
+        """
         now = time.time()
         if now - self.last_update < 2:
             return
@@ -156,6 +284,16 @@ class DownloadProgress:
                 pass
 
     async def finish(self):
+        """Show completion message.
+
+        Returns:
+            None
+
+        Displays:
+            - Total files processed
+            - Downloaded/Skipped/Failed counts
+            - Total time taken
+        """
         done = self.downloaded + self.skipped + self.failed
         elapsed = time.time() - self.start_time
         text = (
@@ -171,3 +309,7 @@ class DownloadProgress:
                 await self.status_msg.edit_text(text)
             except Exception:
                 await self.client.send_message(self.chat_id, text)
+
+# ===========================================================================
+#   END OF PROGRESS MODULE
+# ===========================================================================

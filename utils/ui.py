@@ -1,31 +1,64 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TelegramDL - Advanced Telegram Downloader Bot
+============================================================================
+    PROJECT:  TelegramDL - Advanced Telegram Downloader Bot
+    AUTHOR:   Shinei Nouzen (Shineii86)
+    LICENSE:  MIT License (c) 2024-2026
+    REPO:     https://github.com/Shineii86/TelegramDL
+============================================================================
+    DESCRIPTION:
+        UI components: inline keyboards and message templates.
 
-Copyright (c) 2024-2026 Shinei Nouzen (Shineii86)
-Licensed under the MIT License
+    KEYBOARDS:
+        main_menu_keyboard — Main menu
+        download_keyboard  — Download options
+        backup_keyboard    — Backup options
+        batch_keyboard     — Batch options
+        settings_keyboard  — Settings menu
+        settings_delay_keyboard — Delay selection
+        settings_size_keyboard  — Size selection
+        thumbnail_keyboard — Thumbnail management
+        caption_keyboard   — Caption management
+        myplan_keyboard    — Plan info
+        about_keyboard     — About links
+        help_keyboard      — Help topics
+        login_keyboard     — Login/logout
+        back_keyboard      — Back navigation
+        stop_keyboard      — Stop button
 
-Author:    Shinei Nouzen
-GitHub:    https://github.com/Shineii86/TelegramDL
-Telegram:  https://t.me/Shineii86
-Email:     ikx7a@hotmail.com
-
-Description:
-    Advanced Telegram Restricted Content Downloader with Premium System,
-    yt-dlp Integration, File Splitting, Custom Bots & More.
-
-Framework:  Kurigram (Pyrogram Fork)
-
-Disclaimer:
-    This bot is for educational purposes only.
-    Use responsibly and respect Telegram's Terms of Service.
+    MESSAGES:
+        WELCOME_MSG, HELP_*, SETTINGS_INFO, MYPLAN_INFO,
+        PROGRESS_MSG, BACKUP_*, THUMBNAIL_*, CAPTION_*,
+        ABOUT_MSG, PROJECT_MSG, DEV_MSG
+============================================================================
 """
+
+# ===========================================================================
+#   IMPORTS
+# ===========================================================================
 
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
+# ===========================================================================
+#   KEYBOARD BUILDERS
+# ---------------------------------------------------------------------------
+#   Each function returns InlineKeyboardMarkup with buttons
+#   All buttons use callback_data for routing
+# ===========================================================================
+
 
 def main_menu_keyboard():
+    """Main menu keyboard.
+
+    Returns:
+        InlineKeyboardMarkup: 5 rows of buttons
+
+    Buttons:
+        Download, Backup, Batch, Login,
+        Settings, My Plan, Thumbnail, Caption,
+        About, Help
+    """
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton("📥 Download", callback_data="menu_download"),
@@ -51,6 +84,11 @@ def main_menu_keyboard():
 
 
 def download_keyboard():
+    """Download options keyboard.
+
+    Returns:
+        InlineKeyboardMarkup: Filter options and back button
+    """
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("📎 Send Link", callback_data="dl_send_link")],
         [
@@ -66,6 +104,11 @@ def download_keyboard():
 
 
 def backup_keyboard():
+    """Backup options keyboard.
+
+    Returns:
+        InlineKeyboardMarkup: Upload mode options
+    """
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("📎 Send Channel Link", callback_data="bk_send_link")],
         [
@@ -77,6 +120,11 @@ def backup_keyboard():
 
 
 def batch_keyboard():
+    """Batch download options keyboard.
+
+    Returns:
+        InlineKeyboardMarkup: Mode options
+    """
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("📎 Send Channel Link", callback_data="batch_send_link")],
         [
@@ -88,6 +136,11 @@ def batch_keyboard():
 
 
 def settings_keyboard():
+    """Settings menu keyboard.
+
+    Returns:
+        InlineKeyboardMarkup: Setting options
+    """
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton("⏱ Delay", callback_data="set_delay"),
@@ -106,6 +159,11 @@ def settings_keyboard():
 
 
 def settings_delay_keyboard():
+    """Delay selection keyboard.
+
+    Returns:
+        InlineKeyboardMarkup: Delay options (3s to 30s)
+    """
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton("3s", callback_data="delay_3"),
@@ -122,6 +180,11 @@ def settings_delay_keyboard():
 
 
 def settings_size_keyboard():
+    """File size selection keyboard.
+
+    Returns:
+        InlineKeyboardMarkup: Size options (500MB to No Limit)
+    """
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton("500MB", callback_data="size_500"),
@@ -138,6 +201,11 @@ def settings_size_keyboard():
 
 
 def thumbnail_keyboard():
+    """Thumbnail management keyboard.
+
+    Returns:
+        InlineKeyboardMarkup: Set/View/Delete options
+    """
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("🖼 Set Thumbnail", callback_data="thumb_set")],
         [
@@ -149,6 +217,11 @@ def thumbnail_keyboard():
 
 
 def caption_keyboard():
+    """Caption management keyboard.
+
+    Returns:
+        InlineKeyboardMarkup: Set/View/Delete options
+    """
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("📝 Set Caption", callback_data="caption_set")],
         [
@@ -160,6 +233,11 @@ def caption_keyboard():
 
 
 def myplan_keyboard():
+    """Plan info keyboard.
+
+    Returns:
+        InlineKeyboardMarkup: Stats button
+    """
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("📊 My Stats", callback_data="plan_stats")],
         [InlineKeyboardButton("🔙 Back", callback_data="menu_back")],
@@ -167,6 +245,15 @@ def myplan_keyboard():
 
 
 def confirm_keyboard(action, target_id=""):
+    """Confirmation keyboard.
+
+    Args:
+        action: Action name
+        target_id: Target ID (optional)
+
+    Returns:
+        InlineKeyboardMarkup: Confirm/Cancel buttons
+    """
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton("✅ Confirm", callback_data=f"confirm_{action}_{target_id}"),
@@ -176,18 +263,33 @@ def confirm_keyboard(action, target_id=""):
 
 
 def progress_keyboard():
+    """Progress cancel keyboard.
+
+    Returns:
+        InlineKeyboardMarkup: Cancel button
+    """
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("❌ Cancel", callback_data="cancel_download")],
     ])
 
 
 def stop_keyboard():
+    """Stop process keyboard.
+
+    Returns:
+        InlineKeyboardMarkup: Stop button
+    """
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("⏹ Stop", callback_data="stop_process")],
     ])
 
 
 def help_keyboard():
+    """Help topics keyboard.
+
+    Returns:
+        InlineKeyboardMarkup: Help topic buttons
+    """
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton("📥 Download", callback_data="help_download"),
@@ -210,6 +312,11 @@ def help_keyboard():
 
 
 def login_keyboard():
+    """Login/logout keyboard.
+
+    Returns:
+        InlineKeyboardMarkup: Login/Logout buttons
+    """
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("🔐 Login with Phone", callback_data="login_start")],
         [InlineKeyboardButton("🚪 Logout", callback_data="logout_confirm")],
@@ -218,12 +325,25 @@ def login_keyboard():
 
 
 def back_keyboard(target="menu_back"):
+    """Back navigation keyboard.
+
+    Args:
+        target: Callback data for back button
+
+    Returns:
+        InlineKeyboardMarkup: Back button
+    """
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("🔙 Back", callback_data=target)],
     ])
 
 
 def about_keyboard():
+    """About page keyboard.
+
+    Returns:
+        InlineKeyboardMarkup: External links
+    """
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("👨‍💻 Developer", url="https://t.me/Shineii86")],
         [InlineKeyboardButton("📂 GitHub", url="https://github.com/Shineii86/TelegramDL")],
@@ -235,8 +355,12 @@ def about_keyboard():
         [InlineKeyboardButton("🔙 Back", callback_data="menu_back")],
     ])
 
+# ===========================================================================
+#   MESSAGE TEMPLATES
+# ---------------------------------------------------------------------------
+#   All user-facing messages as constants
+# ===========================================================================
 
-# ============ MESSAGES ============
 
 WELCOME_MSG = """
 **Welcome to TelegramDL Bot!**
@@ -582,3 +706,7 @@ DEV_MSG = """
 **Support:**
 If you like this bot, ⭐ star the repo on GitHub!
 """
+
+# ===========================================================================
+#   END OF UI MODULE
+# ===========================================================================

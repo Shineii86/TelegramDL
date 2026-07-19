@@ -1,26 +1,31 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TelegramDL - Advanced Telegram Downloader Bot
+============================================================================
+    PROJECT:  TelegramDL - Advanced Telegram Downloader Bot
+    AUTHOR:   Shinei Nouzen (Shineii86)
+    LICENSE:  MIT License (c) 2024-2026
+    REPO:     https://github.com/Shineii86/TelegramDL
+============================================================================
+    DESCRIPTION:
+        Custom bot management. Each user can set their own bot token
+        to prevent bans on the main bot.
 
-Copyright (c) 2024-2026 Shinei Nouzen (Shineii86)
-Licensed under the MIT License
+    COMMANDS:
+        /setbot <token> — Set custom bot token
+        /delbot         — Remove custom bot
+        /mybot          — View current bot status
 
-Author:    Shinei Nouzen
-GitHub:    https://github.com/Shineii86/TelegramDL
-Telegram:  https://t.me/Shineii86
-Email:     ikx7a@hotmail.com
-
-Description:
-    Advanced Telegram Restricted Content Downloader with Premium System,
-    yt-dlp Integration, File Splitting, Custom Bots & More.
-
-Framework:  Kurigram (Pyrogram Fork)
-
-Disclaimer:
-    This bot is for educational purposes only.
-    Use responsibly and respect Telegram's Terms of Service.
+    FEATURES:
+        FEATURE: CUSTOM_BOT_COMMANDS
+        FEATURE: BOT_VALIDATION
+        FEATURE: BOT_CACHING
+============================================================================
 """
+
+# ===========================================================================
+#   IMPORTS
+# ===========================================================================
 
 import os
 import asyncio
@@ -32,12 +37,40 @@ from database.db import db
 
 logger = logging.getLogger(__name__)
 
-# Store active custom bot clients
+# ===========================================================================
+#   GLOBAL STATE
+# ---------------------------------------------------------------------------
+#   custom_bot_clients: Cache of active custom bot clients
+#
+#   NOTE: Clients are reused across requests for performance
+# ===========================================================================
+
 custom_bot_clients = {}
+
+# ===========================================================================
+#   HELPER FUNCTIONS
+# ===========================================================================
 
 
 async def get_user_bot(user_id):
-    """Get or create a user's custom bot client."""
+    """Get or create a user's custom bot client.
+
+    Args:
+        user_id: Telegram user ID
+
+    Returns:
+        Client: Active bot client or None
+
+    Process:
+        1. Check cache for existing client
+        2. Verify client is connected
+        3. Get token from database
+        4. Create and start new client
+        5. Cache for reuse
+
+    Note:
+        Returns None if no custom bot set
+    """
     if user_id in custom_bot_clients:
         client = custom_bot_clients[user_id]
         if client.is_connected:
@@ -63,7 +96,17 @@ async def get_user_bot(user_id):
 
 
 async def stop_user_bot(user_id):
-    """Stop a user's custom bot client."""
+    """Stop a user's custom bot client.
+
+    Args:
+        user_id: Telegram user ID
+
+    Returns:
+        None
+
+    Note:
+        Removes client from cache after stopping
+    """
     if user_id in custom_bot_clients:
         try:
             await custom_bot_clients[user_id].stop()
@@ -71,10 +114,41 @@ async def stop_user_bot(user_id):
             pass
         del custom_bot_clients[user_id]
 
+# ===========================================================================
+#   FEATURE: CUSTOM_BOT_COMMANDS
+# ---------------------------------------------------------------------------
+#   /setbot <token> — Set custom bot token
+#   /delbot         — Remove custom bot
+#   /mybot          — View current bot status
+#
+#   TIP: Custom bots prevent bans on main bot token
+# ===========================================================================
+
 
 @bot.on_message(filters.command("setbot") & filters.private)
 async def setbot_cmd(client, message: Message):
-    """Set a custom bot token for your account."""
+    """Set custom bot token.
+
+    Args:
+        client: Bot client
+        message: User message with bot token
+
+    Returns:
+        None
+
+    Usage:
+        /setbot 123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11
+
+    Process:
+        1. Check ban status
+        2. Validate token format
+        3. Test token by starting client
+        4. Save to database
+        5. Show success message
+
+    Note:
+        Token format: "bot_token" (e.g., "123456:ABC-DEF")
+    """
     user_id = message.from_user.id
 
     if await db.is_banned(user_id):
@@ -142,7 +216,20 @@ async def setbot_cmd(client, message: Message):
 
 @bot.on_message(filters.command("delbot") & filters.private)
 async def delbot_cmd(client, message: Message):
-    """Remove custom bot and use main bot."""
+    """Remove custom bot.
+
+    Args:
+        client: Bot client
+        message: User message
+
+    Returns:
+        None
+
+    Process:
+        1. Stop active client
+        2. Remove from database
+        3. Show success message
+    """
     user_id = message.from_user.id
 
     await stop_user_bot(user_id)
@@ -156,7 +243,20 @@ async def delbot_cmd(client, message: Message):
 
 @bot.on_message(filters.command("mybot") & filters.private)
 async def mybot_cmd(client, message: Message):
-    """Show current bot status."""
+    """Show current bot status.
+
+    Args:
+        client: Bot client
+        message: User message
+
+    Returns:
+        None
+
+    Displays:
+        - Bot username and name
+        - Bot ID
+        - Connection status
+    """
     user_id = message.from_user.id
 
     bot_token = await db.get_bot_token(user_id)
@@ -195,3 +295,7 @@ async def mybot_cmd(client, message: Message):
             "Using the main bot.\n\n"
             "Use /setbot <token> to add your own bot."
         )
+
+# ===========================================================================
+#   END OF CUSTOM_BOT PLUGIN
+# ===========================================================================

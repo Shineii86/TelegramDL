@@ -1,26 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TelegramDL - Advanced Telegram Downloader Bot
+============================================================================
+    PROJECT:  TelegramDL - Advanced Telegram Downloader Bot
+    AUTHOR:   Shinei Nouzen (Shineii86)
+    LICENSE:  MIT License (c) 2024-2026
+    REPO:     https://github.com/Shineii86/TelegramDL
+============================================================================
+    DESCRIPTION:
+        Admin broadcast plugin. Sends messages to all registered users.
 
-Copyright (c) 2024-2026 Shinei Nouzen (Shineii86)
-Licensed under the MIT License
+    COMMANDS:
+        /broadcast — Reply to a message to send to all users
 
-Author:    Shinei Nouzen
-GitHub:    https://github.com/Shineii86/TelegramDL
-Telegram:  https://t.me/Shineii86
-Email:     ikx7a@hotmail.com
-
-Description:
-    Advanced Telegram Restricted Content Downloader with Premium System,
-    yt-dlp Integration, File Splitting, Custom Bots & More.
-
-Framework:  Kurigram (Pyrogram Fork)
-
-Disclaimer:
-    This bot is for educational purposes only.
-    Use responsibly and respect Telegram's Terms of Service.
+    FEATURES:
+        FEATURE: BROADCAST_COMMAND
+        FEATURE: AUTO_CLEANUP
+        FEATURE: PROGRESS_TRACKING
+============================================================================
 """
+
+# ===========================================================================
+#   IMPORTS
+# ===========================================================================
 
 import time
 import asyncio
@@ -32,9 +34,44 @@ from bot import bot
 from database.db import db
 from config import ADMINS
 
+# ===========================================================================
+#   FEATURE: BROADCAST_COMMAND
+# ---------------------------------------------------------------------------
+#   /broadcast — Send message to all users
+#   Admin only command with progress tracking
+#
+#   NOTE: Automatically removes blocked/deleted users
+# ===========================================================================
+
 
 @bot.on_message(filters.command("broadcast"))
 async def broadcast_cmd(client, message: Message):
+    """Handle /broadcast command.
+
+    Args:
+        client: Bot client
+        message: Reply to message to broadcast
+
+    Returns:
+        None
+
+    Admin Only: Yes
+
+    Process:
+        1. Check if user is admin
+        2. Check if replying to a message
+        3. Iterate through all users
+        4. Copy message to each user
+        5. Handle errors (blocked, deleted, flood)
+        6. Auto-cleanup blocked/deleted users
+        7. Show final stats
+
+    Stats Tracked:
+        - Success: Messages sent successfully
+        - Blocked: Users who blocked the bot
+        - Deleted: Deleted accounts
+        - Failed: Other errors
+    """
     if not ADMINS or message.from_user.id not in ADMINS:
         return
     if not message.reply_to_message:
@@ -105,3 +142,7 @@ async def broadcast_cmd(client, message: Message):
         f"**Deleted:** {deleted}\n"
         f"**Failed:** {failed}"
     )
+
+# ===========================================================================
+#   END OF BROADCAST PLUGIN
+# ===========================================================================

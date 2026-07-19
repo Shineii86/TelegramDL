@@ -1,26 +1,31 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TelegramDL - Advanced Telegram Downloader Bot
+============================================================================
+    PROJECT:  TelegramDL - Advanced Telegram Downloader Bot
+    AUTHOR:   Shinei Nouzen (Shineii86)
+    LICENSE:  MIT License (c) 2024-2026
+    REPO:     https://github.com/Shineii86/TelegramDL
+============================================================================
+    DESCRIPTION:
+        yt-dlp wrapper for downloading from 100+ sites.
 
-Copyright (c) 2024-2026 Shinei Nouzen (Shineii86)
-Licensed under the MIT License
+    FUNCTIONS:
+        is_ytdl_url       — Check if URL is supported
+        download_with_ytdl — Download media from URL
+        get_video_info     — Get video metadata
 
-Author:    Shinei Nouzen
-GitHub:    https://github.com/Shineii86/TelegramDL
-Telegram:  https://t.me/Shineii86
-Email:     ikx7a@hotmail.com
-
-Description:
-    Advanced Telegram Restricted Content Downloader with Premium System,
-    yt-dlp Integration, File Splitting, Custom Bots & More.
-
-Framework:  Kurigram (Pyrogram Fork)
-
-Disclaimer:
-    This bot is for educational purposes only.
-    Use responsibly and respect Telegram's Terms of Service.
+    FEATURES:
+        FEATURE: URL_VALIDATION
+        FEATURE: VIDEO_DOWNLOAD
+        FEATURE: AUDIO_EXTRACTION
+        FEATURE: METADATA_EXTRACTION
+============================================================================
 """
+
+# ===========================================================================
+#   IMPORTS
+# ===========================================================================
 
 import os
 import re
@@ -30,7 +35,13 @@ import tempfile
 
 logger = logging.getLogger(__name__)
 
-# Supported URL patterns
+# ===========================================================================
+#   FEATURE: URL_VALIDATION
+# ---------------------------------------------------------------------------
+#   Supported URL patterns for yt-dlp
+#   Covers 100+ sites including major platforms
+# ===========================================================================
+
 YT_DLP_PATTERNS = [
     r'youtube\.com',
     r'youtu\.be',
@@ -61,24 +72,54 @@ YT_DLP_PATTERNS = [
 
 
 def is_ytdl_url(url):
-    """Check if URL is supported by yt-dlp."""
+    """Check if URL is supported by yt-dlp.
+
+    Args:
+        url: URL to check
+
+    Returns:
+        bool: True if supported
+
+    Note:
+        Checks against known URL patterns
+    """
     for pattern in YT_DLP_PATTERNS:
         if re.search(pattern, url, re.IGNORECASE):
             return True
     return False
 
+# ===========================================================================
+#   FEATURE: VIDEO_DOWNLOAD
+# ---------------------------------------------------------------------------
+#   Downloads media using yt-dlp with progress tracking
+#   Supports video and audio-only modes
+#
+#   NOTE: Requires yt-dlp and ffmpeg installed
+# ===========================================================================
+
 
 async def download_with_ytdl(url, output_dir, audio_only=False, progress_callback=None):
     """Download media using yt-dlp.
-    
+
     Args:
         url: URL to download
         output_dir: Directory to save files
         audio_only: If True, extract audio only
         progress_callback: Optional callback for progress
-    
+
     Returns:
-        List of downloaded file paths
+        list: List of downloaded file paths
+
+    Process:
+        1. Import yt-dlp (optional dependency)
+        2. Configure options
+        3. Set audio-only options if needed
+        4. Add cookies if available
+        5. Download with progress hook
+        6. Return downloaded files
+
+    Note:
+        Returns empty list on failure
     """
     try:
         import yt_dlp
@@ -134,9 +175,31 @@ async def download_with_ytdl(url, output_dir, audio_only=False, progress_callbac
     
     return downloaded_files
 
+# ===========================================================================
+#   FEATURE: METADATA_EXTRACTION
+# ---------------------------------------------------------------------------
+#   Gets video info without downloading
+#   Used for preview before download
+# ===========================================================================
+
 
 async def get_video_info(url):
-    """Get video metadata without downloading."""
+    """Get video metadata without downloading.
+
+    Args:
+        url: Video URL
+
+    Returns:
+        dict: Video info (title, duration, uploader, etc.) or None
+
+    Fields:
+        - title: Video title
+        - duration: Duration in seconds
+        - uploader: Channel/creator name
+        - description: Video description
+        - thumbnail: Thumbnail URL
+        - filesize: File size in bytes
+    """
     try:
         import yt_dlp
     except ImportError:
@@ -163,3 +226,7 @@ async def get_video_info(url):
     except Exception as e:
         logger.error(f"Failed to get video info: {e}")
         return None
+
+# ===========================================================================
+#   END OF YTDL MODULE
+# ===========================================================================

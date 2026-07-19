@@ -1,26 +1,32 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TelegramDL - Advanced Telegram Downloader Bot
+============================================================================
+    PROJECT:  TelegramDL - Advanced Telegram Downloader Bot
+    AUTHOR:   Shinei Nouzen (Shineii86)
+    LICENSE:  MIT License (c) 2024-2026
+    REPO:     https://github.com/Shineii86/TelegramDL
+============================================================================
+    DESCRIPTION:
+        yt-dlp integration plugin. Downloads from YouTube, Instagram,
+        Facebook, TikTok, and 100+ other sites.
 
-Copyright (c) 2024-2026 Shinei Nouzen (Shineii86)
-Licensed under the MIT License
+    COMMANDS:
+        /dl <url>  — Download video from URL
+        /adl <url> — Download audio only from URL
 
-Author:    Shinei Nouzen
-GitHub:    https://github.com/Shineii86/TelegramDL
-Telegram:  https://t.me/Shineii86
-Email:     ikx7a@hotmail.com
-
-Description:
-    Advanced Telegram Restricted Content Downloader with Premium System,
-    yt-dlp Integration, File Splitting, Custom Bots & More.
-
-Framework:  Kurigram (Pyrogram Fork)
-
-Disclaimer:
-    This bot is for educational purposes only.
-    Use responsibly and respect Telegram's Terms of Service.
+    FEATURES:
+        FEATURE: YTDL_COMMAND
+        FEATURE: AUDIO_ONLY_COMMAND
+        FEATURE: FILE_SPLITTING
+        FEATURE: AUDIO_METADATA
+        FEATURE: CONCURRENT_LIMIT
+============================================================================
 """
+
+# ===========================================================================
+#   IMPORTS
+# ===========================================================================
 
 import os
 import asyncio
@@ -36,13 +42,63 @@ from config import OUTPUT_DIR, WAITING_TIME
 
 logger = logging.getLogger(__name__)
 
-# Track ongoing downloads per user
+# ===========================================================================
+#   GLOBAL STATE
+# ---------------------------------------------------------------------------
+#   ongoing_downloads: Track concurrent downloads per user
+#   NOTE: Prevents multiple simultaneous downloads per user
+# ===========================================================================
+
 ongoing_downloads = {}
+
+# ===========================================================================
+#   FEATURE: YTDL_COMMAND
+# ---------------------------------------------------------------------------
+#   /dl <url> — Download video from URL
+#   Supports 100+ sites via yt-dlp
+#
+#   Process:
+#   1. Validate URL
+#   2. Get video info
+#   3. Download with yt-dlp
+#   4. Split if >2GB
+#   5. Upload to user
+#   6. Cleanup
+#
+#   FEATURE: FILE_SPLITTING
+# ===========================================================================
 
 
 @bot.on_message(filters.command("dl") & filters.private)
 async def dl_cmd(client, message: Message):
-    """Download video/audio from YouTube, Instagram, Facebook, etc."""
+    """Handle /dl command for video downloads.
+
+    Args:
+        client: Bot client
+        message: User message with URL
+
+    Returns:
+        None
+
+    Usage:
+        /dl https://youtube.com/watch?v=xxx
+
+    Supported Sites:
+        YouTube, Instagram, Facebook, TikTok,
+        Twitter/X, Reddit, Vimeo, SoundCloud,
+        Twitch, and 100+ more sites
+
+    Process:
+        1. Check ban status
+        2. Check daily limit
+        3. Check concurrent download
+        4. Validate URL
+        5. Get video info
+        6. Download with yt-dlp
+        7. Split if >2GB
+        8. Upload to user
+        9. Increment usage
+    """
     user_id = message.from_user.id
 
     # Check ban
@@ -203,10 +259,39 @@ async def dl_cmd(client, message: Message):
         except:
             pass
 
+# ===========================================================================
+#   FEATURE: AUDIO_ONLY_COMMAND
+# ---------------------------------------------------------------------------
+#   /adl <url> — Download audio only as MP3 (320kbps)
+#   Embeds metadata (title, artist, album art)
+#
+#   FEATURE: AUDIO_METADATA
+# ===========================================================================
+
 
 @bot.on_message(filters.command("adl") & filters.private)
 async def adl_cmd(client, message: Message):
-    """Download audio only from URL."""
+    """Handle /adl command for audio downloads.
+
+    Args:
+        client: Bot client
+        message: User message with URL
+
+    Returns:
+        None
+
+    Usage:
+        /adl https://youtube.com/watch?v=xxx
+
+    Process:
+        1. Check ban/limit
+        2. Download audio only
+        3. Embed metadata
+        4. Upload as audio file
+
+    Note:
+        Downloads as MP3 320kbps with metadata
+    """
     user_id = message.from_user.id
 
     if await db.is_banned(user_id):
@@ -282,3 +367,7 @@ async def adl_cmd(client, message: Message):
             shutil.rmtree(output_dir, ignore_errors=True)
         except:
             pass
+
+# ===========================================================================
+#   END OF YTDL PLUGIN
+# ===========================================================================

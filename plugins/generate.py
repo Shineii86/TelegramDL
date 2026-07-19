@@ -1,26 +1,42 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TelegramDL - Advanced Telegram Downloader Bot
+============================================================================
+    PROJECT:  TelegramDL - Advanced Telegram Downloader Bot
+    AUTHOR:   Shinei Nouzen (Shineii86)
+    LICENSE:  MIT License (c) 2024-2026
+    REPO:     https://github.com/Shineii86/TelegramDL
+============================================================================
+    DESCRIPTION:
+        Core download logic. Handles single messages, batch downloads,
+        story downloads, link parsing, and content delivery.
 
-Copyright (c) 2024-2026 Shinei Nouzen (Shineii86)
-Licensed under the MIT License
+    LINK FORMATS:
+        t.me/username/1001-1010     — Batch range
+        t.me/username/123           — Single message
+        t.me/username/s/123         — Story
+        t.me/c/1234567890/123       — Private channel
+        t.me/b/botusername/123      — Bot chat
+        t.me/+invitehash            — Invite link
+        -1001234567890/123          — Numeric ID
 
-Author:    Shinei Nouzen
-GitHub:    https://github.com/Shineii86/TelegramDL
-Telegram:  https://t.me/Shineii86
-Email:     ikx7a@hotmail.com
-
-Description:
-    Advanced Telegram Restricted Content Downloader with Premium System,
-    yt-dlp Integration, File Splitting, Custom Bots & More.
-
-Framework:  Kurigram (Pyrogram Fork)
-
-Disclaimer:
-    This bot is for educational purposes only.
-    Use responsibly and respect Telegram's Terms of Service.
+    FEATURES:
+        FEATURE: LINK_PARSER
+        FEATURE: AUTH_CLIENT
+        FEATURE: AUTO_JOIN
+        FEATURE: DOWNLOAD_RETRY
+        FEATURE: FORWARD_MODE
+        FEATURE: SEND_WITH_METADATA
+        FEATURE: BATCH_DOWNLOAD
+        FEATURE: STORY_DOWNLOAD
+        FEATURE: DAILY_LIMITS
+        FEATURE: FILE_SIZE_CHECK
+============================================================================
 """
+
+# ===========================================================================
+#   IMPORTS
+# ===========================================================================
 
 import os
 import re
@@ -47,11 +63,39 @@ from config import (
 
 logger = logging.getLogger(__name__)
 
+# ===========================================================================
+#   GLOBAL STATE
+# ---------------------------------------------------------------------------
+#   IS_BATCH:     Dict tracking batch cancel flags per user
+#   USER_PROGRESS: Dict tracking progress trackers per user
+#
+#   NOTE: These are in-memory only, reset on bot restart
+# ===========================================================================
+
 IS_BATCH = {}
 USER_PROGRESS = {}
 
+# ===========================================================================
+#   FEATURE: MEDIA_TYPE_HELPERS
+# ---------------------------------------------------------------------------
+#   Helper functions for media type detection and folder organization
+# ===========================================================================
+
 
 def get_message_type(msg):
+    """Determine the type of media in a message.
+
+    Args:
+        msg: Telegram message object
+
+    Returns:
+        str: Media type (photo, video, document, audio, voice,
+             animation, sticker, text) or None
+
+    Note:
+        Used for routing files to correct folders and
+        determining file extensions
+    """
     if msg.media:
         if msg.media == MessageMediaType.PHOTO:
             return "photo"
@@ -73,6 +117,17 @@ def get_message_type(msg):
 
 
 def get_folder(msg_type):
+    """Get folder name for media type.
+
+    Args:
+        msg_type: Media type string
+
+    Returns:
+        str: Folder name (Photos, Videos, Audios, etc.)
+
+    Example:
+        get_folder("video") → "Videos"
+    """
     folders = {
         "photo": "Photos", "video": "Videos", "audio": "Audios",
         "voice": "Voice", "animation": "GIFs", "sticker": "Stickers",
@@ -82,6 +137,17 @@ def get_folder(msg_type):
 
 
 def get_ext(msg_type):
+    """Get file extension for media type.
+
+    Args:
+        msg_type: Media type string
+
+    Returns:
+        str: File extension (jpg, mp4, mp3, etc.)
+
+    Example:
+        get_ext("video") → "mp4"
+    """
     exts = {
         "photo": "jpg", "video": "mp4", "audio": "mp3",
         "voice": "ogg", "animation": "mp4", "document": "",
@@ -90,27 +156,61 @@ def get_ext(msg_type):
 
 
 def make_caption(msg, folder):
+    """Generate default caption for a message.
+
+    Args:
+        msg: Telegram message object
+        folder: Folder name (Photos, Videos, etc.)
+
+    Returns:
+        str: Formatted caption "Folder | YYYY-MM-DD | #msg_id"
+
+    Example:
+        make_caption(msg, "Videos") → "Videos | 2024-01-15 | #123"
+    """
     date_str = msg.date.strftime("%Y-%m-%d") if msg.date else "unknown"
     return f"{folder} | {date_str} | #{msg.id}"
 
+# ===========================================================================
+#   FEATURE: LINK_PARSER
+# ---------------------------------------------------------------------------
+#   Parses ALL Telegram link types into structured data.
+#   Returns tuple of (chat_username, msg_start, msg_end)
+#
+#   TIP: This is the most complex parser in the codebase.
+#        Handles 10+ different link formats.
+# ===========================================================================
+
 
 def parse_channel_username(link):
-    """Parse ALL Telegram link types to extract chat username and message IDs.
+    """Parse ALL Telegram link types to extract chat and message IDs.
 
-    Supported formats:
-    - t.me/username/1001-1010     → batch range
-    - t.me/username/123           → single message
-    - t.me/username/s/123         → story
-    - t.me/c/1234567890/123       → private channel msg
-    - t.me/c/1234567890           → private channel (no msg)
-    - t.me/b/botusername/123      → bot chat msg
-    - t.me/b/botusername          → bot chat (no msg)
-    - t.me/+invitehash            → invite link
-    - t.me/joinchat/invitehash    → invite link (old format)
-    - t.me/username               → channel/group/bot (no msg)
-    - username                    → plain username
-    - -1001234567890              → numeric chat ID
-    - -1001234567890/123          → numeric chat ID + msg
+    Args:
+        link: Telegram link, username, or numeric ID
+
+    Returns:
+        tuple: (chat_username, msg_start, msg_end)
+               - chat_username: str or int (chat identifier)
+               - msg_start: int or None (first message ID)
+               - msg_end: int or None (last message ID)
+
+    Supported Formats:
+        t.me/username/1001-1010     → batch range
+        t.me/username/123           → single message
+        t.me/username/s/123         → story
+        t.me/c/1234567890/123       → private channel msg
+        t.me/c/1234567890           → private channel (no msg)
+        t.me/b/botusername/123      → bot chat msg
+        t.me/b/botusername          → bot chat (no msg)
+        t.me/+invitehash            → invite link
+        t.me/joinchat/invitehash    → invite link (old)
+        t.me/username               → channel/group (no msg)
+        username                    → plain username
+        -1001234567890              → numeric chat ID
+        -1001234567890/123          → numeric chat ID + msg
+
+    Note:
+        Returns (link, None, None) as fallback for unrecognized formats
     """
     link = link.strip()
 
@@ -167,8 +267,35 @@ def parse_channel_username(link):
     # 9. Fallback - return as-is
     return link, None, None
 
+# ===========================================================================
+#   FEATURE: AUTH_CLIENT
+# ---------------------------------------------------------------------------
+#   Returns appropriate client for user based on authentication:
+#   1. Custom bot (if user set one)
+#   2. User session (if LOGIN_SYSTEM=true)
+#   3. Global user client (if LOGIN_SYSTEM=false)
+#
+#   TIP: Custom bots prevent bans on main bot token
+# ===========================================================================
+
 
 async def get_auth_client(user_id):
+    """Get authenticated client for user.
+
+    Args:
+        user_id: Telegram user ID
+
+    Returns:
+        Client: Authenticated Pyrogram client or None
+
+    Priority:
+        1. Custom bot (user's own bot token)
+        2. User session (per-user login)
+        3. Global user client (shared session)
+
+    Note:
+        Returns None if no authentication available
+    """
     # First try custom bot
     from plugins.custom_bot import get_user_bot
     custom_bot = await get_user_bot(user_id)
@@ -188,17 +315,59 @@ async def get_auth_client(user_id):
         await start_user_client()
         return user_client
 
+# ===========================================================================
+#   FEATURE: AUTO_JOIN
+# ---------------------------------------------------------------------------
+#   Automatically joins a channel when bot can't access it.
+#   Used as fallback before returning access errors.
+# ===========================================================================
+
 
 async def auto_join_channel(client, channel):
-    """Try to join a channel if access denied."""
+    """Try to join a channel if access denied.
+
+    Args:
+        client: Authenticated Pyrogram client
+        channel: Channel username or invite link
+
+    Returns:
+        bool: True if joined successfully, False otherwise
+
+    Note:
+        Silently fails on any error (join may not be possible)
+    """
     try:
         await client.join_chat(channel)
         return True
     except:
         return False
 
+# ===========================================================================
+#   FEATURE: DOWNLOAD_RETRY
+# ---------------------------------------------------------------------------
+#   Downloads file with automatic retry on FloodWait.
+#   Retries up to 3 times with exponential backoff.
+#
+#   NOTE: FloodWait is Telegram's rate limit signal
+# ===========================================================================
+
 
 async def download_with_retry(client, msg, dest):
+    """Download file with retry logic.
+
+    Args:
+        client: Pyrogram client
+        msg: Message to download
+        dest: Destination file path
+
+    Returns:
+        bool: True if download succeeded, False otherwise
+
+    Retry Logic:
+        - Up to 3 attempts
+        - FloodWait: Wait required time + 5s buffer
+        - Other errors: Wait 5s between retries
+    """
     for attempt in range(3):
         try:
             await client.download_media(msg, file_name=dest)
@@ -210,8 +379,31 @@ async def download_with_retry(client, msg, dest):
             await asyncio.sleep(5)
     return False
 
+# ===========================================================================
+#   FEATURE: FORWARD_MODE
+# ---------------------------------------------------------------------------
+#   Forwards messages directly (fastest method).
+#   No download/upload required, uses Telegram's internal transfer.
+#
+#   TIP: Always prefer forward mode when possible
+# ===========================================================================
+
 
 async def forward_single(client, dest_chat, msg):
+    """Forward a single message (fastest method).
+
+    Args:
+        client: Pyrogram client
+        dest_chat: Destination chat ID
+        msg: Message to forward
+
+    Returns:
+        bool: True if forwarded successfully, False otherwise
+
+    Note:
+        Forwarding is faster than download+upload because
+        Telegram handles the transfer internally
+    """
     for attempt in range(3):
         try:
             await client.forward_messages(dest_chat, msg.chat.id, msg.id)
@@ -222,9 +414,48 @@ async def forward_single(client, dest_chat, msg):
             return False
     return False
 
+# ===========================================================================
+#   FEATURE: SEND_WITH_METADATA
+# ---------------------------------------------------------------------------
+#   Sends file with all metadata preserved:
+#   - Thumbnail (custom or original)
+#   - Duration (for video/audio)
+#   - Dimensions (for video)
+#   - Caption entities (formatting)
+#   - Custom caption templates
+#
+#   FEATURE: CUSTOM_THUMBNAIL
+#   FEATURE: CUSTOM_CAPTION
+# ===========================================================================
+
 
 async def send_with_metadata(client, chat_id, file_path, caption, msg, caption_entities=None, user_id=None):
-    """Send file with metadata: thumbnail, duration, dimensions, caption entities."""
+    """Send file with metadata: thumbnail, duration, dimensions, caption.
+
+    Args:
+        client: Pyrogram client
+        chat_id: Destination chat ID
+        file_path: Path to file
+        caption: Message caption
+        msg: Original message (for metadata)
+        caption_entities: Original formatting entities
+        user_id: User ID for custom settings
+
+    Returns:
+        bool: True if sent successfully, False otherwise
+
+    Features:
+        - Custom thumbnail from database
+        - Custom caption with placeholders
+        - Auto-detect file type for correct send method
+        - Preserves video duration/dimensions
+        - Retries up to 3 times on FloodWait
+
+    Placeholders:
+        {filename} — Original filename
+        {size}     — File size (human readable)
+        {date}     — Upload date (YYYY-MM-DD)
+    """
     # Get custom thumbnail and caption from DB
     custom_thumb = None
     custom_caption = None
@@ -329,8 +560,52 @@ async def send_with_metadata(client, chat_id, file_path, caption, msg, caption_e
 
     return False
 
+# ===========================================================================
+#   FEATURE: HANDLE_SINGLE
+# ---------------------------------------------------------------------------
+#   Processes a single message download:
+#   1. Check file size limits
+#   2. Try forward mode (fastest)
+#   3. Fallback to download+upload
+#   4. Apply custom settings
+#   5. Forward to dump chat if set
+#   6. Cleanup local file
+#
+#   FEATURE: FILE_SIZE_CHECK
+#   FEATURE: DUMP_CHAT
+# ===========================================================================
+
 
 async def handle_single(client, acc, message, chat_id, msg_id, forward=False, progress=None):
+    """Handle download of a single message.
+
+    Args:
+        client: Bot client (for sending to user)
+        acc: Auth client (for accessing source)
+        message: User's original message
+        chat_id: Source chat ID
+        msg_id: Message ID to download
+        forward: Use forward mode (faster)
+        progress: Progress tracker (optional)
+
+    Returns:
+        None
+
+    Process:
+        1. Convert chat_id to int if numeric
+        2. Get message from source
+        3. Check file size against user's limit
+        4. Try forward mode if enabled
+        5. Download and upload with metadata
+        6. Increment daily usage
+        7. Forward to dump chat if set
+        8. Cleanup local file
+
+    Errors:
+        - FloodWait: Waits required time
+        - UserNotParticipant: Shows access denied
+        - ChannelPrivate: Shows access denied
+    """
     try:
         if isinstance(chat_id, str) and (chat_id.isdigit() or chat_id.startswith("-100")):
             chat_id = int(chat_id)
@@ -427,9 +702,27 @@ async def handle_single(client, acc, message, chat_id, msg_id, forward=False, pr
         if ERROR_MESSAGE:
             await client.send_message(message.chat.id, f"Error: {str(e)}")
 
+# ===========================================================================
+#   FEATURE: CANCEL_CALLBACK
+# ---------------------------------------------------------------------------
+#   Callback handler for cancel_download button
+# ===========================================================================
+
 
 @bot.on_callback_query(filters.regex("^cancel_download$"))
 async def cancel_callback(client, callback: CallbackQuery):
+    """Handle cancel download callback.
+
+    Args:
+        client: Bot client
+        callback: Callback query object
+
+    Returns:
+        None
+
+    Note:
+        Sets IS_BATCH flag to True to stop batch processing
+    """
     user_id = callback.from_user.id
     IS_BATCH[user_id] = True
     await callback.answer("Download cancelled!")
@@ -438,9 +731,41 @@ async def cancel_callback(client, callback: CallbackQuery):
         reply_markup=main_menu_keyboard()
     )
 
+# ===========================================================================
+#   FEATURE: BATCH_DOWNLOAD
+# ---------------------------------------------------------------------------
+#   /batch <channel_url> — Download all media from channel
+#   Processes message ID ranges with progress tracking
+#
+#   FEATURE: PROGRESS_BAR
+#   FEATURE: CANCEL_SUPPORT
+# ===========================================================================
+
 
 @bot.on_message(filters.command("batch") & filters.private)
 async def batch_cmd(client, message: Message):
+    """Handle /batch command for batch downloads.
+
+    Args:
+        client: Bot client
+        message: User message with channel URL
+
+    Returns:
+        None
+
+    Usage:
+        /batch https://t.me/username/1001-1010
+
+    Process:
+        1. Parse channel URL and message range
+        2. Get authenticated client
+        3. Create progress tracker
+        4. Process each message with delay
+        5. Show completion stats
+
+    Note:
+        Supports cancel via /cancel command or Stop button
+    """
     args = message.text.split(maxsplit=1)
     if len(args) < 2:
         await message.reply(
@@ -507,9 +832,46 @@ async def batch_cmd(client, message: Message):
         except:
             pass
 
+# ===========================================================================
+#   FEATURE: TEXT_MESSAGE_HANDLER
+# ---------------------------------------------------------------------------
+#   Handles all text messages that look like Telegram links.
+#   Auto-detects link type and routes to appropriate handler.
+#
+#   FEATURE: STORY_DOWNLOAD
+#   FEATURE: CHANNEL_INFO
+#   FEATURE: SINGLE_DOWNLOAD
+#   FEATURE: DAILY_LIMITS
+#   FEATURE: BAN_CHECK
+# ===========================================================================
+
 
 @bot.on_message(filters.text & filters.private, group=2)
 async def save(client, message: Message):
+    """Handle text messages that look like Telegram links.
+
+    Args:
+        client: Bot client
+        message: User text message
+
+    Returns:
+        None
+
+    Process:
+        1. Check if message looks like a link
+        2. Check if user is banned
+        3. Check daily limit
+        4. Parse link type
+        5. Route to appropriate handler:
+           - Story → story download
+           - No msg ID → channel info
+           - Has msg ID → single/batch download
+
+    Link Detection:
+        - Contains "t.me"
+        - Starts with "http"
+        - Matches numeric ID pattern (-100...)
+    """
     text = message.text.strip()
     user_id = message.from_user.id
 
@@ -801,3 +1163,7 @@ async def save(client, message: Message):
             await acc.stop()
         except:
             pass
+
+# ===========================================================================
+#   END OF GENERATE PLUGIN
+# ===========================================================================

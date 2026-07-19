@@ -1,32 +1,53 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TelegramDL - Advanced Telegram Downloader Bot
+============================================================================
+    PROJECT:  TelegramDL - Advanced Telegram Downloader Bot
+    AUTHOR:   Shinei Nouzen (Shineii86)
+    LICENSE:  MIT License (c) 2024-2026
+    REPO:     https://github.com/Shineii86/TelegramDL
+============================================================================
+    DESCRIPTION:
+        Media type detection and folder organization.
 
-Copyright (c) 2024-2026 Shinei Nouzen (Shineii86)
-Licensed under the MIT License
+    FUNCTIONS:
+        get_message_type — Detect media type
+        get_media_folder — Get folder for type
 
-Author:    Shinei Nouzen
-GitHub:    https://github.com/Shineii86/TelegramDL
-Telegram:  https://t.me/Shineii86
-Email:     ikx7a@hotmail.com
-
-Description:
-    Advanced Telegram Restricted Content Downloader with Premium System,
-    yt-dlp Integration, File Splitting, Custom Bots & More.
-
-Framework:  Kurigram (Pyrogram Fork)
-
-Disclaimer:
-    This bot is for educational purposes only.
-    Use responsibly and respect Telegram's Terms of Service.
+    FEATURES:
+        FEATURE: MEDIA_DETECTION
+        FEATURE: FOLDER_ORGANIZATION
+============================================================================
 """
+
+# ===========================================================================
+#   IMPORTS
+# ===========================================================================
 
 from pyrogram.enums import MessageMediaType
 
+# ===========================================================================
+#   FEATURE: MEDIA_DETECTION
+# ---------------------------------------------------------------------------
+#   Detects media type from Telegram message
+#   Used for routing files to correct folders
+# ===========================================================================
+
 
 def get_message_type(msg):
-    """Determine the type of media in a message."""
+    """Determine the type of media in a message.
+
+    Args:
+        msg: Telegram message object
+
+    Returns:
+        str: Media type (photo, video, document, audio,
+             voice, animation, sticker, text) or None
+
+    Example:
+        >>> get_message_type(msg)
+        "video"
+    """
     if msg.media:
         if msg.media == MessageMediaType.PHOTO:
             return "photo"
@@ -46,9 +67,27 @@ def get_message_type(msg):
         return "text"
     return None
 
+# ===========================================================================
+#   FEATURE: FOLDER_ORGANIZATION
+# ---------------------------------------------------------------------------
+#   Maps media types to folder names
+#   Used for organizing downloaded files
+# ===========================================================================
+
 
 def get_media_folder(msg_type):
-    """Get the folder name for a media type."""
+    """Get the folder name for a media type.
+
+    Args:
+        msg_type: Media type string
+
+    Returns:
+        str: Folder name (Photos, Videos, Audios, etc.)
+
+    Example:
+        >>> get_media_folder("video")
+        "Videos"
+    """
     folders = {
         "photo": "Photos",
         "video": "Videos",
@@ -60,3 +99,7 @@ def get_media_folder(msg_type):
         "text": "Text",
     }
     return folders.get(msg_type, "Other")
+
+# ===========================================================================
+#   END OF MEDIA MODULE
+# ===========================================================================

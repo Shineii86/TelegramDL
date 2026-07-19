@@ -1,26 +1,30 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TelegramDL - Advanced Telegram Downloader Bot
+============================================================================
+    PROJECT:  TelegramDL - Advanced Telegram Downloader Bot
+    AUTHOR:   Shinei Nouzen (Shineii86)
+    LICENSE:  MIT License (c) 2024-2026
+    REPO:     https://github.com/Shineii86/TelegramDL
+============================================================================
+    DESCRIPTION:
+        Channel backup plugin. Downloads all media from a channel
+        and re-uploads to a backup channel.
 
-Copyright (c) 2024-2026 Shinei Nouzen (Shineii86)
-Licensed under the MIT License
+    COMMANDS:
+        /backup <channel_url> — Backup channel to new channel
 
-Author:    Shinei Nouzen
-GitHub:    https://github.com/Shineii86/TelegramDL
-Telegram:  https://t.me/Shineii86
-Email:     ikx7a@hotmail.com
-
-Description:
-    Advanced Telegram Restricted Content Downloader with Premium System,
-    yt-dlp Integration, File Splitting, Custom Bots & More.
-
-Framework:  Kurigram (Pyrogram Fork)
-
-Disclaimer:
-    This bot is for educational purposes only.
-    Use responsibly and respect Telegram's Terms of Service.
+    FEATURES:
+        FEATURE: BACKUP_COMMAND
+        FEATURE: AUTO_CREATE_CHANNEL
+        FEATURE: CHECKPOINT_RESUME
+        FEATURE: PROGRESS_TRACKING
+============================================================================
 """
+
+# ===========================================================================
+#   IMPORTS
+# ===========================================================================
 
 import os
 import asyncio
@@ -41,8 +45,20 @@ from config import (
 
 logger = logging.getLogger(__name__)
 
+# ===========================================================================
+#   HELPER FUNCTIONS
+# ===========================================================================
+
 
 def get_folder(msg_type):
+    """Get folder name for media type.
+
+    Args:
+        msg_type: Media type string
+
+    Returns:
+        str: Folder name
+    """
     folders = {
         "photo": "Photos", "video": "Videos", "audio": "Audios",
         "voice": "Voice", "animation": "GIFs", "sticker": "Stickers",
@@ -52,6 +68,14 @@ def get_folder(msg_type):
 
 
 def get_ext(msg_type):
+    """Get file extension for media type.
+
+    Args:
+        msg_type: Media type string
+
+    Returns:
+        str: File extension
+    """
     exts = {
         "photo": "jpg", "video": "mp4", "audio": "mp3",
         "voice": "ogg", "animation": "mp4", "document": "",
@@ -60,6 +84,14 @@ def get_ext(msg_type):
 
 
 def get_media_type(msg):
+    """Determine media type of message.
+
+    Args:
+        msg: Telegram message
+
+    Returns:
+        str: Media type or None
+    """
     if msg.media == MessageMediaType.PHOTO:
         return "photo"
     elif msg.media == MessageMediaType.VIDEO:
@@ -78,11 +110,35 @@ def get_media_type(msg):
 
 
 def make_caption(msg, folder):
+    """Generate caption for backup message.
+
+    Args:
+        msg: Telegram message
+        folder: Folder name
+
+    Returns:
+        str: Formatted caption
+    """
     date_str = msg.date.strftime("%Y-%m-%d") if msg.date else "unknown"
     return f"{folder} | {date_str} | #{msg.id}"
 
+# ===========================================================================
+#   DOWNLOAD/SEND HELPERS
+# ===========================================================================
+
 
 async def download_file(client, msg, dest, user_id):
+    """Download file with retry logic.
+
+    Args:
+        client: Pyrogram client
+        msg: Message to download
+        dest: Destination path
+        user_id: User ID (unused, for consistency)
+
+    Returns:
+        bool: True if successful
+    """
     for attempt in range(3):
         try:
             await client.download_media(msg, file_name=dest)
@@ -96,6 +152,18 @@ async def download_file(client, msg, dest, user_id):
 
 
 async def send_file(client, chat_id, file_path, caption, msg):
+    """Send file with automatic type detection.
+
+    Args:
+        client: Pyrogram client
+        chat_id: Destination chat
+        file_path: Path to file
+        caption: Message caption
+        msg: Original message
+
+    Returns:
+        bool: True if successful
+    """
     for attempt in range(3):
         try:
             if file_path.endswith((".jpg", ".jpeg", ".png", ".webp")):
@@ -119,9 +187,49 @@ async def send_file(client, chat_id, file_path, caption, msg):
             await asyncio.sleep(5)
     return False
 
+# ===========================================================================
+#   FEATURE: BACKUP_COMMAND
+# ---------------------------------------------------------------------------
+#   /backup <channel_url> — Backup channel to new channel
+#
+#   Process:
+#   1. Get user session
+#   2. Resolve source channel
+#   3. Create/get backup channel
+#   4. Iterate through all messages
+#   5. Download and re-upload each media
+#   6. Save checkpoint every 50 files
+#
+#   FEATURE: AUTO_CREATE_CHANNEL
+#   FEATURE: CHECKPOINT_RESUME
+# ===========================================================================
+
 
 @bot.on_message(filters.command("backup") & filters.private)
 async def backup_cmd(client, message: Message):
+    """Handle /backup command.
+
+    Args:
+        client: Bot client
+        message: User message with channel URL
+
+    Returns:
+        None
+
+    Usage:
+        /backup https://t.me/username
+
+    Process:
+        1. Parse channel URL
+        2. Get user session for access
+        3. Create backup channel (or use existing)
+        4. Download all media with progress
+        5. Upload to backup channel
+        6. Save checkpoint for resume
+
+    Note:
+        Supports resume via checkpoint system
+    """
     user_id = message.from_user.id
     args = message.text.split(maxsplit=1)
 
@@ -282,3 +390,7 @@ async def backup_cmd(client, message: Message):
                 await acc.stop()
             except:
                 pass
+
+# ===========================================================================
+#   END OF BACKUP PLUGIN
+# ===========================================================================
