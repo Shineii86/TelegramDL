@@ -19,39 +19,19 @@ Version:    2.0.0
 Python:     3.10+
 Framework:  Kurigram (Pyrogram Fork)
 
+Features:
+    - Save Restricted Content (channels, groups, stories, bots)
+    - Two-Tier Access (bot token + user session)
+    - Premium System with Daily Limits
+    - yt-dlp Integration (YouTube, Instagram, 100+ sites)
+    - File Splitting (>2GB)
+    - Custom Thumbnails & Captions
+    - Audio Metadata Embedding
+    - Custom Bot per User
+    - Topic Group Support
+    - Modern UI with Inline Keyboards
+
 Disclaimer:
     This bot is for educational purposes only.
     Use responsibly and respect Telegram's Terms of Service.
 """
-
-from flask import Flask, render_template
-import os
-
-app = Flask(__name__)
-
-
-def detect_platform():
-    if os.environ.get("RENDER"):
-        return "Render"
-    if os.environ.get("HEROKU"):
-        return "Heroku"
-    if os.environ.get("KOYEB"):
-        return "Koyeb"
-    if os.path.exists("/app/.dockerenv"):
-        return "Docker"
-    return "VPS"
-
-
-@app.route("/")
-def home():
-    return render_template("welcome.html", platform=detect_platform())
-
-
-@app.route("/health")
-def health():
-    return "OK"
-
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
