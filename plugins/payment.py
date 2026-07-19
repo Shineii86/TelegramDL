@@ -20,13 +20,18 @@
         /reject <id>   — Reject payment (admin)
         /pending       — View pending payments (admin)
 
+    PAYMENT GATEWAYS:
+        FEATURE: USDT_BYBIT     — BSC/ERC20/TON networks
+        FEATURE: TONKEEPER      — TON/USDT via Tonkeeper
+        FEATURE: UPI_PHONEPE    — INR via PhonePe
+        FEATURE: TELEGRAM_STARS — Stars via Telegram
+
     FEATURES:
         FEATURE: PREMIUM_PLANS
         FEATURE: PAYMENT_REQUEST
         FEATURE: PAYMENT_METHODS
         FEATURE: PAYMENT_APPROVAL
         FEATURE: PAYMENT_HISTORY
-        FEATURE: AUTO_APPROVE
 ============================================================================
 """
 
@@ -83,29 +88,37 @@ PREMIUM_PLANS = {
 }
 
 PAYMENT_METHODS = {
+    "usdt_bybit": {
+        "name": "USDT (ByBit Exchange)",
+        "emoji": "💵",
+        "details": (
+            "**BSC (BEP20):**\n`0x326451334779ce498d79788aad283b5b2a7544ce`\n\n"
+            "**Ethereum (ERC20):**\n`0x326451334779ce498d79788aad283b5b2a7544ce`\n\n"
+            "**TON Network:**\n`EQDD8dqOzaj4zUK6ziJOo_G2lx6qf1TEktTRkFJ7T1c_fPQb`\n"
+            "**Tag/Memo:** `11180061`"
+        ),
+        "instructions": "Send USDT and screenshot + tx hash"
+    },
+    "tonkeeper": {
+        "name": "TON (Tonkeeper)",
+        "emoji": "🪙",
+        "details": (
+            "**TON Address:**\n`UQBmK_-2A-gHnhx0hmWdFeQc8X7iZ0O_UkxQbQGU2uA6OwmX`\n\n"
+            "**USDT Address:**\n`UQBmK_-2A-gHnhx0hmWdFeQc8X7iZ0O_UkxQbQGU2uA6OwmX`"
+        ),
+        "instructions": "Send TON/USDT and screenshot"
+    },
     "upi": {
-        "name": "UPI",
-        "emoji": "📱",
-        "details": "`telegramdl@upi`",
-        "instructions": "Send payment and screenshot"
+        "name": "INR PhonePe (UPI)",
+        "emoji": "🇮🇳",
+        "details": "**UPI ID:** DM at @shineii86",
+        "instructions": "Send payment screenshot via PhonePe"
     },
-    "paypal": {
-        "name": "PayPal",
-        "emoji": "💳",
-        "details": "`paypal.me/telegramdl`",
-        "instructions": "Send payment and screenshot"
-    },
-    "crypto": {
-        "name": "Crypto (USDT)",
-        "emoji": "₿",
-        "details": "`TN3Vj8qXxZQ1nH9pLmK4rT6wY2bS7dF8g`",
-        "instructions": "Send TRC20 USDT and transaction ID"
-    },
-    "bank": {
-        "name": "Bank Transfer",
-        "emoji": "🏦",
-        "details": "Contact admin for bank details",
-        "instructions": "Send receipt screenshot"
+    "stars": {
+        "name": "Telegram Stars",
+        "emoji": "⭐️",
+        "details": "**Send to:** @shineii86",
+        "instructions": "Send stars and screenshot"
     }
 }
 
@@ -254,16 +267,16 @@ async def pay_cmd(client, message: Message):
 
     for key, method in PAYMENT_METHODS.items():
         text += f"\n{method['emoji']} **{method['name']}**\n"
-        text += f"  Details: {method['details']}\n"
-        text += f"  {method['instructions']}\n"
+        text += f"{method['details']}\n"
+        text += f"_{method['instructions']}_\n"
 
-    text += f"\n**After payment, send screenshot to admin:**\n{ADMIN_CONTACT}"
+    text += f"\n**After payment, send proof to:**\n{ADMIN_CONTACT}"
 
     keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("📱 UPI", callback_data="pay_upi")],
-        [InlineKeyboardButton("💳 PayPal", callback_data="pay_paypal")],
-        [InlineKeyboardButton("₿ Crypto", callback_data="pay_crypto")],
-        [InlineKeyboardButton("🏦 Bank", callback_data="pay_bank")],
+        [InlineKeyboardButton("💵 USDT ByBit", callback_data="pay_usdt_bybit")],
+        [InlineKeyboardButton("🪙 TON Tonkeeper", callback_data="pay_tonkeeper")],
+        [InlineKeyboardButton("🇮🇳 UPI PhonePe", callback_data="pay_upi")],
+        [InlineKeyboardButton("⭐️ Telegram Stars", callback_data="pay_stars")],
         [InlineKeyboardButton("📸 Send Screenshot", callback_data="pay_screenshot")],
         [InlineKeyboardButton("🔙 Back", callback_data="menu_back")],
     ])
@@ -314,8 +327,8 @@ async def payment_cmd(client, message: Message):
     for key, method in PAYMENT_METHODS.items():
         text += (
             f"{method['emoji']} **{method['name']}**\n"
-            f"  Details: {method['details']}\n"
-            f"  {method['instructions']}\n\n"
+            f"{method['details']}\n"
+            f"_{method['instructions']}_\n\n"
         )
 
     text += (
@@ -570,8 +583,8 @@ async def payment_callbacks(client, callback: CallbackQuery):
         None
 
     Callbacks:
-        pay_now, pay_methods, pay_upi, pay_paypal,
-        pay_crypto, pay_bank, pay_screenshot
+        pay_now, pay_methods, pay_usdt_bybit, pay_tonkeeper,
+        pay_upi, pay_stars, pay_screenshot
     """
     data = callback.data
 
@@ -586,49 +599,51 @@ async def payment_callbacks(client, callback: CallbackQuery):
         text = "**💳 Payment Methods**\n\n"
         for key, method in PAYMENT_METHODS.items():
             text += f"{method['emoji']} **{method['name']}**\n"
-            text += f"  {method['details']}\n\n"
+            text += f"{method['details']}\n\n"
         await callback.message.edit_text(text)
+
+    elif data == "pay_usdt_bybit":
+        await callback.answer(
+            "💵 **USDT ByBit Exchange**\n\n"
+            "**BSC (BEP20):**\n`0x326451334779ce498d79788aad283b5b2a7544ce`\n\n"
+            "**Ethereum (ERC20):**\n`0x326451334779ce498d79788aad283b5b2a7544ce`\n\n"
+            "**TON Network:**\n`EQDD8dqOzaj4zUK6ziJOo_G2lx6qf1TEktTRkFJ7T1c_fPQb`\n"
+            "**Tag/Memo:** `11180061`\n\n"
+            "Send screenshot + tx hash to admin",
+            show_alert=True
+        )
+
+    elif data == "pay_tonkeeper":
+        await callback.answer(
+            "🪙 **TON Payment via Tonkeeper**\n\n"
+            "**Address:**\n`UQBmK_-2A-gHnhx0hmWdFeQc8X7iZ0O_UkxQbQGU2uA6OwmX`\n\n"
+            "Send TON/USDT and screenshot to admin",
+            show_alert=True
+        )
 
     elif data == "pay_upi":
         await callback.answer(
-            f"**📱 UPI Payment**\n\n"
-            f"Send to: `telegramdl@upi`\n"
-            f"Take screenshot and send to admin",
+            "🇮🇳 **PhonePe UPI**\n\n"
+            "**UPI ID:** DM at @shineii86\n\n"
+            "Send payment screenshot via PhonePe",
             show_alert=True
         )
 
-    elif data == "pay_paypal":
+    elif data == "pay_stars":
         await callback.answer(
-            f"**💳 PayPal Payment**\n\n"
-            f"Send to: `paypal.me/telegramdl`\n"
-            f"Take screenshot and send to admin",
-            show_alert=True
-        )
-
-    elif data == "pay_crypto":
-        await callback.answer(
-            f"**₿ Crypto Payment**\n\n"
-            f"Send USDT (TRC20) to:\n"
-            f"`TN3Vj8qXxZQ1nH9pLmK4rT6wY2bS7dF8g`\n"
-            f"Send transaction ID to admin",
-            show_alert=True
-        )
-
-    elif data == "pay_bank":
-        await callback.answer(
-            f"**🏦 Bank Transfer**\n\n"
-            f"Contact admin for bank details:\n"
-            f"{ADMIN_CONTACT}",
+            "⭐️ **Telegram Stars**\n\n"
+            "**Send to:** @shineii86\n\n"
+            "Send stars and screenshot to admin",
             show_alert=True
         )
 
     elif data == "pay_screenshot":
         await callback.message.edit_text(
-            "**📸 Send Payment Screenshot**\n\n"
+            "**📸 Send Payment Proof**\n\n"
             f"1. Take screenshot of payment\n"
             f"2. Send to admin: {ADMIN_CONTACT}\n"
             f"3. Include your user ID: `{callback.from_user.id}`\n\n"
-            f"**Or forward payment confirmation here**"
+            f"**Include:** Payment proof + Channel username/link for promotion"
         )
 
     await callback.answer()
