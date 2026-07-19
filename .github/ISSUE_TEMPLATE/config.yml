@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Documentation
+    url: https://github.com/Shineii86/TelegramDL#-overview
+    about: Check the README for documentation
+  - name: 💬 Telegram Support
+    url: https://t.me/Shineii86
+    about: Contact support on Telegram

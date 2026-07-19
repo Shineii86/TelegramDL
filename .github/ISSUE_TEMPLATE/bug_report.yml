@@ -1,0 +1,96 @@
+name: 🐛 Bug Report
+description: Report a bug or issue with TelegramDL
+title: "[BUG] "
+labels: ["bug", "triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! Please fill out the form below.
+
+        **Before submitting**, please:
+        - Check if the issue already exists in [Issues](https://github.com/Shineii86/TelegramDL/issues)
+        - Try the latest version of the bot
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: What version of TelegramDL are you using?
+      placeholder: "e.g., latest commit on main"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Deployment Platform
+      description: Where are you running the bot?
+      options:
+        - Google Colab
+        - Docker
+        - Heroku
+        - Render
+        - Koyeb
+        - VPS (Ubuntu/Debian)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear description of what the bug is.
+      placeholder: "What happened?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Send command '/start'
+        2. Click on 'Download'
+        3. Paste a link
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Logs
+      description: Paste any error messages or logs here.
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other context about the problem.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing issues
+          required: true
+        - label: I am using the latest version
+          required: true

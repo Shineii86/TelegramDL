@@ -1,0 +1,75 @@
+name: 🚀 Deployment Issue
+description: Issue with deploying or running the bot
+title: "[DEPLOY] "
+labels: ["deployment", "help wanted"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Having trouble deploying? Fill out the form below.
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      description: Which platform are you deploying on?
+      options:
+        - Google Colab
+        - Docker
+        - Docker Compose
+        - Heroku
+        - Render
+        - Koyeb
+        - VPS (Ubuntu/Debian)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue Description
+      description: What's happening during deployment?
+      placeholder: "Describe the problem..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Logs
+      description: Paste any error messages here.
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration
+      description: Share your config (hide sensitive values like API keys).
+      placeholder: |
+        API_ID: ****
+        BOT_TOKEN: ****
+        MONGO_DB: ****
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other details about your setup.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      options:
+        - label: I have read the README
+          required: true
+        - label: I have searched existing issues
+          required: true
