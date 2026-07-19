@@ -30,6 +30,14 @@
         /unban         — Unban user (admin)
         /add_premium   — Add premium (admin)
         /remove_premium — Remove premium (admin)
+        /ping          — Check bot latency
+        /info          — Show bot info & stats
+        /speedtest     — Test download speed
+        /quote         — Random motivational quote
+        /welcome       — Set welcome message (admin)
+        /view_welcome  — View welcome message (admin)
+        /del_welcome   — Delete welcome message (admin)
+        /antispan      — Toggle anti-spam (admin)
 
     SEE ALSO:
         plugins/payment.py — /premium, /pay, /payment, /history, /approve, /reject, /pending
@@ -41,6 +49,8 @@
     FEATURE: THUMBNAIL_COMMANDS
     FEATURE: CAPTION_COMMANDS
     FEATURE: ADMIN_COMMANDS
+    FEATURE: QUICK_WIN_COMMANDS
+    FEATURE: ADMIN_ADVANCED
     FEATURE: CALLBACK_HANDLERS
 ============================================================================
 """
@@ -585,6 +595,317 @@ async def remove_premium_cmd(client, message: Message):
         await message.reply(f"**✅ User {target_id} premium removed.**")
     except ValueError:
         await message.reply("Invalid user ID.")
+
+# ===========================================================================
+#   FEATURE: QUICK_WIN_COMMANDS
+# ---------------------------------------------------------------------------
+#   /ping      — Check bot latency
+#   /info      — Show bot info & stats
+#   /speedtest — Test download speed
+#   /quote     — Random motivational quote
+# ===========================================================================
+
+
+@bot.on_message(filters.command("ping") & filters.private)
+async def ping_cmd(client, message: Message):
+    """Check bot latency.
+
+    Args:
+        client: Bot client
+        message: User message
+
+    Returns:
+        None
+
+    Shows:
+        - Response time in ms
+        - Bot status
+    """
+    import time
+    start = time.time()
+    msg = await message.reply("**🏓 Pinging...**")
+    end = time.time()
+    latency = (end - start) * 1000
+    await msg.edit_text(
+        f"**🏓 Pong!**\n\n"
+        f"**Latency:** `{latency:.1f}ms`\n"
+        f"**Status:** 🟢 Online"
+    )
+
+
+@bot.on_message(filters.command("info") & filters.private)
+async def info_cmd(client, message: Message):
+    """Show bot information and statistics.
+
+    Args:
+        client: Bot client
+        message: User message
+
+    Returns:
+        None
+
+    Displays:
+        - Bot version
+        - Uptime
+        - Total users
+        - Premium users
+    """
+    from config import __version__
+    import time
+
+    uptime_seconds = int(time.time() - botStartTime)
+    hours, remainder = divmod(uptime_seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+
+    total_users = await db.total_users_count()
+
+    premium_count = 0
+    async for user in db.get_all_users():
+        if user.get("is_premium"):
+            premium_count += 1
+
+    await message.reply(
+        f"**🤖 TelegramDL Info**\n\n"
+        f"**Version:** `{__version__}`\n"
+        f"**Uptime:** `{hours}h {minutes}m {seconds}s`\n"
+        f"**Total Users:** `{total_users}`\n"
+        f"**Premium Users:** `{premium_count}`\n"
+        f"**Free Users:** `{total_users - premium_count}`\n\n"
+        f"**Framework:** Kurigram (Pyrogram Fork)\n"
+        f"**Python:** `3.10+`\n"
+        f"**License:** MIT"
+    )
+
+
+@bot.on_message(filters.command("speedtest") & filters.private)
+async def speedtest_cmd(client, message: Message):
+    """Test download speed from a sample file.
+
+    Args:
+        client: Bot client
+        message: User message
+
+    Returns:
+        None
+
+    Downloads a 10MB test file and shows speed
+    """
+    import time
+    import urllib.request
+
+    msg = await message.reply("**⚡ Speedtest starting...**")
+
+    test_url = "https://speed.cloudflare.com/__down?bytes=10485760"  # 10MB
+    start = time.time()
+
+    try:
+        req = urllib.request.Request(test_url, headers={"User-Agent": "TelegramDL"})
+        response = urllib.request.urlopen(req, timeout=30)
+        data = response.read()
+        end = time.time()
+
+        elapsed = end - start
+        speed = len(data) / elapsed / 1024 / 1024  # MB/s
+
+        await msg.edit_text(
+            f"**⚡ Speedtest Complete**\n\n"
+            f"**Download Speed:** `{speed:.2f} MB/s`\n"
+            f"**File Size:** `10 MB`\n"
+            f"**Time:** `{elapsed:.2f}s`"
+        )
+    except Exception as e:
+        await msg.edit_text(
+            f"**❌ Speedtest Failed**\n\n"
+            f"**Error:** `{str(e)}`"
+        )
+
+
+QUOTES = [
+    "💡 The only way to do great work is to love what you do.",
+    "🚀 Success is not final, failure is not fatal: it is the courage to continue that counts.",
+    "💪 Don't watch the clock; do what it does. Keep going.",
+    "🎯 Focus on being productive instead of busy.",
+    "🔥 The secret of getting ahead is getting started.",
+    "⭐ Don't be afraid to give up the good to go for the great.",
+    "💡 Innovation distinguishes between a leader and a follower.",
+    "🏆 Work hard in silence, let success make the noise.",
+    "💪 The future belongs to those who believe in the beauty of their dreams.",
+    "🌟 It always seems impossible until it's done."
+]
+
+
+@bot.on_message(filters.command("quote") & filters.private)
+async def quote_cmd(client, message: Message):
+    """Show a random motivational quote.
+
+    Args:
+        client: Bot client
+        message: User message
+
+    Returns:
+        None
+    """
+    import random
+    quote = random.choice(QUOTES)
+    await message.reply(quote)
+
+
+# Track bot start time
+import time as _time
+botStartTime = _time.time()
+
+# ===========================================================================
+#   FEATURE: ADMIN_ADVANCED
+# ---------------------------------------------------------------------------
+#   /welcome <text>  — Set custom welcome message
+#   /view_welcome    — View welcome message
+#   /del_welcome     — Delete welcome message
+#   /antispan on/off — Toggle anti-spam
+#
+#   NOTE: Only ADMINS from config can use these commands
+# ===========================================================================
+
+WELCOME_MESSAGES = {}
+
+
+@bot.on_message(filters.command("welcome") & filters.private)
+async def welcome_cmd(client, message: Message):
+    """Set custom welcome message for new users.
+
+    Args:
+        client: Bot client
+        message: Admin message with welcome text
+
+    Returns:
+        None
+
+    Admin Only: Yes
+
+    Usage:
+        /welcome Welcome to {name}! You are user #{count}.
+    """
+    if message.from_user.id not in ADMINS:
+        return
+    args = message.text.split(maxsplit=1)
+    if len(args) < 2:
+        await message.reply(
+            "**Usage:** `/welcome <text>`\n\n"
+            "**Placeholders:**\n"
+            "- `{name}` — User's first name\n"
+            "- `{count}` — Total user count\n"
+            "- `{id}` — User ID"
+        )
+        return
+
+    WELCOME_MESSAGES["default"] = args[1]
+    await message.reply(f"**✅ Welcome message set!**\n\nPreview:\n{args[1]}")
+
+
+@bot.on_message(filters.command("view_welcome") & filters.private)
+async def view_welcome_cmd(client, message: Message):
+    """View current welcome message.
+
+    Args:
+        client: Bot client
+        message: Admin message
+
+    Returns:
+        None
+
+    Admin Only: Yes
+    """
+    if message.from_user.id not in ADMINS:
+        return
+    welcome = WELCOME_MESSAGES.get("default")
+    if welcome:
+        await message.reply(f"**Current Welcome Message:**\n\n{welcome}")
+    else:
+        await message.reply("**No custom welcome message set.**\nUsing default.")
+
+
+@bot.on_message(filters.command("del_welcome") & filters.private)
+async def del_welcome_cmd(client, message: Message):
+    """Delete custom welcome message.
+
+    Args:
+        client: Bot client
+        message: Admin message
+
+    Returns:
+        None
+
+    Admin Only: Yes
+    """
+    if message.from_user.id not in ADMINS:
+        return
+    if "default" in WELCOME_MESSAGES:
+        del WELCOME_MESSAGES["default"]
+        await message.reply("**✅ Welcome message deleted.**")
+    else:
+        await message.reply("**No custom welcome message to delete.**")
+
+
+# Anti-spam tracking
+USER_ACTION_TIMES = {}
+ANTI_SPAM_ENABLED = True
+ANTI_SPAM_INTERVAL = 3  # seconds between actions
+
+
+@bot.on_message(filters.command("antispan") & filters.private)
+async def antispan_cmd(client, message: Message):
+    """Toggle anti-spam protection.
+
+    Args:
+        client: Bot client
+        message: Admin message with on/off
+
+    Returns:
+        None
+
+    Admin Only: Yes
+
+    Usage:
+        /antispan on
+        /antispan off
+    """
+    global ANTI_SPAM_ENABLED
+    if message.from_user.id not in ADMINS:
+        return
+    args = message.text.split(maxsplit=1)
+    if len(args) < 2 or args[1].strip().lower() not in ["on", "off"]:
+        await message.reply("**Usage:** `/antispan <on/off>`")
+        return
+
+    ANTI_SPAM_ENABLED = args[1].strip().lower() == "on"
+    status = "✅ Enabled" if ANTI_SPAM_ENABLED else "❌ Disabled"
+    await message.reply(f"**Anti-Spam:** {status}")
+
+
+def check_anti_spam(user_id: int) -> bool:
+    """Check if user is rate-limited.
+
+    Args:
+        user_id: Telegram user ID
+
+    Returns:
+        bool: True if OK, False if rate-limited
+
+    Note:
+        Only works when ANTI_SPAM_ENABLED is True
+    """
+    if not ANTI_SPAM_ENABLED:
+        return True
+    if user_id in ADMINS:
+        return True
+
+    now = _time.time()
+    last_action = USER_ACTION_TIMES.get(user_id, 0)
+
+    if now - last_action < ANTI_SPAM_INTERVAL:
+        return False
+
+    USER_ACTION_TIMES[user_id] = now
+    return True
 
 # ===========================================================================
 #   FEATURE: CALLBACK_HANDLERS

@@ -651,6 +651,15 @@ flowchart TD
 | `/pay <plan>` | Request premium subscription |
 | `/payment` | View payment methods |
 
+### Quick Commands
+
+| Command | Description |
+|---------|-------------|
+| `/ping` | Check bot latency |
+| `/info` | Show bot info & statistics |
+| `/speedtest` | Test download speed |
+| `/quote` | Random motivational quote |
+
 ### Admin Commands
 
 | Command | Description |
@@ -661,6 +670,10 @@ flowchart TD
 | `/add_premium <id> <days>` | Add premium to user |
 | `/remove_premium <id>` | Remove premium from user |
 | `/stats` | View bot statistics |
+| `/welcome <text>` | Set custom welcome message |
+| `/view_welcome` | View welcome message |
+| `/del_welcome` | Delete welcome message |
+| `/antispan <on/off>` | Toggle anti-spam protection |
 
 ### Inline Keyboard Navigation
 
