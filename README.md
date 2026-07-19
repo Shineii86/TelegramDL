@@ -208,19 +208,28 @@ TelegramDL/
 ├── gen_session.py            # Session string generator
 ├── TelegramDL.ipynb          # Main Colab notebook (4 cells)
 ├── Dockerfile                # Docker deployment
-├── Procfile                  # Heroku/Koyeb
+├── docker-compose.yml        # Docker Compose
+├── Procfile                  # Heroku worker
+├── heroku.yml                # Heroku container
+├── app.json                  # Heroku deploy button
 ├── runtime.txt               # Python version
+├── deploy.sh                 # VPS auto-deploy script
+├── templates/
+│   └── welcome.html          # Flask status page
 │
 ├── bot.py                    # Main entry - Bot + User client
 ├── config.py                 # Environment variable config
-├── app.py                    # Flask keep-alive (Docker)
+├── app.py                    # Flask keep-alive (Docker/VPS)
 │
 ├── plugins/
 │   ├── __init__.py
 │   ├── start.py              # /start, /help, /login, /logout, /cancel + callbacks
 │   ├── generate.py           # Core save/download logic
 │   ├── backup.py             # Backup command
-│   └── broadcast.py          # Admin broadcast
+│   ├── broadcast.py          # Admin broadcast
+│   ├── ytdl.py               # yt-dlp commands (/dl, /adl)
+│   ├── custom_bot.py         # Custom bot per user
+│   └── settings.py           # User settings
 │
 ├── database/
 │   ├── __init__.py
@@ -235,7 +244,10 @@ TelegramDL/
     ├── checkpoint.py         # Resume support
     ├── media.py              # Media type detection
     ├── filters.py            # Date/type filters
-    └── archive.py            # ZIP creation
+    ├── archive.py            # ZIP creation
+    ├── splitter.py           # File splitting >2GB
+    ├── ytdl.py               # yt-dlp wrapper
+    └── audio_metadata.py     # Audio metadata embedding
 ```
 
 ---
@@ -285,11 +297,139 @@ TelegramDL/
 # Get session string → copy to Step 2
 ```
 
-### Docker
+---
+
+## 🚀 Deployment
+
+### 📱 Google Colab (Easiest)
+
+[![Open in Colab](https://img.shields.io/badge/Google_Colab-F9AB00?style=for-the-badge&logo=googlecolab&logoColor=black)](https://colab.research.google.com/github/Shineii86/TelegramDL/blob/main/TelegramDL.ipynb)
+
+### 🐳 Docker
 
 ```bash
+# Build and run
 docker build -t telegramdl .
-docker run -e API_ID=xxx -e API_HASH=xxx -e BOT_TOKEN=xxx telegramdl
+docker run -d \
+  --name telegramdl \
+  -e API_ID=your_api_id \
+  -e API_HASH=your_api_hash \
+  -e BOT_TOKEN=your_bot_token \
+  -e MONGO_DB=your_mongodb_url \
+  -e OWNER_ID=your_user_id \
+  -e LOG_GROUP=-1001234567890 \
+  telegramdl
+```
+
+### 🐳 Docker Compose
+
+```bash
+# Create .env file first
+cp .env.example .env
+nano .env  # Fill in your credentials
+
+# Start
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop
+docker-compose down
+```
+
+### 🔶 Heroku
+
+**Method 1: Deploy Button**
+[![Deploy](https://img.shields.io/badge/Deploy-Heroku-430098?style=for-the-badge&logo=heroku&logoColor=white)](https://heroku.com/deploy)
+
+**Method 2: Container Registry**
+```bash
+# Login to Heroku
+heroku login
+heroku container:login
+
+# Create app
+heroku create your-app-name
+
+# Build and push
+heroku container:push worker --app your-app-name
+heroku container:release worker --app your-app-name
+
+# Set config
+heroku config:set API_ID=your_api_id API_HASH=your_api_hash BOT_TOKEN=your_bot_token --app your-app-name
+```
+
+**Method 3: Git Deploy**
+```bash
+# Clone and login
+git clone https://github.com/Shineii86/TelegramDL.git
+cd TelegramDL
+heroku create your-app-name
+
+# Set buildpack
+heroku buildpacks:set heroku/python
+
+# Deploy
+git push heroku main
+
+# Scale worker
+heroku ps:scale worker=1
+```
+
+### 🟣 Render
+
+1. Go to [render.com](https://render.com) → **New Web Service**
+2. Connect your GitHub repo
+3. Select **Docker** as build type
+4. Choose **Free** plan
+5. Add environment variables:
+   - `API_ID`, `API_HASH`, `BOT_TOKEN`, `MONGO_DB`, `OWNER_ID`, `LOG_GROUP`
+6. Click **Create Web Service**
+
+### 🔵 Koyeb
+
+1. Go to [koyeb.com](https://koyeb.com) → **Create New Service**
+2. Select **Dockerfile** as build type
+3. Connect your GitHub repo
+4. Add environment variables:
+   - `API_ID`, `API_HASH`, `BOT_TOKEN`, `MONGO_DB`, `OWNER_ID`, `LOG_GROUP`
+5. Click **Deploy**
+
+### 🖥️ VPS (Ubuntu/Debian)
+
+```bash
+# Install dependencies
+sudo apt update && sudo apt install -y python3 python3-pip python3-venv ffmpeg git
+
+# Clone repo
+git clone https://github.com/Shineii86/TelegramDL.git
+cd TelegramDL
+
+# Setup virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install Python packages
+pip install -r requirements.txt
+
+# Create .env file
+cp .env.example .env
+nano .env  # Fill in your credentials
+
+# Run with auto-restart (systemd)
+sudo bash deploy.sh
+
+# Or run manually
+python3 bot.py
+```
+
+**Run in background with screen:**
+```bash
+screen -S telegramdl
+python3 bot.py
+# Detach: Ctrl+A, then Ctrl+D
+# Re-attach: screen -r telegramdl
 ```
 
 ---

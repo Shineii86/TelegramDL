@@ -1,0 +1,89 @@
+{
+  "name": "TelegramDL",
+  "description": "Advanced Telegram Downloader Bot with Premium System, yt-dlp, File Splitting & More",
+  "logo": "https://raw.githubusercontent.com/Shineii86/TelegramDL/main/assets/logo.png",
+  "keywords": ["python3", "telegram", "telegram-bot", "kurigram", "downloader"],
+  "repository": "https://github.com/Shineii86/TelegramDL",
+  "success_url": "https://github.com/Shineii86/TelegramDL",
+  "env": {
+    "API_ID": {
+      "description": "Get this value from https://my.telegram.org",
+      "value": "",
+      "required": true
+    },
+    "API_HASH": {
+      "description": "Get this value from https://my.telegram.org",
+      "value": "",
+      "required": true
+    },
+    "BOT_TOKEN": {
+      "description": "Bot token from @BotFather",
+      "value": "",
+      "required": true
+    },
+    "MONGO_DB": {
+      "description": "MongoDB connection URL (https://cloud.mongodb.com)",
+      "value": "",
+      "required": true
+    },
+    "DB_NAME": {
+      "description": "Database name for MongoDB",
+      "value": "telegram_downloader",
+      "required": false
+    },
+    "OWNER_ID": {
+      "description": "Your Telegram user ID",
+      "value": "",
+      "required": true
+    },
+    "LOG_GROUP": {
+      "description": "Log channel/group ID (with -100 prefix)",
+      "value": "-1001234567890",
+      "required": true
+    },
+    "FORCE_SUB": {
+      "description": "Force subscribe channel ID (with -100 prefix)",
+      "value": "-1001234567890",
+      "required": false
+    },
+    "STRING": {
+      "description": "Optional Pyrogram session string for restricted content",
+      "value": "",
+      "required": false
+    },
+    "LOGIN_SYSTEM": {
+      "description": "Enable per-user login (True/False)",
+      "value": "True",
+      "required": false
+    },
+    "FREE_DAILY_LIMIT": {
+      "description": "Daily download limit for free users",
+      "value": "10",
+      "required": false
+    },
+    "FREE_MAX_FILE_SIZE_MB": {
+      "description": "Max file size for free users (MB)",
+      "value": "2000",
+      "required": false
+    },
+    "PREMIUM_MAX_FILE_SIZE_MB": {
+      "description": "Max file size for premium users (MB)",
+      "value": "4000",
+      "required": false
+    },
+    "ADMIN_CONTACT": {
+      "description": "Admin contact link",
+      "value": "https://t.me/username",
+      "required": true
+    },
+    "JOIN_LINK": {
+      "description": "Channel link shown on /start",
+      "value": "https://t.me/username",
+      "required": true
+    }
+  },
+  "buildpacks": [
+    { "url": "heroku/python" }
+  ],
+  "stack": "container"
+}

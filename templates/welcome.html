@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TelegramDL - Bot Status</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            border-radius: 20px;
+            box-shadow: 0 0 40px rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            max-width: 500px;
+            width: 90%;
+        }
+        .title {
+            font-size: 2.5em;
+            font-weight: bold;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf, #ff006e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glitch 2s infinite;
+            margin-bottom: 10px;
+        }
+        @keyframes glitch {
+            0%, 100% { text-shadow: 2px 2px #ff006e, -2px -2px #00d4ff; }
+            25% { text-shadow: -2px 2px #ff006e, 2px -2px #00d4ff; }
+            50% { text-shadow: 2px -2px #ff006e, -2px 2px #00d4ff; }
+            75% { text-shadow: -2px -2px #ff006e, 2px 2px #00d4ff; }
+        }
+        .status {
+            font-size: 1.2em;
+            color: #00ff88;
+            margin: 20px 0;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: #00ff88;
+            border-radius: 50%;
+            margin-right: 10px;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .info {
+            color: #888;
+            margin: 15px 0;
+            font-size: 0.9em;
+        }
+        .buttons {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 12px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 1em;
+        }
+        .btn-primary {
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            color: #fff;
+        }
+        .btn-secondary {
+            background: transparent;
+            color: #00d4ff;
+            border: 2px solid #00d4ff;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+        }
+        .features {
+            margin-top: 30px;
+            text-align: left;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+        .features h3 {
+            color: #00d4ff;
+            margin-bottom: 10px;
+        }
+        .features ul {
+            list-style: none;
+            color: #aaa;
+        }
+        .features li {
+            padding: 5px 0;
+        }
+        .features li::before {
+            content: "✓ ";
+            color: #00ff88;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">TelegramDL</div>
+        <p style="color: #aaa;">Advanced Telegram Downloader Bot</p>
+
+        <div class="status">
+            <span class="dot"></span> Bot is Live & Running
+        </div>
+
+        <div class="info">
+            Powered by Kurigram | Deployed on {{ platform }}
+        </div>
+
+        <div class="features">
+            <h3>Features</h3>
+            <ul>
+                <li>Save Restricted Content</li>
+                <li>yt-dlp Integration (YouTube, Instagram, 100+ sites)</li>
+                <li>Premium System with Daily Limits</li>
+                <li>File Splitting (>2GB)</li>
+                <li>Custom Thumbnails & Captions</li>
+                <li>Audio Metadata Embedding</li>
+            </ul>
+        </div>
+
+        <div class="buttons">
+            <a href="https://t.me/TelegramDLBot" class="btn btn-primary">Start Bot</a>
+            <a href="https://github.com/Shineii86/TelegramDL" class="btn btn-secondary">GitHub</a>
+        </div>
+    </div>
+</body>
+</html>
