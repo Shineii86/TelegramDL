@@ -94,6 +94,19 @@ TelegramDL is a **Telegram Restricted Content Downloader** that lets you downloa
 | 📝 **Caption Formatting** | Preserves bold, italic, links |
 | 💾 **Resume Support** | Checkpoint system for Colab disconnects |
 | 📢 **Broadcast** | Admin broadcast to all users |
+| 🎬 **yt-dlp Support** | YouTube, Instagram, Facebook, TikTok, 100+ sites |
+| ⭐ **Premium System** | Daily limits, file size limits, subscription plans |
+| 💳 **Payment Gateway** | UPI, PayPal, Crypto, Telegram Stars |
+| 🖼️ **Custom Thumbnails** | Per-user thumbnail storage |
+| 📝 **Custom Captions** | Placeholder support ({filename}, {size}, {date}) |
+| 📢 **Dump Chat** | Auto-forward downloads to channel |
+| 🚫 **Ban System** | Admin ban/unban users |
+| ✂️ **File Splitting** | Auto-split files >2GB |
+| 🎵 **Audio Metadata** | Embed title/artist/album art |
+| 🤖 **Custom Bot** | Per-user bot token support |
+| 🏷️ **Topic Groups** | Support for topic-based groups |
+| 📋 **Activity Logging** | Full logging to dedicated channel |
+| 🔐 **Auto-Join** | Automatically join channels when needed |
 
 ---
 
@@ -115,6 +128,8 @@ TelegramDL is a **Telegram Restricted Content Downloader** that lets you downloa
 | Stories | ✅ |
 | Groups | ✅ |
 | Bot Chats | ✅ |
+| yt-dlp Support | ✅ |
+| Auto-Join Channels | ✅ |
 
 </td>
 <td width="50%" valign="top">
@@ -128,6 +143,7 @@ TelegramDL is a **Telegram Restricted Content Downloader** that lets you downloa
 | Rate Limit Protection | ✅ |
 | Retry Logic (3x) | ✅ |
 | Cancel Button | ✅ |
+| Ban System | ✅ |
 
 </td>
 </tr>
@@ -155,12 +171,15 @@ TelegramDL is a **Telegram Restricted Content Downloader** that lets you downloa
 | Feature | Status |
 |---------|:------:|
 | Original Caption | ✅ |
+| Custom Captions | ✅ |
 | Caption Formatting | ✅ |
 | Thumbnail Preservation | ✅ |
-| Video Metadata | ✅ |
+| Custom Thumbnails | ✅ |
+| Audio Metadata | ✅ |
 | Date Filter | ✅ |
 | Type Filter | ✅ |
 | File Size Filter | ✅ |
+| File Splitting | ✅ |
 
 </td>
 </tr>
@@ -184,14 +203,51 @@ TelegramDL is a **Telegram Restricted Content Downloader** that lets you downloa
 </td>
 <td width="50%" valign="top">
 
+### ⭐ Premium Features
+
+| Feature | Status |
+|---------|:------:|
+| Premium System | ✅ |
+| Payment Gateway | ✅ |
+| Daily Limits | ✅ |
+| File Size Limits | ✅ |
+| Dump Chat | ✅ |
+| Custom Bot | ✅ |
+| Topic Groups | ✅ |
+| Activity Logging | ✅ |
+
+</td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
 ### 🔧 Admin Features
 
 | Feature | Status |
 |---------|:------:|
 | Broadcast | ✅ |
-| User Management | ✅ |
-| Auto-Cleanup | ✅ |
-| Error Handling | ✅ |
+| Ban/Unban Users | ✅ |
+| Add/Remove Premium | ✅ |
+| Bot Statistics | ✅ |
+| Payment Approval | ✅ |
+
+</td>
+<td width="50%" valign="top">
+
+### 🚀 Deployment
+
+| Platform | Status |
+|----------|:------:|
+| Google Colab | ✅ |
+| Docker | ✅ |
+| Docker Compose | ✅ |
+| Heroku | ✅ |
+| Render | ✅ |
+| Koyeb | ✅ |
+| VPS (systemd) | ✅ |
 
 </td>
 </tr>
