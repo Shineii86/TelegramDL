@@ -821,18 +821,45 @@ Only if LOGIN_SYSTEM=true. If false, set STRING_SESSION directly and skip DB_URI
 <tr>
 <td width="50%" valign="top">
 
-### 🛠️ Tools
+### 🛠️ Core Libraries
 - [Kurigram](https://github.com/KurimuzonAkuma/kurigram) — Pyrogram fork (Telegram client)
-- [Google Colab](https://colab.research.google.com) — Free GPU runtime
+- [TgCrypto](https://github.com/pyrogram/tgcrypto) — Crypto acceleration
 - [Motor](https://github.com/mongodb/motor) — Async MongoDB driver
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) — YouTube/media downloader
+- [Mutagen](https://github.com/quodlibet/mutagen) — Audio metadata
+- [aiofiles](https://github.com/Tinche/aiofiles) — Async file I/O
 
 </td>
+<td width="50%" valign="top">
+
+### 🌐 Web & Deployment
+- [Flask](https://flask.palletsprojects.com) — Keep-alive server
+- [Gunicorn](https://gunicorn.org) — WSGI HTTP Server
+- [Google Colab](https://colab.research.google.com) — Free GPU runtime
+- [Docker](https://www.docker.com) — Container platform
+- [Heroku](https://www.heroku.com) — Cloud PaaS
+- [Render](https://render.com) — Cloud PaaS
+
+</td>
+</tr>
+</table>
+
+<table>
+<tr>
 <td width="50%" valign="top">
 
 ### 📚 Resources
 - [Telegram API](https://core.telegram.org) — Official Telegram API
 - [my.telegram.org](https://my.telegram.org) — API credentials
-- [VJ-Save-Restricted-Content](https://github.com/VJBots/VJ-Save-Restricted-Content) — Inspiration
+- [Kurigram Docs](https://docs.kurimuzonakuma.dev) — API documentation
+
+</td>
+<td width="50%" valign="top">
+
+### 🙏 Inspiration
+- [VJ-Save-Restricted-Content](https://github.com/VJBots/VJ-Save-Restricted-Content) — Restricted content concept
+- [Cantarella](https://github.com/abhinai2244/Cantarella) — Bot architecture
+- [Save-Restricted-Content-Bot-v3](https://github.com/devgaganin/Save-Restricted-Content-Bot-v3) — Features reference
 
 </td>
 </tr>
