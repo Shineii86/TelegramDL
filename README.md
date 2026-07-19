@@ -858,7 +858,7 @@ Only if LOGIN_SYSTEM=true. If false, set STRING_SESSION directly and skip DB_URI
 
 ### 🙏 Inspiration
 - [VJ-Save-Restricted-Content](https://github.com/VJBots/VJ-Save-Restricted-Content) — Restricted content concept
-- [Cantarella](https://github.com/abhinai2244/Cantarella) — Bot architecture
+- [Save-Restricted-Content-Bot](https://github.com/abhinai2244/save-restricted-content-bot) — Bot architecture
 - [Save-Restricted-Content-Bot-v3](https://github.com/devgaganin/Save-Restricted-Content-Bot-v3) — Features reference
 
 </td>
