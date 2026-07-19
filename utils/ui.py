@@ -13,6 +13,13 @@ def main_menu_keyboard():
         ],
         [
             InlineKeyboardButton("⚙️ Settings", callback_data="menu_settings"),
+            InlineKeyboardButton("👤 My Plan", callback_data="menu_myplan"),
+        ],
+        [
+            InlineKeyboardButton("🖼 Thumbnail", callback_data="menu_thumbnail"),
+            InlineKeyboardButton("📝 Caption", callback_data="menu_caption"),
+        ],
+        [
             InlineKeyboardButton("❓ Help", callback_data="menu_help"),
         ],
     ])
@@ -63,11 +70,11 @@ def settings_keyboard():
         ],
         [
             InlineKeyboardButton("🏷 Type Filter", callback_data="set_type"),
-            InlineKeyboardButton("📝 Captions", callback_data="set_captions"),
+            InlineKeyboardButton("🔄 Forward Mode", callback_data="set_forward"),
         ],
         [
-            InlineKeyboardButton("🔄 Forward Mode", callback_data="set_forward"),
             InlineKeyboardButton("💾 Checkpoint", callback_data="set_checkpoint"),
+            InlineKeyboardButton("📢 Dump Chat", callback_data="set_dump"),
         ],
         [InlineKeyboardButton("🔙 Back", callback_data="menu_back")],
     ])
@@ -105,6 +112,35 @@ def settings_size_keyboard():
     ])
 
 
+def thumbnail_keyboard():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🖼 Set Thumbnail", callback_data="thumb_set")],
+        [
+            InlineKeyboardButton("👁 View Thumbnail", callback_data="thumb_view"),
+            InlineKeyboardButton("🗑 Delete Thumbnail", callback_data="thumb_delete"),
+        ],
+        [InlineKeyboardButton("🔙 Back", callback_data="menu_back")],
+    ])
+
+
+def caption_keyboard():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("📝 Set Caption", callback_data="caption_set")],
+        [
+            InlineKeyboardButton("👁 View Caption", callback_data="caption_view"),
+            InlineKeyboardButton("🗑 Delete Caption", callback_data="caption_delete"),
+        ],
+        [InlineKeyboardButton("🔙 Back", callback_data="menu_back")],
+    ])
+
+
+def myplan_keyboard():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("📊 My Stats", callback_data="plan_stats")],
+        [InlineKeyboardButton("🔙 Back", callback_data="menu_back")],
+    ])
+
+
 def confirm_keyboard(action, target_id=""):
     return InlineKeyboardMarkup([
         [
@@ -137,6 +173,10 @@ def help_keyboard():
             InlineKeyboardButton("🔐 Login", callback_data="help_login"),
         ],
         [
+            InlineKeyboardButton("🖼 Thumbnail", callback_data="help_thumbnail"),
+            InlineKeyboardButton("📝 Caption", callback_data="help_caption"),
+        ],
+        [
             InlineKeyboardButton("⚙️ Settings", callback_data="help_settings"),
             InlineKeyboardButton("🔗 Formats", callback_data="help_formats"),
         ],
@@ -157,6 +197,8 @@ def back_keyboard(target="menu_back"):
         [InlineKeyboardButton("🔙 Back", callback_data=target)],
     ])
 
+
+# ============ MESSAGES ============
 
 WELCOME_MSG = """
 **Welcome to TelegramDL Bot!**
@@ -189,7 +231,6 @@ Send any Telegram link or username to download.
 | Private Channel | `t.me/c/1234567890/123` | `t.me/c/123456/1` |
 | Bot Chat | `t.me/b/botusername/123` | `t.me/b/botfather/1` |
 | Invite Link | `t.me/+invitehash` | `t.me/+abc123` |
-| Join Chat | `t.me/joinchat/hash` | `t.me/joinchat/xyz` |
 | Group | `t.me/groupname/123` | `t.me/mygroup/1` |
 | Username Only | `username` | `durov` |
 | Numeric ID | `-1001234567890/123` | `-1001234567890/1` |
@@ -236,9 +277,41 @@ HELP_LOGIN = """
 
 **Steps:**
 1. Click Login button
-2. Enter API ID & Hash
-3. Enter phone number
-4. Enter OTP code
+2. Enter phone number
+3. Enter OTP code
+"""
+
+
+HELP_THUMBNAIL = """
+**🖼 Thumbnail Help**
+
+Set a custom thumbnail for your uploads.
+
+**Commands:**
+- `/set_thumb` — Reply to a photo to set as thumbnail
+- `/view_thumb` — View your current thumbnail
+- `/del_thumb` — Delete your thumbnail
+
+**Note:** Custom thumbnail is used for all your uploads. If not set, original thumbnail is used.
+"""
+
+
+HELP_CAPTION = """
+**📝 Caption Help**
+
+Set a custom caption for your uploads.
+
+**Commands:**
+- `/set_caption <text>` — Set custom caption
+- `/view_caption` — View your current caption
+- `/del_caption` — Delete your caption
+
+**Placeholders:**
+- `{filename}` — Original filename
+- `{size}` — File size
+- `{date}` — Upload date
+
+**Example:** `📁 {filename} | Size: {size} | Date: {date}`
 """
 
 
@@ -250,9 +323,9 @@ Adjust bot behavior:
 - **Delay** — Time between downloads (flood protection)
 - **File Size** — Max file size limit
 - **Type Filter** — Download only specific media
-- **Captions** — Enable/disable captions
 - **Forward Mode** — Use forwarding (faster)
 - **Checkpoint** — Save progress for resume
+- **Dump Chat** — Auto-forward downloads to a channel
 """
 
 
@@ -274,7 +347,7 @@ HELP_FORMATS = """
 - `-1001234567890/123` — Numeric group ID
 
 **Bots:**
-- `t.me/b/botusername/123` — Bot chat (use Plus Messenger to get ID)
+- `t.me/b/botusername/123` — Bot chat
 - `t.me/b/botusername` — Bot chat (no specific message)
 - `t.me/botusername` — Bot link
 
@@ -293,9 +366,24 @@ SETTINGS_INFO = """
 **Delay:** {delay}s between downloads
 **File Size:** {size}MB max
 **Type Filter:** {type_filter}
-**Captions:** {captions}
 **Forward Mode:** {forward}
 **Checkpoint:** {checkpoint}
+**Dump Chat:** {dump_chat}
+"""
+
+
+MYPLAN_INFO = """
+**👤 My Plan**
+
+**Status:** {plan_type}
+**Expiry:** {expiry}
+
+**Daily Usage:** {daily_used}/{daily_limit}
+**Total Saves:** {total_saves}
+
+**Limits:**
+- Free: {daily_limit} downloads/day, {free_size}MB max
+- Premium: Unlimited downloads, {premium_size}MB max
 """
 
 
@@ -304,8 +392,8 @@ PROGRESS_MSG = """
 
 `[{bar}]` **{percent}%**
 
-**Total:** {total}
-**Done:** {done}
+**Speed:** {speed}/s
+**Done:** {done}/{total}
 **Failed:** {failed}
 **Remaining:** {remaining}
 
@@ -334,4 +422,41 @@ BACKUP_COMPLETE = """
 **Failed:** {failed}
 **Total:** {total}
 **Time:** {time}
+"""
+
+
+THUMBNAIL_SET = """
+**🖼 Thumbnail Updated!**
+
+Your custom thumbnail has been set.
+All future uploads will use this thumbnail.
+"""
+
+
+THUMBNAIL_DELETED = """
+**🗑 Thumbnail Deleted!**
+
+Your custom thumbnail has been removed.
+Original thumbnails will be used.
+"""
+
+
+CAPTION_SET = """
+**📝 Caption Updated!**
+
+Your custom caption has been set.
+**Preview:** {caption}
+
+**Placeholders:**
+- `{{filename}}` — Original filename
+- `{{size}}` — File size
+- `{{date}}` — Upload date
+"""
+
+
+CAPTION_DELETED = """
+**🗑 Caption Deleted!**
+
+Your custom caption has been removed.
+Original captions will be used.
 """

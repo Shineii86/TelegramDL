@@ -1,14 +1,22 @@
+from datetime import datetime
 from pyrogram import filters
 from pyrogram.types import Message, CallbackQuery
 from bot import bot
 from database.db import db
-from config import LOGIN_SYSTEM, WAITING_TIME, MAX_FILE_SIZE_MB, TYPE_FILTER, CAPTION_ENABLED, FORWARD_MODE, USE_CHECKPOINT
+from config import (
+    LOGIN_SYSTEM, WAITING_TIME, MAX_FILE_SIZE_MB, TYPE_FILTER,
+    CAPTION_ENABLED, FORWARD_MODE, USE_CHECKPOINT,
+    FREE_DAILY_LIMIT, FREE_MAX_FILE_SIZE_MB, PREMIUM_MAX_FILE_SIZE_MB, ADMINS
+)
 from utils.ui import (
     main_menu_keyboard, download_keyboard, backup_keyboard, batch_keyboard,
     settings_keyboard, settings_delay_keyboard, settings_size_keyboard,
+    thumbnail_keyboard, caption_keyboard, myplan_keyboard,
     login_keyboard, help_keyboard, back_keyboard,
     WELCOME_MSG, HELP_DOWNLOAD, HELP_BACKUP, HELP_BATCH, HELP_LOGIN,
-    HELP_SETTINGS, HELP_FORMATS, SETTINGS_INFO
+    HELP_THUMBNAIL, HELP_CAPTION, HELP_SETTINGS, HELP_FORMATS,
+    SETTINGS_INFO, MYPLAN_INFO, THUMBNAIL_SET, THUMBNAIL_DELETED,
+    CAPTION_SET, CAPTION_DELETED
 )
 
 
@@ -30,13 +38,14 @@ async def help_cmd(client, message: Message):
 
 @bot.on_message(filters.command("settings") & filters.private)
 async def settings_cmd(client, message: Message):
+    dump_chat = await db.get_dump_chat(message.from_user.id)
     text = SETTINGS_INFO.format(
         delay=WAITING_TIME,
         size=MAX_FILE_SIZE_MB,
         type_filter=TYPE_FILTER,
-        captions="ON" if CAPTION_ENABLED else "OFF",
         forward="ON" if FORWARD_MODE else "OFF",
         checkpoint="ON" if USE_CHECKPOINT else "OFF",
+        dump_chat=dump_chat or "Not set",
     )
     await message.reply(text, reply_markup=settings_keyboard())
 
@@ -76,6 +85,171 @@ async def cancel_cmd(client, message: Message):
     await message.reply("**Download cancelled.**")
 
 
+@bot.on_message(filters.command("myplan") & filters.private)
+async def myplan_cmd(client, message: Message):
+    user_id = message.from_user.id
+    is_premium = await db.is_premium(user_id)
+    daily_usage = await db.get_daily_usage(user_id)
+    total_saves = await db.get_total_saves(user_id)
+    premium_info = await db.get_premium_info(user_id)
+
+    if is_premium:
+        plan_type = "⭐ Premium"
+        expiry = premium_info.get("expiry") if premium_info else None
+        if isinstance(expiry, datetime):
+            expiry = expiry.strftime("%Y-%m-%d %H:%M")
+        elif isinstance(expiry, str):
+            expiry = expiry.split(" ")[0]
+        else:
+            expiry = "Never"
+    else:
+        plan_type = "🆓 Free"
+        expiry = "N/A"
+
+    text = MYPLAN_INFO.format(
+        plan_type=plan_type,
+        expiry=expiry,
+        daily_used=daily_usage,
+        daily_limit="∞" if is_premium else FREE_DAILY_LIMIT,
+        total_saves=total_saves,
+        free_size=FREE_MAX_FILE_SIZE_MB,
+        premium_size=PREMIUM_MAX_FILE_SIZE_MB,
+    )
+    await message.reply(text, reply_markup=myplan_keyboard())
+
+
+# ============ THUMBNAIL COMMANDS ============
+
+@bot.on_message(filters.command("set_thumb") & filters.private)
+async def set_thumb_cmd(client, message: Message):
+    if not message.reply_to_message or not message.reply_to_message.photo:
+        await message.reply("**Reply to a photo** to set as your thumbnail.")
+        return
+    file_id = message.reply_to_message.photo.file_id
+    await db.set_thumbnail(message.from_user.id, file_id)
+    await message.reply(THUMBNAIL_SET)
+
+
+@bot.on_message(filters.command("view_thumb") & filters.private)
+async def view_thumb_cmd(client, message: Message):
+    file_id = await db.get_thumbnail(message.from_user.id)
+    if file_id:
+        await message.reply_photo(file_id, caption="**Your current thumbnail:**")
+    else:
+        await message.reply("No custom thumbnail set.")
+
+
+@bot.on_message(filters.command("del_thumb") & filters.private)
+async def del_thumb_cmd(client, message: Message):
+    await db.delete_thumbnail(message.from_user.id)
+    await message.reply(THUMBNAIL_DELETED)
+
+
+# ============ CAPTION COMMANDS ============
+
+@bot.on_message(filters.command("set_caption") & filters.private)
+async def set_caption_cmd(client, message: Message):
+    args = message.text.split(maxsplit=1)
+    if len(args) < 2:
+        await message.reply(
+            "**Usage:** `/set_caption <text>`\n\n"
+            "**Placeholders:**\n"
+            "- `{filename}` — Original filename\n"
+            "- `{size}` — File size\n"
+            "- `{date}` — Upload date"
+        )
+        return
+    caption = args[1]
+    await db.set_caption(message.from_user.id, caption)
+    await message.reply(CAPTION_SET.format(caption=caption))
+
+
+@bot.on_message(filters.command("view_caption") & filters.private)
+async def view_caption_cmd(client, message: Message):
+    caption = await db.get_caption(message.from_user.id)
+    if caption:
+        await message.reply(f"**Your current caption:**\n\n`{caption}`")
+    else:
+        await message.reply("No custom caption set.")
+
+
+@bot.on_message(filters.command("del_caption") & filters.private)
+async def del_caption_cmd(client, message: Message):
+    await db.delete_caption(message.from_user.id)
+    await message.reply(CAPTION_DELETED)
+
+
+# ============ ADMIN COMMANDS ============
+
+@bot.on_message(filters.command("ban") & filters.private)
+async def ban_cmd(client, message: Message):
+    if message.from_user.id not in ADMINS:
+        return
+    args = message.text.split(maxsplit=1)
+    if len(args) < 2:
+        await message.reply("**Usage:** `/ban <user_id>`")
+        return
+    try:
+        target_id = int(args[1])
+        await db.ban_user(target_id)
+        await message.reply(f"**✅ User {target_id} banned.**")
+    except ValueError:
+        await message.reply("Invalid user ID.")
+
+
+@bot.on_message(filters.command("unban") & filters.private)
+async def unban_cmd(client, message: Message):
+    if message.from_user.id not in ADMINS:
+        return
+    args = message.text.split(maxsplit=1)
+    if len(args) < 2:
+        await message.reply("**Usage:** `/unban <user_id>`")
+        return
+    try:
+        target_id = int(args[1])
+        await db.unban_user(target_id)
+        await message.reply(f"**✅ User {target_id} unbanned.**")
+    except ValueError:
+        await message.reply("Invalid user ID.")
+
+
+@bot.on_message(filters.command("add_premium") & filters.private)
+async def add_premium_cmd(client, message: Message):
+    if message.from_user.id not in ADMINS:
+        return
+    args = message.text.split(maxsplit=1)
+    if len(args) < 2:
+        await message.reply("**Usage:** `/add_premium <user_id> <days>`")
+        return
+    parts = args[1].split()
+    if len(parts) < 2:
+        await message.reply("**Usage:** `/add_premium <user_id> <days>`")
+        return
+    try:
+        target_id = int(parts[0])
+        days = int(parts[1])
+        await db.add_premium(target_id, days)
+        await message.reply(f"**✅ User {target_id} premium added for {days} days.**")
+    except ValueError:
+        await message.reply("Invalid user ID or days.")
+
+
+@bot.on_message(filters.command("remove_premium") & filters.private)
+async def remove_premium_cmd(client, message: Message):
+    if message.from_user.id not in ADMINS:
+        return
+    args = message.text.split(maxsplit=1)
+    if len(args) < 2:
+        await message.reply("**Usage:** `/remove_premium <user_id>`")
+        return
+    try:
+        target_id = int(args[1])
+        await db.remove_premium(target_id)
+        await message.reply(f"**✅ User {target_id} premium removed.**")
+    except ValueError:
+        await message.reply("Invalid user ID.")
+
+
 # ============ CALLBACK HANDLERS ============
 
 @bot.on_callback_query(filters.regex("^menu_"))
@@ -113,15 +287,59 @@ async def menu_callbacks(client, callback: CallbackQuery):
         )
 
     elif data == "menu_settings":
+        dump_chat = await db.get_dump_chat(callback.from_user.id)
         text = SETTINGS_INFO.format(
             delay=WAITING_TIME,
             size=MAX_FILE_SIZE_MB,
             type_filter=TYPE_FILTER,
-            captions="ON" if CAPTION_ENABLED else "OFF",
             forward="ON" if FORWARD_MODE else "OFF",
             checkpoint="ON" if USE_CHECKPOINT else "OFF",
+            dump_chat=dump_chat or "Not set",
         )
         await callback.message.edit_text(text, reply_markup=settings_keyboard())
+
+    elif data == "menu_myplan":
+        user_id = callback.from_user.id
+        is_premium = await db.is_premium(user_id)
+        daily_usage = await db.get_daily_usage(user_id)
+        total_saves = await db.get_total_saves(user_id)
+        premium_info = await db.get_premium_info(user_id)
+
+        if is_premium:
+            plan_type = "⭐ Premium"
+            expiry = premium_info.get("expiry") if premium_info else None
+            if isinstance(expiry, datetime):
+                expiry = expiry.strftime("%Y-%m-%d %H:%M")
+            elif isinstance(expiry, str):
+                expiry = expiry.split(" ")[0]
+            else:
+                expiry = "Never"
+        else:
+            plan_type = "🆓 Free"
+            expiry = "N/A"
+
+        text = MYPLAN_INFO.format(
+            plan_type=plan_type,
+            expiry=expiry,
+            daily_used=daily_usage,
+            daily_limit="∞" if is_premium else FREE_DAILY_LIMIT,
+            total_saves=total_saves,
+            free_size=FREE_MAX_FILE_SIZE_MB,
+            premium_size=PREMIUM_MAX_FILE_SIZE_MB,
+        )
+        await callback.message.edit_text(text, reply_markup=myplan_keyboard())
+
+    elif data == "menu_thumbnail":
+        await callback.message.edit_text(
+            "**🖼 Thumbnail Settings**\n\nManage your custom thumbnail:",
+            reply_markup=thumbnail_keyboard()
+        )
+
+    elif data == "menu_caption":
+        await callback.message.edit_text(
+            "**📝 Caption Settings**\n\nManage your custom caption:",
+            reply_markup=caption_keyboard()
+        )
 
     elif data == "menu_help":
         await callback.message.edit_text("**❓ Help Menu**\n\nChoose a topic:", reply_markup=help_keyboard())
@@ -203,14 +421,19 @@ async def settings_callbacks(client, callback: CallbackQuery):
     elif data == "set_type":
         await callback.answer("Send /batch <link> to download", show_alert=True)
 
-    elif data == "set_captions":
-        await callback.answer("Captions: ON", show_alert=True)
-
     elif data == "set_forward":
         await callback.answer("Forward mode: ON", show_alert=True)
 
     elif data == "set_checkpoint":
         await callback.answer("Checkpoint: ON", show_alert=True)
+
+    elif data == "set_dump":
+        await callback.message.edit_text(
+            "**📢 Dump Chat**\n\n"
+            "Send me a chat ID to auto-forward all downloads.\n"
+            "Send /cancel to clear dump chat.",
+        )
+        await callback.answer()
 
 
 @bot.on_callback_query(filters.regex("^delay_"))
@@ -237,6 +460,92 @@ async def size_callbacks(client, callback: CallbackQuery):
     )
 
 
+@bot.on_callback_query(filters.regex("^thumb_"))
+async def thumbnail_callbacks(client, callback: CallbackQuery):
+    data = callback.data
+
+    if data == "thumb_set":
+        await callback.message.edit_text(
+            "**🖼 Set Thumbnail**\n\n"
+            "Reply to a photo with `/set_thumb` to set it as your thumbnail.",
+            reply_markup=back_keyboard("menu_thumbnail")
+        )
+
+    elif data == "thumb_view":
+        file_id = await db.get_thumbnail(callback.from_user.id)
+        if file_id:
+            await callback.message.delete()
+            await client.send_photo(callback.from_user.id, file_id, caption="**Your thumbnail:**")
+        else:
+            await callback.answer("No thumbnail set!", show_alert=True)
+        return
+
+    elif data == "thumb_delete":
+        await db.delete_thumbnail(callback.from_user.id)
+        await callback.message.edit_text(
+            THUMBNAIL_DELETED,
+            reply_markup=back_keyboard("menu_thumbnail")
+        )
+
+    await callback.answer()
+
+
+@bot.on_callback_query(filters.regex("^caption_"))
+async def caption_callbacks(client, callback: CallbackQuery):
+    data = callback.data
+
+    if data == "caption_set":
+        await callback.message.edit_text(
+            "**📝 Set Caption**\n\n"
+            "Send me your caption text.\n\n"
+            "**Placeholders:**\n"
+            "- `{filename}` — Original filename\n"
+            "- `{size}` — File size\n"
+            "- `{date}` — Upload date\n\n"
+            "**Example:** `📁 {filename} | Size: {size}`",
+            reply_markup=back_keyboard("menu_caption")
+        )
+
+    elif data == "caption_view":
+        caption = await db.get_caption(callback.from_user.id)
+        if caption:
+            await callback.answer(f"Caption: {caption}", show_alert=True)
+        else:
+            await callback.answer("No caption set!", show_alert=True)
+        return
+
+    elif data == "caption_delete":
+        await db.delete_caption(callback.from_user.id)
+        await callback.message.edit_text(
+            CAPTION_DELETED,
+            reply_markup=back_keyboard("menu_caption")
+        )
+
+    await callback.answer()
+
+
+@bot.on_callback_query(filters.regex("^plan_"))
+async def plan_callbacks(client, callback: CallbackQuery):
+    data = callback.data
+
+    if data == "plan_stats":
+        user_id = callback.from_user.id
+        is_premium = await db.is_premium(user_id)
+        daily_usage = await db.get_daily_usage(user_id)
+        total_saves = await db.get_total_saves(user_id)
+
+        stats = (
+            f"**📊 Your Stats**\n\n"
+            f"**Today:** {daily_usage} downloads\n"
+            f"**Total:** {total_saves} saves\n"
+            f"**Plan:** {'Premium' if is_premium else 'Free'}"
+        )
+        await callback.answer(stats, show_alert=True)
+        return
+
+    await callback.answer()
+
+
 @bot.on_callback_query(filters.regex("^help_"))
 async def help_callbacks(client, callback: CallbackQuery):
     data = callback.data
@@ -249,6 +558,10 @@ async def help_callbacks(client, callback: CallbackQuery):
         await callback.message.edit_text(HELP_BATCH, reply_markup=back_keyboard("menu_help"))
     elif data == "help_login":
         await callback.message.edit_text(HELP_LOGIN, reply_markup=back_keyboard("menu_help"))
+    elif data == "help_thumbnail":
+        await callback.message.edit_text(HELP_THUMBNAIL, reply_markup=back_keyboard("menu_help"))
+    elif data == "help_caption":
+        await callback.message.edit_text(HELP_CAPTION, reply_markup=back_keyboard("menu_help"))
     elif data == "help_settings":
         await callback.message.edit_text(HELP_SETTINGS, reply_markup=back_keyboard("menu_help"))
     elif data == "help_formats":
@@ -264,8 +577,8 @@ async def login_callbacks(client, callback: CallbackQuery):
     if data == "login_start":
         await callback.message.edit_text(
             "**🔐 Login Process**\n\n"
-            "Send your **API ID** (from my.telegram.org)\n"
-            "Or send /skip to use bot's API ID."
+            "Send your **phone number** (with country code)\n"
+            "Example: `+1234567890`"
         )
 
     await callback.answer()

@@ -35,6 +35,11 @@ BACKUP_CHANNEL = environ.get("BACKUP_CHANNEL", "")
 CAPTION_ENABLED = environ.get("CAPTION_ENABLED", "true").lower() == "true"
 KEEP_ORIGINAL_CAPTION = environ.get("KEEP_ORIGINAL_CAPTION", "true").lower() == "true"
 
+# Premium settings
+FREE_DAILY_LIMIT = int(environ.get("FREE_DAILY_LIMIT", "10"))
+FREE_MAX_FILE_SIZE_MB = int(environ.get("FREE_MAX_FILE_SIZE_MB", "2048"))
+PREMIUM_MAX_FILE_SIZE_MB = int(environ.get("PREMIUM_MAX_FILE_SIZE_MB", "4096"))
+
 # Colab settings
 KEEP_ALIVE = environ.get("KEEP_ALIVE", "true").lower() == "true"
 KEEP_ALIVE_INTERVAL = int(environ.get("KEEP_ALIVE_INTERVAL", "30"))

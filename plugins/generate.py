@@ -17,7 +17,8 @@ from utils.ui import stop_keyboard, main_menu_keyboard
 from config import (
     API_ID, API_HASH, LOGIN_SYSTEM, OUTPUT_DIR,
     WAITING_TIME, ERROR_MESSAGE, CHANNEL_ID, MAX_FILE_SIZE_MB,
-    KEEP_ORIGINAL_CAPTION
+    KEEP_ORIGINAL_CAPTION, FREE_MAX_FILE_SIZE_MB, PREMIUM_MAX_FILE_SIZE_MB,
+    FREE_DAILY_LIMIT
 )
 
 logger = logging.getLogger(__name__)
@@ -182,21 +183,43 @@ async def forward_single(client, dest_chat, msg):
     return False
 
 
-async def send_with_metadata(client, chat_id, file_path, caption, msg, caption_entities=None):
+async def send_with_metadata(client, chat_id, file_path, caption, msg, caption_entities=None, user_id=None):
     """Send file with metadata: thumbnail, duration, dimensions, caption entities."""
+    # Get custom thumbnail and caption from DB
+    custom_thumb = None
+    custom_caption = None
+    if user_id:
+        custom_thumb = await db.get_thumbnail(user_id)
+        custom_caption = await db.get_caption(user_id)
+
     for attempt in range(3):
         try:
-            # Download thumbnail if available
-            thumb = None
-            try:
-                if msg.media == MessageMediaType.VIDEO and msg.video.thumbs:
-                    thumb = await client.download_media(msg.video.thumbs[0].file_id)
-                elif msg.media == MessageMediaType.DOCUMENT and msg.document.thumbs:
-                    thumb = await client.download_media(msg.document.thumbs[0].file_id)
-                elif msg.media == MessageMediaType.AUDIO and msg.audio.thumbs:
-                    thumb = await client.download_media(msg.audio.thumbs[0].file_id)
-            except:
-                thumb = None
+            # Use custom thumbnail or original
+            thumb = custom_thumb
+            if not thumb:
+                try:
+                    if msg.media == MessageMediaType.VIDEO and msg.video.thumbs:
+                        thumb = await client.download_media(msg.video.thumbs[0].file_id)
+                    elif msg.media == MessageMediaType.DOCUMENT and msg.document.thumbs:
+                        thumb = await client.download_media(msg.document.thumbs[0].file_id)
+                    elif msg.media == MessageMediaType.AUDIO and msg.audio.thumbs:
+                        thumb = await client.download_media(msg.audio.thumbs[0].file_id)
+                except:
+                    thumb = None
+
+            # Apply custom caption if set
+            if custom_caption:
+                import os as _os
+                from datetime import datetime as _dt
+                file_name = _os.path.basename(file_path)
+                file_size = _os.path.getsize(file_path)
+                size_str = f"{file_size / 1024 / 1024:.1f}MB" if file_size > 1024*1024 else f"{file_size / 1024:.1f}KB"
+                date_str = _dt.now().strftime("%Y-%m-%d")
+                caption = custom_caption.format(
+                    filename=file_name,
+                    size=size_str,
+                    date=date_str
+                )
 
             if file_path.endswith((".jpg", ".jpeg", ".png", ".webp")):
                 await client.send_photo(
@@ -250,8 +273,8 @@ async def send_with_metadata(client, chat_id, file_path, caption, msg, caption_e
                     thumb=thumb
                 )
 
-            # Cleanup thumbnail
-            if thumb and os.path.exists(thumb):
+            # Cleanup thumbnail (only if not custom)
+            if thumb and not custom_thumb and isinstance(thumb, str) and os.path.exists(thumb):
                 try:
                     os.remove(thumb)
                 except:
@@ -264,12 +287,6 @@ async def send_with_metadata(client, chat_id, file_path, caption, msg, caption_e
             logger.error(f"Send failed (attempt {attempt+1}): {e}")
             await asyncio.sleep(5)
 
-    # Cleanup thumbnail on failure
-    if thumb and os.path.exists(thumb):
-        try:
-            os.remove(thumb)
-        except:
-            pass
     return False
 
 
@@ -288,13 +305,18 @@ async def handle_single(client, acc, message, chat_id, msg_id, forward=False, pr
                 await client.send_message(message.chat.id, msg.text)
             return
 
-        # Check file size
+        # Check file size based on premium status
+        user_id = message.from_user.id
+        is_user_premium = await db.is_premium(user_id)
+        max_size = PREMIUM_MAX_FILE_SIZE_MB if is_user_premium else FREE_MAX_FILE_SIZE_MB
+
         media_obj = getattr(msg, msg.media.value, None) if msg.media else None
         if media_obj and hasattr(media_obj, 'file_size'):
-            if media_obj.file_size > MAX_FILE_SIZE_MB * 1024 * 1024:
+            if media_obj.file_size > max_size * 1024 * 1024:
                 await client.send_message(
                     message.chat.id,
-                    f"Skipped #{msg_id}: too large ({media_obj.file_size / 1024 / 1024:.1f}MB)"
+                    f"Skipped #{msg_id}: too large ({media_obj.file_size / 1024 / 1024:.1f}MB)\n"
+                    f"Limit: {max_size}MB ({'Premium' if is_user_premium else 'Free'})"
                 )
                 return
 
@@ -308,6 +330,14 @@ async def handle_single(client, acc, message, chat_id, msg_id, forward=False, pr
         if forward:
             forwarded = await forward_single(client, message.chat.id, msg)
             if forwarded:
+                await db.increment_daily_usage(user_id)
+                # Dump chat forwarding
+                dump_chat = await db.get_dump_chat(user_id)
+                if dump_chat:
+                    try:
+                        await client.forward_messages(dump_chat, msg.chat.id, msg.id)
+                    except:
+                        pass
                 return
 
         # Download + upload fallback
@@ -324,7 +354,20 @@ async def handle_single(client, acc, message, chat_id, msg_id, forward=False, pr
 
         caption = msg.caption if (KEEP_ORIGINAL_CAPTION and msg.caption) else make_caption(msg, folder)
         caption_entities = msg.caption_entities if msg.caption_entities else None
-        sent = await send_with_metadata(client, message.chat.id, file_path, caption, msg, caption_entities)
+        sent = await send_with_metadata(client, message.chat.id, file_path, caption, msg, caption_entities, user_id=user_id)
+
+        # Increment daily usage
+        if sent:
+            await db.increment_daily_usage(user_id)
+
+        # Dump chat forwarding
+        if sent:
+            dump_chat = await db.get_dump_chat(user_id)
+            if dump_chat:
+                try:
+                    await send_with_metadata(client, dump_chat, file_path, caption, msg, caption_entities, user_id=user_id)
+                except:
+                    pass
 
         try:
             os.remove(file_path)
@@ -440,6 +483,23 @@ async def save(client, message: Message):
 
     if not is_link:
         return
+
+    # Check if user is banned
+    if await db.is_banned(user_id):
+        await message.reply("**❌ You are banned** from using this bot.")
+        return
+
+    # Check daily limit
+    if not await db.check_daily_limit(user_id):
+        is_premium = await db.is_premium(user_id)
+        if not is_premium:
+            await message.reply(
+                f"**📊 Daily Limit Reached**\n\n"
+                f"You've used all {FREE_DAILY_LIMIT} free downloads today.\n"
+                f"Wait 24 hours or ask admin for premium.",
+                reply_markup=main_menu_keyboard()
+            )
+            return
 
     # Clear any stale batch cancel flag
     IS_BATCH.pop(user_id, None)
