@@ -23,6 +23,7 @@
 
 import os
 import logging
+import asyncio
 import warnings
 warnings.filterwarnings("ignore", message="coroutine.*was never awaited")
 from pyrogram import Client
@@ -144,7 +145,25 @@ def main():
     """
     os.makedirs("downloads", exist_ok=True)
     logger.info(f"Starting TelegramDL v{__version__}...")
-    bot.run()
+    
+    async def _run():
+        await start_user_client()
+        await bot.start()
+        logger.info("Bot is running!")
+        await asyncio.Event().wait()  # Run forever
+    
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            # Colab / nest_asyncio — schedule as a task
+            task = loop.create_task(_run())
+            loop.run_until_complete(task)
+        else:
+            loop.run_until_complete(_run())
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(_run())
 
 
 # ===========================================================================
