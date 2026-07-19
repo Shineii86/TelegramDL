@@ -232,6 +232,8 @@ TelegramDL/
 │   ├── generate.py           # Core save/download logic
 │   ├── backup.py             # Backup command
 │   ├── broadcast.py          # Admin broadcast
+│   ├── payment.py            # Premium plans & payments
+│   ├── logger.py             # Full activity logging
 │   ├── ytdl.py               # yt-dlp commands (/dl, /adl)
 │   ├── custom_bot.py         # Custom bot per user
 │   └── settings.py           # User settings
@@ -320,9 +322,10 @@ docker run -d \
   -e API_ID=your_api_id \
   -e API_HASH=your_api_hash \
   -e BOT_TOKEN=your_bot_token \
-  -e MONGO_DB=your_mongodb_url \
-  -e OWNER_ID=your_user_id \
-  -e LOG_GROUP=-1001234567890 \
+  -e DB_URI=your_mongodb_uri \
+  -e ADMINS=your_user_id \
+  -e CHANNEL_ID=-1001234567890 \
+  -e LOG_CHANNEL=-1001234567890 \
   telegramdl
 ```
 
@@ -389,7 +392,7 @@ heroku ps:scale worker=1
 3. Select **Docker** as build type
 4. Choose **Free** plan
 5. Add environment variables:
-   - `API_ID`, `API_HASH`, `BOT_TOKEN`, `MONGO_DB`, `OWNER_ID`, `LOG_GROUP`
+   - `API_ID`, `API_HASH`, `BOT_TOKEN`, `DB_URI`, `ADMINS`, `CHANNEL_ID`, `LOG_CHANNEL`
 6. Click **Create Web Service**
 
 ### 🔵 Koyeb
@@ -398,7 +401,7 @@ heroku ps:scale worker=1
 2. Select **Dockerfile** as build type
 3. Connect your GitHub repo
 4. Add environment variables:
-   - `API_ID`, `API_HASH`, `BOT_TOKEN`, `MONGO_DB`, `OWNER_ID`, `LOG_GROUP`
+   - `API_ID`, `API_HASH`, `BOT_TOKEN`, `DB_URI`, `ADMINS`, `CHANNEL_ID`, `LOG_CHANNEL`
 5. Click **Deploy**
 
 ### 🖥️ VPS (Ubuntu/Debian)
@@ -443,30 +446,79 @@ python3 bot.py
 
 ### Environment Variables
 
+#### Required
+
+| Variable | Description |
+|----------|-------------|
+| `API_ID` | Telegram API ID (from my.telegram.org) |
+| `API_HASH` | Telegram API Hash (from my.telegram.org) |
+| `BOT_TOKEN` | Bot token from @BotFather |
+
+#### Database
+
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `API_ID` | — | Telegram API ID (from my.telegram.org) |
-| `API_HASH` | — | Telegram API Hash (from my.telegram.org) |
-| `BOT_TOKEN` | — | Bot token from @BotFather |
-| `STRING_SESSION` | — | User session string (for restricted content) |
-| `LOGIN_SYSTEM` | `true` | Per-user login vs global session |
-| `DB_URI` | — | MongoDB URI (if LOGIN_SYSTEM=true) |
+| `DB_URI` | — | MongoDB URI (required if LOGIN_SYSTEM=true) |
 | `DB_NAME` | `telegramdl` | MongoDB database name |
-| `ADMINS` | — | Admin user ID (for broadcast) |
+
+#### Admin
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ADMINS` | — | Admin user IDs (comma-separated) |
 | `CHANNEL_ID` | — | Auto-upload channel ID |
+| `LOG_CHANNEL` | — | Activity logging channel ID |
+| `ADMIN_CONTACT` | `@Shineii86` | Admin contact for support |
+
+#### Bot Settings
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `LOGIN_SYSTEM` | `true` | Per-user login vs global session |
+| `STRING_SESSION` | — | User session string (if LOGIN_SYSTEM=false) |
 | `WAITING_TIME` | `10` | Seconds between messages |
 | `ERROR_MESSAGE` | `true` | Show error messages |
+
+#### Download Settings
+
+| Variable | Default | Description |
+|----------|---------|-------------|
 | `OUTPUT_DIR` | `./downloads` | Download directory |
 | `MAX_FILE_SIZE_MB` | `2048` | Skip files larger than this |
 | `TYPE_FILTER` | `all` | `all`, `photo`, `video`, `audio` |
-| `CAPTION_ENABLED` | `true` | Add captions to uploads |
-| `KEEP_ORIGINAL_CAPTION` | `true` | Preserve source caption |
+| `PARALLEL_DOWNLOADS` | `3` | Max concurrent downloads |
+
+#### Premium Settings
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `FREE_DAILY_LIMIT` | `10` | Max downloads per day (free) |
+| `FREE_MAX_FILE_SIZE_MB` | `2048` | Max file size for free users |
+| `PREMIUM_MAX_FILE_SIZE_MB` | `4096` | Max file size for premium users |
+
+#### Backup Settings
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `BACKUP_TO_TELEGRAM` | `true` | Enable auto-backup |
 | `FORWARD_MODE` | `true` | Use forwarding (faster) |
 | `BACKUP_CHANNEL` | — | Custom backup channel |
+
+#### Caption Settings
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CAPTION_ENABLED` | `true` | Add captions to uploads |
+| `KEEP_ORIGINAL_CAPTION` | `true` | Preserve source caption |
+
+#### Keep-Alive & Session
+
+| Variable | Default | Description |
+|----------|---------|-------------|
 | `KEEP_ALIVE` | `true` | Prevent idle timeout |
 | `KEEP_ALIVE_INTERVAL` | `30` | Keep-alive ping interval (min) |
-| `SESSION_LIMIT_HOURS` | `12` | Colab session limit |
 | `USE_CHECKPOINT` | `true` | Save progress for resume |
+| `SESSION_LIMIT_HOURS` | `12` | Colab session limit |
 
 ---
 
@@ -517,6 +569,8 @@ flowchart TD
 
 ## 🤖 Bot Commands
 
+### User Commands
+
 | Command | Description |
 |---------|-------------|
 | `/start` | Start the bot, show main menu |
@@ -524,10 +578,33 @@ flowchart TD
 | `/settings` | View/adjust bot settings |
 | `/login` | Login with your phone number |
 | `/logout` | Logout from your session |
-| `/batch <url>` | Batch download from channel |
-| `/backup <url>` | Backup channel to backup channel |
 | `/cancel` | Cancel ongoing download |
-| `/broadcast` | Admin: broadcast to all users |
+| `/myplan` | View current plan & usage |
+| `/set_thumb` | Set custom thumbnail |
+| `/view_thumb` | View thumbnail |
+| `/del_thumb` | Delete thumbnail |
+| `/set_caption` | Set custom caption |
+| `/view_caption` | View caption |
+| `/del_caption` | Delete caption |
+
+### Premium Commands
+
+| Command | Description |
+|---------|-------------|
+| `/premium` | View premium plans |
+| `/pay <plan>` | Request premium subscription |
+| `/payment` | View payment methods |
+
+### Admin Commands
+
+| Command | Description |
+|---------|-------------|
+| `/broadcast` | Broadcast to all users |
+| `/ban <user_id>` | Ban user |
+| `/unban <user_id>` | Unban user |
+| `/add_premium <id> <days>` | Add premium to user |
+| `/remove_premium <id>` | Remove premium from user |
+| `/stats` | View bot statistics |
 
 ### Inline Keyboard Navigation
 
