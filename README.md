@@ -664,17 +664,39 @@ flowchart TD
 
 ### Inline Keyboard Navigation
 
-```
-Main Menu:
-📥 Download    ☁️ Backup
-📦 Batch       🔐 Login
-⚙️ Settings    ❓ Help
+```mermaid
+graph TB
+    subgraph MAIN["🏠 Main Menu"]
+        DL["📥 Download"]
+        BK["☁️ Backup"]
+        BT["📦 Batch"]
+        LG["🔐 Login"]
+        ST["⚙️ Settings"]
+        HP["❓ Help"]
+    end
 
-Settings Menu:
-⏱ Delay       📏 File Size
-🏷 Type Filter  📝 Captions
-🔄 Forward     💾 Checkpoint
-       🔙 Back
+    subgraph SETTINGS["⚙️ Settings Menu"]
+        SD["⏱ Delay"]
+        SZ["📏 File Size"]
+        TF["🏷 Type Filter"]
+        CP["📝 Captions"]
+        FM["🔄 Forward"]
+        CK["💾 Checkpoint"]
+        BACK["🔙 Back"]
+    end
+
+    DL --> SETTINGS
+    ST --> SETTINGS
+    BACK --> MAIN
+
+    style MAIN fill:#1a1a2e,stroke:#e94560,color:#fff
+    style SETTINGS fill:#16213e,stroke:#0f3460,color:#fff
+    style DL fill:#27ae60,stroke:#2ecc71,color:#fff
+    style BK fill:#3498db,stroke:#2980b9,color:#fff
+    style BT fill:#9b59b6,stroke:#8e44ad,color:#fff
+    style LG fill:#f39c12,stroke:#f1c40f,color:#fff
+    style ST fill:#e74c3c,stroke:#c0392b,color:#fff
+    style HP fill:#1abc9c,stroke:#16a085,color:#fff
 ```
 
 ---
