@@ -1,4 +1,4 @@
-# Changelog
+# 📋 Changelog
 
 All notable changes to TelegramDL will be documented in this file.
 
@@ -7,149 +7,119 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2.6.0] - 2026-07-18
+## [2.0.0] - 2026-01-19
 
-### Added
-- Story support — download Telegram stories: `t.me/username/s/123`
-- Story format pattern matcher added to parser
+### 🚀 Major Release
 
----
+Complete rewrite from Telethon to Kurigram with premium features.
 
-## [2.5.0] - 2026-07-18
+### ✨ Added
 
-### Added
-- Thumbnail preservation — downloads and re-uploads thumbnails for documents, videos, audio
-- Caption entities preservation — preserves bold, italic, code, links, etc. in captions
-- Video metadata — duration, width, height preserved on upload
-- Audio metadata — duration preserved on upload
-- Broadcast command (`/broadcast`) — admin broadcast to all registered users
-- Broadcast progress tracking — shows success/blocked/deleted counts
-- Auto-cleanup of blocked/deactivated users from database
-- UsernameNotOccupied error handling — clear message for non-existent usernames
-- UsernameInvalid error handling — clear message for invalid usernames
-- Session validation on login — checks if user already has active session
-- Already logged in detection — prevents duplicate login attempts
+#### Core Features
+- **Premium System** — Daily limits, file size limits, subscription management
+- **Payment Integration** — UPI, PayPal, Crypto, Telegram Stars
+- **Custom Thumbnails** — Per-user thumbnail storage
+- **Custom Captions** — Placeholder support ({filename}, {size}, {date})
+- **Dump Chat** — Auto-forward downloads to channel
+- **Ban System** — Admin ban/unban users
+- **File Splitting** — Auto-split files >2GB
+- **yt-dlp Integration** — YouTube, Instagram, Facebook, TikTok support
+- **Audio Metadata** — Embed title/artist/album art
+- **Custom Bot** — Per-user bot token support
+- **Topic Group** — Support for topic-based groups
+- **Logging** — Full activity logging to channel
 
-### Changed
-- Upgraded `send_with_metadata()` with thumbnail and metadata support
-- Updated `handle_single()` to pass caption_entities
-- Updated error handling in save function with specific error types
+#### UI/UX
+- Modern inline keyboards
+- Progress bar with ETA
+- Callback handlers for all actions
+- Back navigation
 
----
+#### Deployment
+- Docker & Docker Compose
+- Heroku (Procfile, heroku.yml, app.json)
+- Render
+- Koyeb
+- VPS (systemd, screen, nohup)
+- Flask status page
 
-## [2.4.0] - 2026-07-18
+#### Documentation
+- Comprehensive README
+- Architecture docs
+- FAQ with troubleshooting
+- Deployment guide for all platforms
+- Security policy
+- Code of conduct
+- Contributing guidelines
 
-### Added
-- Support for ALL Telegram link types:
-  - Public channels: `t.me/username`
-  - Private channels: `t.me/c/CHANNEL_ID/MSG_ID`
-  - Invite links: `t.me/+invitehash` and `t.me/joinchat/hash`
-  - Groups & Supergroups: `t.me/groupname/123`
-  - Bots: `t.me/botusername`
-  - Username only: `username` or `@username`
-  - Numeric IDs: `-1001234567890/123`
-  - Batch ranges: `t.me/username/1001-1010`
-  - Forwarded messages: `t.me/c/123/456?single`
-- Chat info display — shows channel/group/bot details when no message ID
-- Auto-join attempt for private channels/groups
-- Updated help with complete format table
+### 🔧 Changed
+- Migrated from Telethon to Kurigram (Pyrogram fork)
+- Improved error handling with retry logic
+- Enhanced FloodWait handling
 
-### Changed
-- Rewrote `parse_channel_username()` with 8 pattern matchers
-- Improved `save()` function with proper chat type detection
-- Updated UI help texts with all supported formats
-
----
-
-## [2.3.0] - 2026-07-18
-
-### Added
-- Modern UI/UX with inline keyboards and callback buttons
-- Main menu with navigation buttons (Download, Backup, Batch, Login, Settings, Help)
-- Help menu with topic-specific sections and back buttons
-- Settings menu with delay, file size, type filter, captions options
-- Delay selector with preset buttons (3s, 5s, 10s, 15s, 20s, 30s)
-- File size selector with preset buttons (500MB, 1GB, 2GB, 5GB, 10GB, No Limit)
-- Login menu with login/logout buttons
-- Confirm/Cancel dialogs for dangerous actions
-- Stop button for batch downloads
-- Back navigation on all sub-menus
-- Message templates for all user interactions (utils/ui.py)
-
-### Changed
-- Rewrote plugins/start.py with full callback handler system
-- Updated plugins/generate.py with modern UI messages
-- Updated help messages with formatted sections
-- All messages now have inline keyboard navigation
+### 🐛 Fixed
+- Session expiration handling
+- Rate limiting issues
+- Memory leaks in batch downloads
 
 ---
 
-## [2.2.0] - 2026-07-18
+## [1.0.0] - 2025-12-01
 
-### Added
-- Live progress messages — real-time progress bar with percentage in Telegram
-- Download counter — shows downloaded/skipped/failed/total counts
-- ETA calculation — estimated time remaining based on average speed
-- File preview — shows file info (type, size) before download
-- Cancel button — inline keyboard button to cancel batch downloads
-- Progress bar — visual Unicode progress bar (█░) in messages
-- Elapsed time tracking — shows how long download has been running
+### 🚀 Initial Release
 
-### Changed
-- Rewrote utils/progress.py with DownloadProgress class
-- Updated plugins/generate.py with live progress and cancel support
-- Updated plugins/backup.py with progress tracking
+#### Features
+- Basic download functionality
+- Public channel support
+- Session string authentication
+- Google Colab notebook
+
+#### Deployment
+- Google Colab support
+- Basic Docker support
 
 ---
 
-## [2.1.0] - 2026-07-18
+## [Unreleased]
 
-### Added
-- `/backup` command — backup channel media to a Telegram backup channel
-- `/batch` command — batch download all media from a channel
-- Session stats — Colab time tracking with 3-tier warnings (critical/warning/tip)
-- Keep-alive — thread-based ping to prevent Colab idle timeout
-- Parallel downloads — configurable concurrency via semaphore
-- Forward mode — direct message forwarding (fastest method)
-- Caption support — auto-generated captions with folder, date, message ID
-- Original caption preservation with truncation to 1024 chars
-- Album handling — detect and process grouped messages
-- Video metadata preservation — duration, width, height on upload
-- Configurable settings: PARALLEL_DOWNLOADS, FORWARD_MODE, CAPTION_ENABLED, KEEP_ORIGINAL_CAPTION, BACKUP_CHANNEL, KEEP_ALIVE_INTERVAL, SESSION_LIMIT_HOURS
+### 🔮 Planned Features
 
-### Changed
-- Updated config.py with all new environment variables
-- Updated start.py help text with /backup and /batch commands
-- Updated utils/__init__.py to export SessionStats and KeepAlive
+#### v2.1.0
+- [ ] Web dashboard for user management
+- [ ] API endpoint for external integrations
+- [ ] Multi-language support
+- [ ] Download queue system
+- [ ] Webhook notifications
+
+#### v2.2.0
+- [ ] Plugin system for custom extensions
+- [ ] Download history and statistics
+- [ ] Scheduled downloads
+- [ ] Cloud storage integration (Google Drive, Dropbox)
+
+#### v3.0.0
+- [ ] Web UI with React frontend
+- [ ] REST API for mobile apps
+- [ ] Distributed download system
+- [ ] AI-powered content categorization
 
 ---
 
-## [2.0.0] - 2026-07-18
+## 📊 Version Statistics
 
-### Changed
-- **Complete rewrite** from Telethon to Kurigram (Pyrogram fork)
-- **Architecture change** from CLI tool to Telegram bot with plugin system
-- **Restricted content handling** via two-tier access: bot token → user session fallback
-- **Colab notebook** rewritten for bot-based workflow (4 cells: setup, config, run, session gen)
-- **Dependencies** updated: kurigram, tgcrypto, motor, Flask, gunicorn
-- **Configuration** simplified with environment variables
+| Version | Files Changed | Contributors | Downloads |
+|---------|---------------|--------------|-----------|
+| 2.0.0 | 22+ | 1 | Growing |
+| 1.0.0 | 10 | 1 | 100+ |
 
-### Added
-- Bot commands: `/start`, `/help`, `/login`, `/logout`, `/cancel`
-- Per-user login system with OTP authentication
-- MongoDB integration for session storage (via Motor async driver)
-- Flask keep-alive server for Docker/Koyeb deployment
-- Dockerfile and Procfile for containerized deployment
-- Batch download support (message ID ranges)
-- Progress tracking with real-time status
-- Checkpoint system for resuming after Colab disconnects
-- File size filter (skip files > 2GB by default)
-- Date and media type filters
-- ZIP archive creation utility
-- CHANGELOG.md
+---
 
-### Removed
-- Telethon library (replaced by Kurigram)
-- CLI interface (replaced by bot commands)
-- Old telegramdl/ package structure
-- nest_asyncio workaround (handled via bot architecture)
+## 🔗 Links
+
+- [Releases](https://github.com/Shineii86/TelegramDL/releases)
+- [Milestones](https://github.com/Shineii86/TelegramDL/milestones)
+- [Roadmap](https://github.com/Shineii86/TelegramDL/projects)
+
+---
+
+**Maintained by**: [Shinei Nouzen](https://github.com/Shineii86)

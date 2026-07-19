@@ -14,6 +14,8 @@
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/Shineii86/TelegramDL?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Shineii86/TelegramDL/pulls)
 [![GitHub last commit](https://img.shields.io/github/last-commit/Shineii86/TelegramDL?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Shineii86/TelegramDL/commits/main)
 [![GitHub repo size](https://img.shields.io/github/repo-size/Shineii86/TelegramDL?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Shineii86/TelegramDL)
+[![GitHub license](https://img.shields.io/github/license/Shineii86/TelegramDL?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Shineii86/TelegramDL/blob/main/LICENSE)
+[![Code size](https://img.shields.io/github/languages/code-size/Shineii86/TelegramDL?style=for-the-badge&logo=python&logoColor=white)](https://github.com/Shineii86/TelegramDL)
 
 <br/>
 
@@ -50,7 +52,9 @@ Open notebook in Google Colab, fill credentials, run — done. Handles restricte
 | [🔗 Supported Formats](#-supported-formats) | ALL URL types |
 | [🧠 How It Works](#-how-it-works) | Step-by-step flow |
 | [🤖 Bot Commands](#-bot-commands) | All commands |
+| [💳 Premium](#-premium) | Plans & payments |
 | [🔋 Colab Guide](#-colab-guide) | Tips & optimizations |
+| [📚 Documentation](#-documentation) | Full docs index |
 | [❓ FAQ](#-faq) | Common questions |
 | [🐛 Troubleshooting](#-troubleshooting) | Fix common issues |
 | [🙏 Acknowledgements](#-acknowledgements) | Credits |
@@ -563,6 +567,51 @@ Settings Menu:
 | **Mount Google Drive** | For persistent storage across sessions |
 | **Use File Size Filter** | Skip large files to save time/storage |
 | **Use Forward Mode** | Faster than download+upload |
+
+---
+
+## 💳 Premium
+
+### Plans
+
+| Plan | Duration | Price | Features |
+|------|----------|-------|----------|
+| 📅 Weekly | 7 days | ₹49 / $1 | Unlimited downloads, 4GB files, Priority speed |
+| 📆 Monthly | 30 days | ₹149 / $3 | + Custom thumbnails |
+| 🗓 Yearly | 365 days | ₹999 / $15 | + Custom captions, Dump chat |
+| ♾️ Lifetime | 100 years | ₹1999 / $25 | Everything + Lifetime access |
+
+### Payment Methods
+
+| Method | Details |
+|--------|---------|
+| 💵 USDT ByBit | BSC/ERC20/TON networks |
+| 🪙 TON Tonkeeper | TON/USDT wallet |
+| 🇮🇳 PhonePe UPI | DM @shineii86 |
+| ⭐️ Telegram Stars | @shineii86 |
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `/premium` | View plans |
+| `/pay <plan>` | Request premium |
+| `/payment` | View payment methods |
+| `/myplan` | View current plan |
+
+---
+
+## 📚 Documentation
+
+| Document | Description |
+|----------|-------------|
+| [ARCHITECTURE.md](ARCHITECTURE.md) | System design & architecture |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Complete deployment guide |
+| [FAQ.md](FAQ.md) | Frequently asked questions |
+| [CHANGELOG.md](CHANGELOG.md) | Version history |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
+| [SECURITY.md](SECURITY.md) | Security policy |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Community guidelines |
 
 ---
 
