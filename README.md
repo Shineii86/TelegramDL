@@ -4,7 +4,7 @@
 
 <br/>
 
-[![Open in Colab](https://img.shields.io/badge/Google-Colab-F9AB00?style=for-the-badge&logo=googlecolab&logoColor=black)](https://colab.research.google.com/github/Shineii86/TelegramDL/blob/main/TelegramDL.ipynb)
+[![Open in Colab](https://img.shields.io/badge/Google-Colab-F9AB00?style=for-the-badge&logo=googlecolab&logoColor=black)](https://colab.research.google.com/github/Shineii86/TelegramDL/blob/main/notebook/TelegramDL.ipynb)
 
 <br/>
 
@@ -206,7 +206,6 @@ TelegramDL/
 ├── .env.example              # Environment template
 ├── requirements.txt          # Python dependencies
 ├── gen_session.py            # Session string generator
-├── TelegramDL.ipynb          # Main Colab notebook (4 cells)
 ├── Dockerfile                # Docker deployment
 ├── docker-compose.yml        # Docker Compose
 ├── Procfile                  # Heroku worker
@@ -216,6 +215,8 @@ TelegramDL/
 ├── deploy.sh                 # VPS auto-deploy script
 ├── templates/
 │   └── welcome.html          # Flask status page
+├── notebook/
+│   └── TelegramDL.ipynb      # Colab notebook
 │
 ├── bot.py                    # Main entry - Bot + User client
 ├── config.py                 # Environment variable config
@@ -256,7 +257,7 @@ TelegramDL/
 
 <div align="center">
 
-[![Open in Colab](https://img.shields.io/badge/Google_Colab-F9AB00?style=for-the-badge&logo=googlecolab&logoColor=black)](https://colab.research.google.com/github/Shineii86/TelegramDL/blob/main/TelegramDL.ipynb)
+[![Open in Colab](https://img.shields.io/badge/Google_Colab-F9AB00?style=for-the-badge&logo=googlecolab&logoColor=black)](https://colab.research.google.com/github/Shineii86/TelegramDL/blob/main/notebook/TelegramDL.ipynb)
 
 </div>
 
@@ -303,7 +304,7 @@ TelegramDL/
 
 ### 📱 Google Colab (Easiest)
 
-[![Open in Colab](https://img.shields.io/badge/Google_Colab-F9AB00?style=for-the-badge&logo=googlecolab&logoColor=black)](https://colab.research.google.com/github/Shineii86/TelegramDL/blob/main/TelegramDL.ipynb)
+[![Open in Colab](https://img.shields.io/badge/Google_Colab-F9AB00?style=for-the-badge&logo=googlecolab&logoColor=black)](https://colab.research.google.com/github/Shineii86/TelegramDL/blob/main/notebook/TelegramDL.ipynb)
 
 ### 🐳 Docker
 
