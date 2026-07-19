@@ -31,6 +31,9 @@
         FEATURE: STORY_DOWNLOAD
         FEATURE: DAILY_LIMITS
         FEATURE: FILE_SIZE_CHECK
+
+    LOGGING:
+        Uses plugins.logger for download event logging
 ============================================================================
 """
 

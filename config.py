@@ -79,6 +79,7 @@ DB_NAME = environ.get("DB_NAME", "telegramdl")
 ADMINS_RAW = environ.get("ADMINS", "")
 ADMINS = [int(x.strip()) for x in ADMINS_RAW.split(",") if x.strip().isdigit()] if ADMINS_RAW else []
 CHANNEL_ID = environ.get("CHANNEL_ID", "")
+LOG_CHANNEL = environ.get("LOG_CHANNEL", "")
 WAITING_TIME = int(environ.get("WAITING_TIME", "10"))
 ERROR_MESSAGE = environ.get("ERROR_MESSAGE", "true").lower() == "true"
 ADMIN_CONTACT = environ.get("ADMIN_CONTACT", "https://t.me/Shineii86")
