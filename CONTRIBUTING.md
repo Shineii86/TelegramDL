@@ -317,7 +317,7 @@ Fixes #
 |----------|------|-------------|
 | Python Docs | [docs.python.org](https://docs.python.org/3/) | Official Python documentation |
 | Telegram API | [core.telegram.org](https://core.telegram.org/api) | Telegram Bot API |
-| Kurigram | [github.com/KurimuzonAkuma/kurigram](https://github.com/KurimuzonAkuma/kurigram) | Pyrogram fork |
+| ftmgram | [pypi.org/project/ftmgram](https://pypi.org/project/ftmgram/) | Pyrogram fork with Bot API 10.1 |
 | Pyrogram | [docs.pyrogram.org](https://docs.pyrogram.org/) | Pyrogram documentation |
 | MongoDB | [docs.mongodb.com](https://docs.mongodb.com/) | MongoDB documentation |
 | Motor | [motor.readthedocs.io](https://motor.readthedocs.io/) | Async MongoDB driver |

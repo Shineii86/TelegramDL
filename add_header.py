@@ -31,7 +31,7 @@ Description:
     Advanced Telegram Restricted Content Downloader with Premium System,
     yt-dlp Integration, File Splitting, Custom Bots & More.
 
-Framework:  Kurigram (Pyrogram Fork)
+Framework:  ftmgram (Bot API 10.1)
 
 Disclaimer:
     This bot is for educational purposes only.

@@ -678,7 +678,7 @@ async def info_cmd(client, message: Message):
         f"**Total Users:** `{total_users}`\n"
         f"**Premium Users:** `{premium_count}`\n"
         f"**Free Users:** `{total_users - premium_count}`\n\n"
-        f"**Framework:** Kurigram (Pyrogram Fork)\n"
+        f"**Framework:** ftmgram (Bot API 10.1)\n"
         f"**Python:** `3.10+`\n"
         f"**License:** MIT"
     )

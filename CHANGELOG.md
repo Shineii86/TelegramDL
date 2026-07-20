@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🚀 Major Release
 
-Complete rewrite from Telethon to Kurigram with premium features.
+Complete rewrite from Telethon to ftmgram with premium features.
 
 ### ✨ Added
 
@@ -53,7 +53,7 @@ Complete rewrite from Telethon to Kurigram with premium features.
 - Contributing guidelines
 
 ### 🔧 Changed
-- Migrated from Telethon to Kurigram (Pyrogram fork)
+- Migrated from Telethon to ftmgram (Bot API 10.1)
 - Improved error handling with retry logic
 - Enhanced FloodWait handling
 

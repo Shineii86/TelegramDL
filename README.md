@@ -20,7 +20,7 @@
 <br/>
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![Kurigram](https://img.shields.io/badge/Kurigram-Pyrogram%20Fork-26A5E4?style=for-the-badge&logo=telegram&logoColor=white)](https://github.com/KurimuzonAkuma/kurigram)
+[![ftmgram](https://img.shields.io/badge/ftmgram-Bot%20API%2010.1-26A5E4?style=for-the-badge&logo=telegram&logoColor=white)](https://pypi.org/project/ftmgram/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge&logo=gnu&logoColor=white)](LICENSE)
 
 <br/>
@@ -29,7 +29,7 @@
 
 Open notebook in Google Colab, fill credentials, run — done. Handles restricted channels, groups, bots, and stories with user session authentication.
 
-**Tags:** `telegram` `restricted-content` `bot` `downloader` `colab` `kurigram` `pyrogram` `backup` `stories` `groups` `bots`
+**Tags:** `telegram` `restricted-content` `bot` `downloader` `colab` `ftmgram` `pyrogram` `backup` `stories` `groups` `bots`
 
 </div>
 
@@ -66,7 +66,7 @@ Open notebook in Google Colab, fill credentials, run — done. Handles restricte
 
 ## 📖 Overview
 
-TelegramDL is a **Telegram Restricted Content Downloader** that lets you download photos, videos, audio, documents, and stories from any Telegram source — including **channels, groups, supergroups, bots, and stories**. Built with Kurigram (Pyrogram fork) and Google Colab notebook for easy usage.
+TelegramDL is a **Telegram Restricted Content Downloader** that lets you download photos, videos, audio, documents, and stories from any Telegram source — including **channels, groups, supergroups, bots, and stories**. Built with ftmgram (Bot API 10.1) and Google Colab notebook for easy usage.
 
 > [!NOTE]
 > **Why TelegramDL?** Telegram doesn't allow downloading from restricted channels. TelegramDL solves this by using a two-tier approach: bot token for public content, user session for restricted content.
@@ -334,7 +334,7 @@ TelegramDL/
 
 **Step 1 — Setup**
 ```python
-# Install kurigram, tgcrypto, motor, Flask, gunicorn, nest_asyncio
+# Install ftmgram, tgcrypto, motor, Flask, gunicorn, nest_asyncio
 # Clone or update TelegramDL repository
 ```
 
@@ -857,7 +857,7 @@ Only if LOGIN_SYSTEM=true. If false, set STRING_SESSION directly and skip DB_URI
 <td width="50%" valign="top">
 
 ### 🛠️ Core Libraries
-- [Kurigram](https://github.com/KurimuzonAkuma/kurigram) — Pyrogram fork (Telegram client)
+- [ftmgram](https://pypi.org/project/ftmgram/) — Pyrogram fork with Bot API 10.1 support
 - [TgCrypto](https://github.com/pyrogram/tgcrypto) — Crypto acceleration
 - [Motor](https://github.com/mongodb/motor) — Async MongoDB driver
 - [yt-dlp](https://github.com/yt-dlp/yt-dlp) — YouTube/media downloader
@@ -886,7 +886,7 @@ Only if LOGIN_SYSTEM=true. If false, set STRING_SESSION directly and skip DB_URI
 ### 📚 Resources
 - [Telegram API](https://core.telegram.org) — Official Telegram API
 - [my.telegram.org](https://my.telegram.org) — API credentials
-- [Kurigram Docs](https://docs.kurimuzonakuma.dev) — API documentation
+- [ftmgram Docs](https://ftmgram.readthedocs.io) — API documentation
 
 </td>
 <td width="50%" valign="top">

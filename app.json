@@ -2,7 +2,7 @@
   "name": "TelegramDL",
   "description": "Advanced Telegram Downloader Bot with Premium System, yt-dlp, File Splitting & More",
   "logo": "https://raw.githubusercontent.com/Shineii86/TelegramDL/main/assets/logo.png",
-  "keywords": ["python3", "telegram", "telegram-bot", "kurigram", "downloader"],
+  "keywords": ["python3", "telegram", "telegram-bot", "ftmgram", "downloader"],
   "repository": "https://github.com/Shineii86/TelegramDL",
   "success_url": "https://github.com/Shineii86/TelegramDL",
   "env": {

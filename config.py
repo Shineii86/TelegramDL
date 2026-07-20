@@ -14,7 +14,7 @@
         environment variables with sensible defaults. Single source
         of truth for __version__.
 
-    FRAMEWORK: Kurigram (Pyrogram Fork)
+    FRAMEWORK: ftmgram (Bot API 10.1)
     PYTHON:    3.10+
 ============================================================================
     DISCLAIMER:

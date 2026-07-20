@@ -17,7 +17,7 @@ Description:
 
 Version:    2.0.0
 Python:     3.10+
-Framework:  Kurigram (Pyrogram Fork)
+Framework:  ftmgram (Bot API 10.1)
 
 Features:
     - Save Restricted Content (channels, groups, stories, bots)

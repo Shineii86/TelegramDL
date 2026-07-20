@@ -4,7 +4,7 @@ import sys
 try:
     from ftmgram import Client
 except ImportError:
-    os.system("pip install kurigram tgcrypto -q")
+    os.system("pip install ftmgram tgcrypto -q")
     from ftmgram import Client
 
 

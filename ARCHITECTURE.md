@@ -2,7 +2,7 @@
 
 ## Overview
 
-TelegramDL is built on a modular architecture using the Kurigram (Pyrogram fork) library. The system uses a two-tier access pattern: bot token for public content, user session for restricted content.
+TelegramDL is built on a modular architecture using the ftmgram (Bot API 10.1) library. The system uses a two-tier access pattern: bot token for public content, user session for restricted content.
 
 ## 📐 System Design
 

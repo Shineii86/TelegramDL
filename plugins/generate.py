@@ -926,7 +926,7 @@ async def save(client, message: Message):
             acc = await get_auth_client(user_id)
             if acc:
                 try:
-                    # Use Kurigram's get_stories API
+                    # Use ftmgram's get_stories API
                     story = await acc.get_stories(chat_username, story_id)
                     if story:
                         # Download story media

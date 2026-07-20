@@ -665,7 +665,7 @@ ABOUT_MSG = """
 └─────────────────────────────────┘
 
 > 📦 **Version:** `{version}`
-> 📚 **Library:** Kurigram (Pyrogram Fork)
+> 📚 **Library:** ftmgram (Bot API 10.1)
 > 👨‍💻 **Developer:** [@Shineii86](https://t.me/Shineii86)
 
 ┌─────────────── **Features** ───────────────┐
@@ -704,7 +704,7 @@ PROJECT_MSG = """
 │    📂 **TelegramDL Project**     │
 └─────────────────────────────────┘
 
-> Open-source Telegram downloader bot built with Kurigram
+> Open-source Telegram downloader bot built with ftmgram
 
 ┌─────────── **What It Does** ──────────┐
 │                                       │
@@ -728,7 +728,7 @@ PROJECT_MSG = """
 ┌─────────── **Tech Stack** ────────────┐
 │                                       │
 │  🐍 **Language:** Python 3.10+        │
-│  📚 **Library:** Kurigram             │
+│  📚 **Library:** ftmgram              │
 │  🗄️ **Database:** MongoDB (Motor)     │
 │  🚀 **Deploy:** Colab, Docker, VPS    │
 │                                       │
