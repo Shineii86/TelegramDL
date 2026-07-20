@@ -168,7 +168,7 @@ async def download_with_ytdl(url, output_dir, audio_only=False, progress_callbac
     
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
+            await asyncio.to_thread(ydl.download, [url])
     except Exception as e:
         logger.error(f"yt-dlp download failed: {e}")
         return []
@@ -214,7 +214,7 @@ async def get_video_info(url):
     
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=False)
+            info = await asyncio.to_thread(ydl.extract_info, url, False)
             return {
                 'title': info.get('title', 'Unknown'),
                 'duration': info.get('duration', 0),

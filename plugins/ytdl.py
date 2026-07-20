@@ -340,8 +340,8 @@ async def adl_cmd(client, message: Message):
             if not os.path.exists(file_path):
                 continue
 
-            # Embed metadata
-            embed_audio_metadata(file_path, title=os.path.basename(file_path))
+            # Embed metadata (blocking call wrapped in thread)
+            await asyncio.to_thread(embed_audio_metadata, file_path, title=os.path.basename(file_path))
 
             thumb = await db.get_thumbnail(user_id)
 

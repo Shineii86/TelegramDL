@@ -595,6 +595,7 @@ async def payment_callbacks(client, callback: CallbackQuery):
             text += f"{plan['emoji']} **{plan['name']}** — {plan['price']}\n"
         text += "\n**Usage:** `/pay <plan>`"
         await callback.message.edit_text(text)
+        await callback.answer()
 
     elif data == "pay_methods":
         text = "**💳 Payment Methods**\n\n"
@@ -602,6 +603,7 @@ async def payment_callbacks(client, callback: CallbackQuery):
             text += f"{method['emoji']} **{method['name']}**\n"
             text += f"{method['details']}\n\n"
         await callback.message.edit_text(text)
+        await callback.answer()
 
     elif data == "pay_usdt_bybit":
         await callback.answer(
@@ -646,8 +648,7 @@ async def payment_callbacks(client, callback: CallbackQuery):
             f"3. Include your user ID: `{callback.from_user.id}`\n\n"
             f"**Include:** Payment proof + Channel username/link for promotion"
         )
-
-    await callback.answer()
+        await callback.answer()
 
 # ===========================================================================
 #   END OF PAYMENT PLUGIN

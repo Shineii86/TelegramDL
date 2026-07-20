@@ -37,7 +37,7 @@
 
 from datetime import datetime, timedelta
 from motor.motor_asyncio import AsyncIOMotorClient
-from config import DB_URI, DB_NAME
+from config import DB_URI, DB_NAME, FREE_DAILY_LIMIT
 
 # ===========================================================================
 #   DATABASE CLASS
@@ -300,7 +300,7 @@ class Database:
             )
             return True
         daily_usage = user.get("daily_usage", 0)
-        return daily_usage < 10
+        return daily_usage < FREE_DAILY_LIMIT
 
     async def increment_daily_usage(self, id):
         """Increment daily usage counter.

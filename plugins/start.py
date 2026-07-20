@@ -67,7 +67,8 @@ from database.db import db
 from config import (
     LOGIN_SYSTEM, WAITING_TIME, MAX_FILE_SIZE_MB, TYPE_FILTER,
     CAPTION_ENABLED, FORWARD_MODE, USE_CHECKPOINT,
-    FREE_DAILY_LIMIT, FREE_MAX_FILE_SIZE_MB, PREMIUM_MAX_FILE_SIZE_MB, ADMINS
+    FREE_DAILY_LIMIT, FREE_MAX_FILE_SIZE_MB, PREMIUM_MAX_FILE_SIZE_MB, ADMINS,
+    __version__
 )
 from utils.ui import (
     main_menu_keyboard, download_keyboard, backup_keyboard, batch_keyboard,
@@ -706,9 +707,12 @@ async def speedtest_cmd(client, message: Message):
     start = time.time()
 
     try:
-        req = urllib.request.Request(test_url, headers={"User-Agent": "TelegramDL"})
-        response = urllib.request.urlopen(req, timeout=30)
-        data = response.read()
+        def download_test():
+            req = urllib.request.Request(test_url, headers={"User-Agent": "TelegramDL"})
+            response = urllib.request.urlopen(req, timeout=30)
+            return response.read()
+
+        data = await asyncio.to_thread(download_test)
         end = time.time()
 
         elapsed = end - start
@@ -1043,8 +1047,9 @@ async def menu_callbacks(client, callback: CallbackQuery):
         )
 
     elif data == "menu_about":
-        # Try rich message first, fallback to plain text
+        # Use rich message with fallback to plain text
         try:
+            from ftmgram.types import InputRichMessage
             rich_msg = ABOUT_RICH(version=__version__)
             await callback.message.edit_text(ABOUT_MSG.format(version=__version__), reply_markup=about_keyboard())
         except Exception:
