@@ -86,6 +86,18 @@ class Bot(Client):
             sleep_threshold=5
         )
 
+    def on_message(self, filters=None, group=0):
+        """Override to also set .handlers attr for plugin discovery."""
+        import ftmgram
+        def decorator(func):
+            handler = ftmgram.handlers.MessageHandler(func, filters)
+            self.add_handler(handler, group)
+            if not hasattr(func, "handlers"):
+                func.handlers = []
+            func.handlers.append((handler, group))
+            return func
+        return decorator
+
     @property
     def handlers(self):
         """Expose handlers for ftmgram plugin discovery."""

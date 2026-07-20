@@ -413,6 +413,13 @@ async def send_with_metadata(client, chat_id, file_path, caption, msg, caption_e
 
     for attempt in range(3):
         try:
+            # Convert to absolute path — ftmgram requires it
+            file_path = os.path.abspath(file_path)
+
+            if not os.path.exists(file_path):
+                logger.error(f"File not found: {file_path}")
+                return False
+
             # Use custom thumbnail or original
             thumb = custom_thumb
             if not thumb:
