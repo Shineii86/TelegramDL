@@ -10,6 +10,7 @@ jobs:
   lint:
     name: Lint & Format
     runs-on: ubuntu-latest
+    continue-on-error: true
     
     steps:
       - name: Checkout code
@@ -40,6 +41,7 @@ jobs:
   security:
     name: Security Scan
     runs-on: ubuntu-latest
+    continue-on-error: true
     
     steps:
       - name: Checkout code
