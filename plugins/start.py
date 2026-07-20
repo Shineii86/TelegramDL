@@ -111,7 +111,7 @@ async def start(client, message: Message):
     if not await db.is_user_exist(user_id):
         await db.add_user(user_id, name)
 
-    await message.reply(WELCOME_MSG, reply_markup=main_menu_keyboard())
+    await message.reply(WELCOME_MSG.format(version=__version__), reply_markup=main_menu_keyboard())
 
 # ===========================================================================
 #   FEATURE: HELP_COMMAND
@@ -951,7 +951,7 @@ async def menu_callbacks(client, callback: CallbackQuery):
     data = callback.data
 
     if data == "menu_back":
-        await callback.message.edit_text(WELCOME_MSG, reply_markup=main_menu_keyboard())
+        await callback.message.edit_text(WELCOME_MSG.format(version=__version__), reply_markup=main_menu_keyboard())
 
     elif data == "menu_download":
         await callback.message.edit_text(
@@ -1036,7 +1036,7 @@ async def menu_callbacks(client, callback: CallbackQuery):
         )
 
     elif data == "menu_about":
-        await callback.message.edit_text(ABOUT_MSG, reply_markup=about_keyboard())
+        await callback.message.edit_text(ABOUT_MSG.format(version=__version__), reply_markup=about_keyboard())
 
     elif data == "menu_help":
         await callback.message.edit_text("**❓ Help Menu**\n\nChoose a topic:", reply_markup=help_keyboard())

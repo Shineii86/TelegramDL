@@ -363,41 +363,65 @@ def about_keyboard():
 
 
 WELCOME_MSG = """
-**Welcome to TelegramDL Bot!**
+┌─────────────────────────────────┐
+│    🤖 **TelegramDL Bot** v{version}   │
+└─────────────────────────────────┘
 
-Download restricted content from Telegram channels, groups, and bots.
+📥 Download restricted content from **channels, groups, bots & stories**
 
-**How to use:**
-1. Send a Telegram link or username
-2. Bot downloads the content
-3. Files sent to you here
+> 💡 **How it works:**
+> Send any Telegram link → Bot downloads → Files sent to you
 
-**Supported:**
-Channels · Groups · Supergroups · Bots
-Public · Private · Invite Links
+┌─────────────── **Quick Start** ───────────────┐
+│                                               │
+│  1️⃣  Send a Telegram link or username          │
+│  2️⃣  Bot downloads the content                │
+│  3️⃣  Files delivered to you here              │
+│                                               │
+└───────────────────────────────────────────────┘
+
+🔗 **Supported:** Channels · Groups · Bots · Stories · Invite Links
+
+⚡ Use the buttons below to navigate
 """
 
 
 HELP_DOWNLOAD = """
-**📥 Download Help**
+┌─────────────────────────────────┐
+│    📥 **Download Help**          │
+└─────────────────────────────────┘
 
-Send any Telegram link or username to download.
+> Send any Telegram link or username to download
 
-**Supported Formats:**
+┌────────── **Supported Formats** ──────────┐
+│                                           │
+│  📢 **Public Channel**                    │
+│     `t.me/username/123`                   │
+│                                           │
+│  🔒 **Private Channel**                   │
+│     `t.me/c/1234567890/123`               │
+│                                           │
+│  📖 **Story**                             │
+│     `t.me/username/s/123`                 │
+│                                           │
+│  📦 **Batch Range**                       │
+│     `t.me/username/1001-1010`             │
+│                                           │
+│  🤖 **Bot Chat**                          │
+│     `t.me/b/botusername/123`              │
+│                                           │
+│  🔗 **Invite Link**                       │
+│     `t.me/+invitehash`                    │
+│                                           │
+│  👥 **Group**                             │
+│     `t.me/groupname/123`                  │
+│                                           │
+│  🆔 **Numeric ID**                        │
+│     `-1001234567890/123`                  │
+│                                           │
+└───────────────────────────────────────────┘
 
-| Type | Format | Example |
-|------|--------|---------|
-| Public Channel | `t.me/username/123` | `t.me/durov/1` |
-| Story | `t.me/username/s/123` | `t.me/Shineii86/s/70` |
-| Batch Range | `t.me/username/1001-1010` | `t.me/durov/1-50` |
-| Private Channel | `t.me/c/1234567890/123` | `t.me/c/123456/1` |
-| Bot Chat | `t.me/b/botusername/123` | `t.me/b/botfather/1` |
-| Invite Link | `t.me/+invitehash` | `t.me/+abc123` |
-| Group | `t.me/groupname/123` | `t.me/mygroup/1` |
-| Username Only | `username` | `durov` |
-| Numeric ID | `-1001234567890/123` | `-1001234567890/1` |
-
-**Note:** For bot chats, use Plus Messenger to get message ID.
+> 💡 For bot chats, use Plus Messenger to get message ID
 """
 
 
@@ -535,34 +559,45 @@ SETTINGS_INFO = """
 
 
 MYPLAN_INFO = """
-**👤 My Plan**
+┌─────────────────────────────────┐
+│    👤 **My Plan**                │
+└─────────────────────────────────┘
 
-**Status:** {plan_type}
-**Expiry:** {expiry}
+┌─────────── **Status** ───────────┐
+│ 🏷️ **Plan:** {plan_type}          │
+│ 📅 **Expires:** {expiry}          │
+└──────────────────────────────────┘
 
-**Daily Usage:** {daily_used}/{daily_limit}
-**Total Saves:** {total_saves}
+┌─────────── **Usage** ────────────┐
+│ 📊 **Today:** `{daily_used}/{daily_limit}` │
+│ 💾 **Total:** `{total_saves}` saved        │
+└──────────────────────────────────┘
 
-**Limits:**
-- Free: {daily_limit} downloads/day, {free_size}MB max
-- Premium: Unlimited downloads, {premium_size}MB max
+┌─────────── **Limits** ───────────┐
+│ 🆓 **Free:** {daily_limit}/day, {free_size}MB  │
+│ ⭐ **Premium:** Unlimited, {premium_size}MB    │
+└──────────────────────────────────┘
+
+💡 Upgrade with `/premium` for unlimited access!
 """
 
 
 PROGRESS_MSG = """
-**📥 Downloading...**
+📥 **Downloading...**
 
 `[{bar}]` **{percent}%**
 
-**Speed:** {speed}/s
-**Done:** {done}/{total}
-**Failed:** {failed}
-**Remaining:** {remaining}
+┌─────────── **Stats** ───────────┐
+│ ⚡ **Speed:** `{speed}/s`         │
+│ ✅ **Done:** `{done}/{total}`     │
+│ ❌ **Failed:** `{failed}`         │
+│ ⏳ **Remaining:** `{remaining}`   │
+└──────────────────────────────────┘
 
-**Elapsed:** {elapsed}
-**ETA:** {eta}
+⏱ **Elapsed:** `{elapsed}`
+📡 **ETA:** `{eta}`
 
-**Current:** `{current}`
+📄 `{current}`
 """
 
 
@@ -625,86 +660,109 @@ Original captions will be used.
 
 
 ABOUT_MSG = """
-**ℹ️ About TelegramDL**
+┌─────────────────────────────────┐
+│    ℹ️ **About TelegramDL**       │
+└─────────────────────────────────┘
 
-**Version:** 3.0.0
-**Library:** Kurigram (Pyrogram Fork)
-**Developer:** [@Shineii86](https://t.me/Shineii86)
+> 📦 **Version:** `{version}`
+> 📚 **Library:** Kurigram (Pyrogram Fork)
+> 👨‍💻 **Developer:** [@Shineii86](https://t.me/Shineii86)
 
-**Features:**
-- 📥 Download restricted content
-- 📦 Batch download with progress
-- 🖼 Custom thumbnails per user
-- 📝 Custom captions with placeholders
-- ⭐ Premium system with daily limits
-- 📢 Dump chat auto-forward
-- 🚫 Ban/unban system
-- 🔐 Secure login system
+┌─────────────── **Features** ───────────────┐
+│                                             │
+│  📥 Download restricted content             │
+│  📦 Batch download with progress bar        │
+│  🖼 Custom thumbnails per user              │
+│  📝 Custom captions with placeholders       │
+│  ⭐ Premium system with daily limits        │
+│  📢 Dump chat auto-forward                  │
+│  🎬 yt-dlp (YouTube, Instagram, TikTok)     │
+│  🔐 Secure login system                     │
+│                                             │
+└─────────────────────────────────────────────┘
 
-**Supported Content:**
-- Public & Private Channels
-- Groups & Supergroups
-- Bot Chats
-- Stories
-- Invite Links
+┌─────────── **Supported Content** ───────────┐
+│                                             │
+│  ✅ Public & Private Channels               │
+│  ✅ Groups & Supergroups                    │
+│  ✅ Bot Chats                               │
+│  ✅ Stories                                 │
+│  ✅ Invite Links                            │
+│  ✅ YouTube, Instagram, Facebook, TikTok    │
+│                                             │
+└─────────────────────────────────────────────┘
 
-**Stats:**
-- 🔗 11+ link formats supported
-- 📊 Rich progress bar with ETA
-- 💾 Checkpoint resume support
+🔗 **Stats:** `11+ link formats` · `Rich progress bar` · `Checkpoint resume`
 
-**Credits:**
-Built with ❤️ by [@Shineii86](https://t.me/Shineii86)
-Source: [GitHub](https://github.com/Shineii86/TelegramDL)
+💡 Built with ❤️ by [@Shineii86](https://t.me/Shineii86)
+📂 Source: [GitHub](https://github.com/Shineii86/TelegramDL)
 """
 
 
 PROJECT_MSG = """
-**📂 TelegramDL Project**
+┌─────────────────────────────────┐
+│    📂 **TelegramDL Project**     │
+└─────────────────────────────────┘
 
-An open-source Telegram downloader bot built with Kurigram.
+> Open-source Telegram downloader bot built with Kurigram
 
-**What it does:**
-Download any content from Telegram — channels, groups, bots, even restricted content.
+┌─────────── **What It Does** ──────────┐
+│                                       │
+│  Download any content from Telegram:  │
+│  • Channels (public & private)        │
+│  • Groups & Supergroups               │
+│  • Bot Chats                          │
+│  • Stories                            │
+│  • Even restricted content!           │
+│                                       │
+└───────────────────────────────────────┘
 
-**How it works:**
-1. User logs in with their phone number
-2. Bot uses user's session to access content
-3. Content is re-uploaded to user via bot
+┌─────────── **How It Works** ──────────┐
+│                                       │
+│  1️⃣  User logs in with phone number   │
+│  2️⃣  Bot uses session to access       │
+│  3️⃣  Content re-uploaded to user      │
+│                                       │
+└───────────────────────────────────────┘
 
-**Tech Stack:**
-- **Language:** Python 3.10+
-- **Library:** Kurigram (Pyrogram Fork)
-- **Database:** MongoDB (Motor async)
-- **Deployment:** Colab, Docker, Koyeb, Heroku
+┌─────────── **Tech Stack** ────────────┐
+│                                       │
+│  🐍 **Language:** Python 3.10+        │
+│  📚 **Library:** Kurigram             │
+│  🗄️ **Database:** MongoDB (Motor)     │
+│  🚀 **Deploy:** Colab, Docker, VPS    │
+│                                       │
+└───────────────────────────────────────┘
 
-**Open Source:**
-- Free to use
-- Free to modify
-- Free to deploy
-- No ads, no limits (for self-host)
-
-**License:** MIT
+> 🆓 **Free to use** · **Free to modify** · **Free to deploy**
+> 📜 **License:** MIT
 """
 
 
 DEV_MSG = """
-**👨‍💻 Developer**
+┌─────────────────────────────────┐
+│    👨‍💻 **Developer**              │
+└─────────────────────────────────┘
 
-**Name:** Shinei Nouzen
-**Username:** [@Shineii86](https://t.me/Shineii86)
-**GitHub:** [Shineii86](https://github.com/Shineii86)
+> 📛 **Name:** Shinei Nouzen
+> 🆔 **Username:** [@Shineii86](https://t.me/Shineii86)
+> 💻 **GitHub:** [Shineii86](https://github.com/Shineii86)
 
-**Other Projects:**
-- TelegramDL — Download bot
-- More coming soon...
+┌─────────── **Projects** ───────────┐
+│                                    │
+│  🤖 TelegramDL — Download bot     │
+│  📦 More coming soon...           │
+│                                    │
+└────────────────────────────────────┘
 
-**Contact:**
-- Telegram: [@Shineii86](https://t.me/Shineii86)
-- GitHub Issues: [Report Bug](https://github.com/Shineii86/TelegramDL/issues)
+┌─────────── **Contact** ────────────┐
+│                                    │
+│  📱 Telegram: [@Shineii86](https://t.me/Shineii86)  │
+│  🐛 Issues: [Report Bug](https://github.com/Shineii86/TelegramDL/issues) │
+│                                    │
+└────────────────────────────────────┘
 
-**Support:**
-If you like this bot, ⭐ star the repo on GitHub!
+> ⭐ If you like this bot, star the repo on GitHub!
 """
 
 # ===========================================================================
