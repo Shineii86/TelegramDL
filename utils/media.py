@@ -24,7 +24,7 @@
 #   IMPORTS
 # ===========================================================================
 
-from pyrogram.enums import MessageMediaType
+from ftmgram.enums import MessageMediaType
 
 # ===========================================================================
 #   FEATURE: MEDIA_DETECTION

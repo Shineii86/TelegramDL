@@ -29,10 +29,10 @@
 import os
 import asyncio
 import logging
-from pyrogram import filters
-from pyrogram.types import Message
-from pyrogram.enums import MessageMediaType
-from pyrogram.errors import FloodWait
+from ftmgram import filters
+from ftmgram.types import Message
+from ftmgram.enums import MessageMediaType
+from ftmgram.errors import FloodWait
 
 from bot import bot, user_client, start_user_client
 from database.db import db
@@ -248,7 +248,7 @@ async def backup_cmd(client, message: Message):
     if LOGIN_SYSTEM:
         session = await db.get_session(user_id)
         if session:
-            from pyrogram import Client
+            from ftmgram import Client
             acc = Client(":memory:", api_id=API_ID, api_hash=API_HASH, session_string=session)
             await acc.start()
     else:

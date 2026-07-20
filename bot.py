@@ -26,7 +26,7 @@ import logging
 import asyncio
 import warnings
 warnings.filterwarnings("ignore", message="coroutine.*was never awaited")
-from pyrogram import Client
+from ftmgram import Client
 
 from config import API_ID, API_HASH, BOT_TOKEN, STRING_SESSION, LOGIN_SYSTEM, __version__
 

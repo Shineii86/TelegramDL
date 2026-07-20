@@ -38,7 +38,7 @@
 #   IMPORTS
 # ===========================================================================
 
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from ftmgram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 # ===========================================================================
 #   KEYBOARD BUILDERS
@@ -764,6 +764,231 @@ DEV_MSG = """
 
 > ⭐ If you like this bot, star the repo on GitHub!
 """
+
+# ===========================================================================
+#   RICH MESSAGE TEMPLATES (Bot API 10.1)
+# ---------------------------------------------------------------------------
+#   HTML-based rich messages for send_rich_message()
+#   Use with ftmgram's InputRichMessage type
+# ===========================================================================
+
+from ftmgram.types import InputRichMessage
+
+
+def WELCOME_RICH(version: str = "2.0.0") -> InputRichMessage:
+    """Build welcome rich message with HTML formatting.
+
+    Args:
+        version: Bot version string
+
+    Returns:
+        InputRichMessage with styled welcome content
+    """
+    html = f"""
+<h2>🤖 TelegramDL Bot v{version}</h2>
+<p>📥 Download restricted content from <b>channels, groups, bots & stories</b></p>
+
+<blockquote>💡 <b>How it works:</b>
+Send any Telegram link → Bot downloads → Files sent to you</blockquote>
+
+<h3>⚡ Quick Start</h3>
+<ol>
+<li>Send a Telegram link or username</li>
+<li>Bot downloads the content</li>
+<li>Files delivered to you here</li>
+</ol>
+
+<p>🔗 <b>Supported:</b> Channels · Groups · Bots · Stories · Invite Links</p>
+<footer>Use the buttons below to navigate</footer>
+"""
+    return InputRichMessage(html=html.strip())
+
+
+def ABOUT_RICH(version: str = "2.0.0") -> InputRichMessage:
+    """Build about rich message with HTML formatting.
+
+    Args:
+        version: Bot version string
+
+    Returns:
+        InputRichMessage with styled about content
+    """
+    html = f"""
+<h2>ℹ️ About TelegramDL</h2>
+
+<table>
+<tr><td><b>Version</b></td><td><code>{version}</code></td></tr>
+<tr><td><b>Library</b></td><td>ftmgram (Bot API 10.1)</td></tr>
+<tr><td><b>Developer</b></td><td><a href="https://t.me/Shineii86">@Shineii86</a></td></tr>
+</table>
+
+<h3>✨ Features</h3>
+<ul>
+<li>📥 Download restricted content</li>
+<li>📦 Batch download with progress bar</li>
+<li>🖼 Custom thumbnails per user</li>
+<li>📝 Custom captions with placeholders</li>
+<li>⭐ Premium system with daily limits</li>
+<li>📢 Dump chat auto-forward</li>
+<li>🎬 yt-dlp (YouTube, Instagram, TikTok)</li>
+<li>🔐 Secure login system</li>
+</ul>
+
+<h3>🔗 Supported Content</h3>
+<ul>
+<li>✅ Public & Private Channels</li>
+<li>✅ Groups & Supergroups</li>
+<li>✅ Bot Chats</li>
+<li>✅ Stories</li>
+<li>✅ Invite Links</li>
+<li>✅ YouTube, Instagram, Facebook, TikTok</li>
+</ul>
+
+<footer>Built with ❤️ by <a href="https://t.me/Shineii86">@Shineii86</a></footer>
+"""
+    return InputRichMessage(html=html.strip())
+
+
+def MYPLAN_RICH(plan_type: str, expiry: str, daily_used: int, daily_limit: int,
+                total_saves: int, free_size: int, premium_size: int) -> InputRichMessage:
+    """Build plan info rich message with HTML formatting.
+
+    Args:
+        plan_type: Current plan type (Free/Premium)
+        expiry: Plan expiry date
+        daily_used: Downloads used today
+        daily_limit: Daily download limit
+        total_saves: Total files saved
+        free_size: Free user file size limit
+        premium_size: Premium user file size limit
+
+    Returns:
+        InputRichMessage with styled plan info
+    """
+    html = f"""
+<h2>👤 My Plan</h2>
+
+<h3>Status</h3>
+<table>
+<tr><td>🏷️ <b>Plan</b></td><td>{plan_type}</td></tr>
+<tr><td>📅 <b>Expires</b></td><td>{expiry}</td></tr>
+</table>
+
+<h3>Usage</h3>
+<table>
+<tr><td>📊 <b>Today</b></td><td><code>{daily_used}/{daily_limit}</code></td></tr>
+<tr><td>💾 <b>Total</b></td><td><code>{total_saves}</code> saved</td></tr>
+</table>
+
+<h3>Limits</h3>
+<table>
+<tr><td>🆓 <b>Free</b></td><td>{daily_limit}/day, {free_size}MB</td></tr>
+<tr><td>⭐ <b>Premium</b></td><td>Unlimited, {premium_size}MB</td></tr>
+</table>
+
+<footer>💡 Upgrade with /premium for unlimited access!</footer>
+"""
+    return InputRichMessage(html=html.strip())
+
+
+def PROGRESS_RICH(bar: str, percent: float, speed: str, done: str, total: str,
+                  failed: str, remaining: str, elapsed: str, eta: str,
+                  current: str) -> InputRichMessage:
+    """Build progress rich message with HTML formatting.
+
+    Args:
+        bar: Progress bar string
+        percent: Progress percentage
+        speed: Download speed
+        done: Bytes downloaded
+        total: Total bytes
+        failed: Failed count
+        remaining: Remaining count
+        elapsed: Elapsed time
+        eta: Estimated time remaining
+        current: Current file name
+
+    Returns:
+        InputRichMessage with styled progress display
+    """
+    html = f"""
+<h3>📥 Downloading...</h3>
+<pre>[{bar}] {percent:.1f}%</pre>
+
+<table>
+<tr><td>⚡ <b>Speed</b></td><td><code>{speed}/s</code></td></tr>
+<tr><td>✅ <b>Done</b></td><td><code>{done}/{total}</code></td></tr>
+<tr><td>❌ <b>Failed</b></td><td><code>{failed}</code></td></tr>
+<tr><td>⏳ <b>Remaining</b></td><td><code>{remaining}</code></td></tr>
+</table>
+
+<p>⏱ <b>Elapsed:</b> <code>{elapsed}</code> | 📡 <b>ETA:</b> <code>{eta}</code></p>
+<footer>📄 {current}</footer>
+"""
+    return InputRichMessage(html=html.strip())
+
+
+def HELP_RICH() -> InputRichMessage:
+    """Build help rich message with HTML formatting.
+
+    Returns:
+        InputRichMessage with styled help content
+    """
+    html = """
+<h2>📖 TelegramDL Help</h2>
+
+<h3>📥 Download Commands</h3>
+<ul>
+<li><code>/dl &lt;link&gt;</code> — Download from URL</li>
+<li><code>/adl &lt;link&gt;</code> — Download audio only</li>
+<li><code>/backup</code> — Backup your settings</li>
+</ul>
+
+<h3>👤 User Commands</h3>
+<ul>
+<li><code>/login</code> — Login for restricted content</li>
+<li><code>/settings</code> — View your settings</li>
+<li><code>/myplan</code> — View your subscription plan</li>
+</ul>
+
+<h3>🔧 Admin Commands</h3>
+<ul>
+<li><code>/broadcast</code> — Broadcast message to all users</li>
+<li><code>/ban /unban</code> — Ban/unban users</li>
+<li><code>/welcome</code> — Set welcome message</li>
+</ul>
+
+<h3>ℹ️ Info Commands</h3>
+<ul>
+<li><code>/ping</code> — Check bot latency</li>
+<li><code>/info</code> — Bot information</li>
+<li><code>/about</code> — About the bot</li>
+</ul>
+
+<footer>Supported: YouTube, Instagram, TikTok, Facebook + 100 sites via yt-dlp</footer>
+"""
+    return InputRichMessage(html=html.strip())
+
+
+def ERROR_RICH(error_type: str, message: str, suggestion: str = "") -> InputRichMessage:
+    """Build error rich message with HTML formatting.
+
+    Args:
+        error_type: Type of error
+        message: Error message details
+        suggestion: Optional suggestion to fix
+
+    Returns:
+        InputRichMessage with styled error content
+    """
+    html = f"""
+<h3>❌ {error_type}</h3>
+<blockquote>{message}</blockquote>
+{"<p>💡 <b>Suggestion:</b> " + suggestion + "</p>" if suggestion else ""}
+<footer>Need help? Use /help</footer>
+"""
+    return InputRichMessage(html=html.strip())
+
 
 # ===========================================================================
 #   END OF UI MODULE

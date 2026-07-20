@@ -30,8 +30,8 @@
 import os
 import asyncio
 import logging
-from pyrogram import filters, Client
-from pyrogram.types import Message, CallbackQuery
+from ftmgram import filters, Client
+from ftmgram.types import Message, CallbackQuery
 from bot import bot
 from database.db import db
 

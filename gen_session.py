@@ -2,10 +2,10 @@ import os
 import sys
 
 try:
-    from pyrogram import Client
+    from ftmgram import Client
 except ImportError:
     os.system("pip install kurigram tgcrypto -q")
-    from pyrogram import Client
+    from ftmgram import Client
 
 
 def generate_session():

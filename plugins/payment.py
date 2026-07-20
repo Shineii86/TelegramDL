@@ -42,8 +42,8 @@
 import time
 import logging
 from datetime import datetime, timedelta
-from pyrogram import filters
-from pyrogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from ftmgram import filters
+from ftmgram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from bot import bot
 from database.db import db
 from config import ADMINS, ADMIN_CONTACT

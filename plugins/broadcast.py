@@ -26,9 +26,9 @@
 
 import time
 import asyncio
-from pyrogram import filters
-from pyrogram.types import Message
-from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, PeerIdInvalid
+from ftmgram import filters
+from ftmgram.types import Message
+from ftmgram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, PeerIdInvalid
 
 from bot import bot
 from database.db import db

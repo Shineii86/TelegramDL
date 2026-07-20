@@ -37,8 +37,8 @@
 import os
 import asyncio
 import logging
-from pyrogram import filters
-from pyrogram.types import Message, CallbackQuery
+from ftmgram import filters
+from ftmgram.types import Message, CallbackQuery
 from bot import bot
 from database.db import db
 from utils.ui import back_keyboard

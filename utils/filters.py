@@ -89,7 +89,7 @@ def filter_by_type(msg, media_type="all"):
     if media_type == "all":
         return True
 
-    from pyrogram.enums import MessageMediaType
+    from ftmgram.enums import MessageMediaType
 
     type_map = {
         "photo": MessageMediaType.PHOTO,

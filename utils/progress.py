@@ -28,7 +28,7 @@
 
 import time
 import os
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from ftmgram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 # ===========================================================================
 #   FEATURE: DOWNLOAD_PROGRESS

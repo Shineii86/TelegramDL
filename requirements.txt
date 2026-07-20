@@ -1,4 +1,4 @@
-kurigram
+ftmgram
 tgcrypto
 motor
 yt-dlp

@@ -33,8 +33,8 @@ import sys
 import traceback
 import logging
 from datetime import datetime
-from pyrogram import filters, __version__ as pyro_version
-from pyrogram.types import Message, CallbackQuery
+from ftmgram import filters, __version__ as pyro_version
+from ftmgram.types import Message, CallbackQuery
 from bot import bot
 from database.db import db
 from config import LOG_CHANNEL, ADMINS, __version__

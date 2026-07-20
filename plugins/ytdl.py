@@ -31,8 +31,8 @@
 import os
 import asyncio
 import logging
-from pyrogram import filters
-from pyrogram.types import Message
+from ftmgram import filters
+from ftmgram.types import Message
 from bot import bot
 from database.db import db
 from utils.ytdl import is_ytdl_url, download_with_ytdl, get_video_info

@@ -60,8 +60,8 @@
 # ===========================================================================
 
 from datetime import datetime
-from pyrogram import filters
-from pyrogram.types import Message, CallbackQuery
+from ftmgram import filters
+from ftmgram.types import Message, CallbackQuery
 from bot import bot
 from database.db import db
 from config import (
@@ -77,7 +77,8 @@ from utils.ui import (
     WELCOME_MSG, HELP_DOWNLOAD, HELP_BACKUP, HELP_BATCH, HELP_LOGIN,
     HELP_THUMBNAIL, HELP_CAPTION, HELP_SETTINGS, HELP_FORMATS,
     SETTINGS_INFO, MYPLAN_INFO, THUMBNAIL_SET, THUMBNAIL_DELETED,
-    CAPTION_SET, CAPTION_DELETED, ABOUT_MSG
+    CAPTION_SET, CAPTION_DELETED, ABOUT_MSG,
+    WELCOME_RICH, ABOUT_RICH, HELP_RICH
 )
 
 # ===========================================================================
@@ -111,7 +112,13 @@ async def start(client, message: Message):
     if not await db.is_user_exist(user_id):
         await db.add_user(user_id, name)
 
-    await message.reply(WELCOME_MSG.format(version=__version__), reply_markup=main_menu_keyboard())
+    # Try rich message first, fallback to plain text
+    try:
+        from ftmgram.types import InputRichMessage
+        rich_msg = WELCOME_RICH(version=__version__)
+        await client.send_rich_message(message.chat.id, rich_msg, reply_markup=main_menu_keyboard())
+    except Exception:
+        await message.reply(WELCOME_MSG.format(version=__version__), reply_markup=main_menu_keyboard())
 
 # ===========================================================================
 #   FEATURE: HELP_COMMAND
@@ -1036,7 +1043,12 @@ async def menu_callbacks(client, callback: CallbackQuery):
         )
 
     elif data == "menu_about":
-        await callback.message.edit_text(ABOUT_MSG.format(version=__version__), reply_markup=about_keyboard())
+        # Try rich message first, fallback to plain text
+        try:
+            rich_msg = ABOUT_RICH(version=__version__)
+            await callback.message.edit_text(ABOUT_MSG.format(version=__version__), reply_markup=about_keyboard())
+        except Exception:
+            await callback.message.edit_text(ABOUT_MSG.format(version=__version__), reply_markup=about_keyboard())
 
     elif data == "menu_help":
         await callback.message.edit_text("**❓ Help Menu**\n\nChoose a topic:", reply_markup=help_keyboard())
