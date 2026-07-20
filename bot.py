@@ -86,6 +86,15 @@ class Bot(Client):
             sleep_threshold=5
         )
 
+    @property
+    def handlers(self):
+        """Expose handlers for ftmgram plugin discovery."""
+        result = []
+        for group, handler_list in self.dispatcher.groups.items():
+            for handler in handler_list:
+                result.append((handler, group))
+        return result
+
 
 bot = Bot()
 
