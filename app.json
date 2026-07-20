@@ -21,7 +21,7 @@
       "value": "",
       "required": true
     },
-    "MONGO_DB": {
+    "DB_URI": {
       "description": "MongoDB connection URL (https://cloud.mongodb.com)",
       "value": "",
       "required": true
@@ -31,23 +31,28 @@
       "value": "telegram_downloader",
       "required": false
     },
-    "OWNER_ID": {
-      "description": "Your Telegram user ID",
+    "ADMINS": {
+      "description": "Comma-separated admin Telegram user IDs",
       "value": "",
-      "required": true
+      "required": false
     },
-    "LOG_GROUP": {
-      "description": "Log channel/group ID (with -100 prefix)",
-      "value": "-1001234567890",
-      "required": true
+    "CHANNEL_ID": {
+      "description": "Channel ID for auto-upload (with -100 prefix)",
+      "value": "",
+      "required": false
+    },
+    "LOG_CHANNEL": {
+      "description": "Log channel ID (with -100 prefix)",
+      "value": "",
+      "required": false
     },
     "FORCE_SUB": {
       "description": "Force subscribe channel ID (with -100 prefix)",
-      "value": "-1001234567890",
+      "value": "",
       "required": false
     },
-    "STRING": {
-      "description": "Optional Pyrogram session string for restricted content",
+    "STRING_SESSION": {
+      "description": "Optional session string for restricted content",
       "value": "",
       "required": false
     },
@@ -72,18 +77,22 @@
       "required": false
     },
     "ADMIN_CONTACT": {
-      "description": "Admin contact link",
-      "value": "https://t.me/username",
-      "required": true
+      "description": "Admin contact username (without @)",
+      "value": "",
+      "required": false
     },
-    "JOIN_LINK": {
-      "description": "Channel link shown on /start",
-      "value": "https://t.me/username",
-      "required": true
+    "KEEP_ALIVE": {
+      "description": "Enable keep-alive server (True/False)",
+      "value": "False",
+      "required": false
     }
   },
-  "buildpacks": [
-    { "url": "heroku/python" }
-  ],
+  "formation": {
+    "worker": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "buildpacks": [],
   "stack": "container"
 }

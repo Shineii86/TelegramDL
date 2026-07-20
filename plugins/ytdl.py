@@ -38,7 +38,7 @@ from database.db import db
 from utils.ytdl import is_ytdl_url, download_with_ytdl, get_video_info
 from utils.splitter import split_file, cleanup_parts
 from utils.audio_metadata import embed_audio_metadata
-from config import OUTPUT_DIR, WAITING_TIME
+from config import OUTPUT_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -241,7 +241,7 @@ async def dl_cmd(client, message: Message):
                 for file_path in downloaded:
                     if os.path.exists(file_path):
                         await client.send_video(dump_chat, file_path) if file_path.endswith(('.mp4', '.mkv')) else await client.send_document(dump_chat, file_path)
-            except:
+            except Exception:
                 pass
 
         await status_msg.edit_text(f"**✅ Download Complete!**\n\nSent {len(downloaded)} file(s).")
@@ -256,7 +256,7 @@ async def dl_cmd(client, message: Message):
         try:
             import shutil
             shutil.rmtree(output_dir, ignore_errors=True)
-        except:
+        except Exception:
             pass
 
 # ===========================================================================
@@ -365,7 +365,7 @@ async def adl_cmd(client, message: Message):
         try:
             import shutil
             shutil.rmtree(output_dir, ignore_errors=True)
-        except:
+        except Exception:
             pass
 
 # ===========================================================================

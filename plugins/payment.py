@@ -297,7 +297,7 @@ async def pay_cmd(client, message: Message):
                 f"**To approve:** `/approve {request_id}`\n"
                 f"**To reject:** `/reject {request_id}`"
             )
-        except:
+        except Exception:
             pass
 
 # ===========================================================================
@@ -421,7 +421,7 @@ async def approve_cmd(client, message: Message):
             f"**Expires:** {(datetime.now() + timedelta(days=days)).strftime('%Y-%m-%d')}\n\n"
             f"**Enjoy your premium features!** 🎉"
         )
-    except:
+    except Exception:
         pass
 
     await message.reply(
@@ -480,7 +480,7 @@ async def reject_cmd(client, message: Message):
             f"**Request ID:** `{request_id}`\n\n"
             f"Contact admin for details: {ADMIN_CONTACT}"
         )
-    except:
+    except Exception:
         pass
 
     await message.reply(f"**❌ Rejected:** `{request_id}`")

@@ -31,7 +31,6 @@ import os
 import re
 import asyncio
 import logging
-import tempfile
 
 logger = logging.getLogger(__name__)
 
@@ -98,14 +97,13 @@ def is_ytdl_url(url):
 # ===========================================================================
 
 
-async def download_with_ytdl(url, output_dir, audio_only=False, progress_callback=None):
+async def download_with_ytdl(url, output_dir, audio_only=False):
     """Download media using yt-dlp.
 
     Args:
         url: URL to download
         output_dir: Directory to save files
         audio_only: If True, extract audio only
-        progress_callback: Optional callback for progress
 
     Returns:
         list: List of downloaded file paths

@@ -28,7 +28,6 @@
 
 import os
 import math
-import asyncio
 import logging
 
 logger = logging.getLogger(__name__)
@@ -114,21 +113,6 @@ async def split_file(file_path, max_size=PART_SIZE):
     return part_paths
 
 
-def get_part_name(base_name, part_num, total_parts, ext):
-    """Generate part filename.
-
-    Args:
-        base_name: Original filename (without extension)
-        part_num: Part number (1-indexed)
-        total_parts: Total number of parts
-        ext: File extension
-
-    Returns:
-        str: Part filename (e.g., "video_part1.mp4")
-    """
-    return f"{base_name}_part{part_num}{ext}"
-
-
 def cleanup_parts(part_paths, original_path):
     """Cleanup part files after upload.
 
@@ -147,7 +131,7 @@ def cleanup_parts(part_paths, original_path):
         if p != original_path and os.path.exists(p):
             try:
                 os.remove(p)
-            except:
+            except Exception:
                 pass
     
     # Cleanup parts directory
@@ -155,7 +139,7 @@ def cleanup_parts(part_paths, original_path):
     if os.path.exists(part_dir):
         try:
             os.rmdir(part_dir)
-        except:
+        except Exception:
             pass
 
 # ===========================================================================

@@ -30,11 +30,10 @@
 # ===========================================================================
 
 import sys
-import traceback
 import logging
 from datetime import datetime
-from ftmgram import filters, __version__ as pyro_version
-from ftmgram.types import Message, CallbackQuery
+from ftmgram import filters, __version__ as ftmgram_version
+from ftmgram.types import Message
 from bot import bot
 from database.db import db
 from config import LOG_CHANNEL, ADMINS, __version__
@@ -91,33 +90,23 @@ def format_user(user) -> str:
 #   FEATURE: USER_ACTIVITY_LOGS
 # ---------------------------------------------------------------------------
 #   Log new users, /start commands, and user interactions
+# ---------------------------------------------------------------------------
+#   NOTE: /start logging is handled in plugins/start.py to avoid
+#   duplicate handlers. Use log_to_channel() from start.py instead.
 # ===========================================================================
 
 
-@bot.on_message(filters.command("start") & filters.private)
-async def log_start(client, message: Message):
-    """Log /start command.
+async def log_start_event(user, is_new: bool):
+    """Log /start command event (called from start.py).
 
     Args:
-        client: Bot client
-        message: User message
+        user: User object from message.from_user
+        is_new: Whether this is a new user
 
     Returns:
         None
-
-    Logs:
-        - User info
-        - Timestamp
-        - First/returning user
     """
-    user = message.from_user
-    is_new = not await db.is_user_exist(user.id)
-
-    if is_new:
-        await db.add_user(user.id, user.first_name)
-        status = "**🆕 New User**"
-    else:
-        status = "**👤 Returning User**"
+    status = "**🆕 New User**" if is_new else "**👤 Returning User**"
 
     await log_to_channel(
         f"**📡 /start Command**\n\n"
@@ -403,7 +392,7 @@ def log_exception(exc_type, exc_value, exc_tb):
                     str(exc_value),
                     f"Type: {exc_type.__name__}"
                 ))
-        except:
+        except Exception:
             pass
 
 # Install exception handler
@@ -441,7 +430,7 @@ async def stats_cmd(client, message: Message):
     await message.reply(
         f"**📊 Bot Statistics**\n\n"
         f"**Version:** {__version__}\n"
-        f"**Pyrogram:** {pyro_version}\n"
+        f"**Pyrogram:** {ftmgram_version}\n"
         f"**Total Users:** {total_users}\n"
         f"**Premium Users:** {is_premium_count}\n"
         f"**Free Users:** {total_users - is_premium_count}\n"

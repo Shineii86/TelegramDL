@@ -66,7 +66,7 @@ from bot import bot
 from database.db import db
 from config import (
     LOGIN_SYSTEM, WAITING_TIME, MAX_FILE_SIZE_MB, TYPE_FILTER,
-    CAPTION_ENABLED, FORWARD_MODE, USE_CHECKPOINT,
+    FORWARD_MODE, USE_CHECKPOINT,
     FREE_DAILY_LIMIT, FREE_MAX_FILE_SIZE_MB, PREMIUM_MAX_FILE_SIZE_MB, ADMINS,
     __version__
 )
@@ -79,7 +79,7 @@ from utils.ui import (
     HELP_THUMBNAIL, HELP_CAPTION, HELP_SETTINGS, HELP_FORMATS,
     SETTINGS_INFO, MYPLAN_INFO, THUMBNAIL_SET, THUMBNAIL_DELETED,
     CAPTION_SET, CAPTION_DELETED, ABOUT_MSG,
-    WELCOME_RICH, ABOUT_RICH, HELP_RICH
+    WELCOME_RICH, ABOUT_RICH
 )
 
 # ===========================================================================
@@ -902,7 +902,8 @@ def check_anti_spam(user_id: int) -> bool:
         bool: True if OK, False if rate-limited
 
     Note:
-        Only works when ANTI_SPAM_ENABLED is True
+        Only works when ANTI_SPAM_ENABLED is True.
+        Periodically cleans stale entries to bound memory.
     """
     if not ANTI_SPAM_ENABLED:
         return True
@@ -910,6 +911,14 @@ def check_anti_spam(user_id: int) -> bool:
         return True
 
     now = _time.time()
+
+    # Cleanup stale entries every 500 keys
+    if len(USER_ACTION_TIMES) > 500:
+        stale_threshold = now - (ANTI_SPAM_INTERVAL * 10)
+        stale_keys = [k for k, v in USER_ACTION_TIMES.items() if v < stale_threshold]
+        for k in stale_keys:
+            del USER_ACTION_TIMES[k]
+
     last_action = USER_ACTION_TIMES.get(user_id, 0)
 
     if now - last_action < ANTI_SPAM_INTERVAL:

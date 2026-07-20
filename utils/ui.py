@@ -356,6 +356,60 @@ def about_keyboard():
     ])
 
 # ===========================================================================
+#   SHARED HELPERS
+# ===========================================================================
+
+
+def make_caption(msg, folder):
+    """Generate default caption for a message.
+
+    Args:
+        msg: Telegram message object
+        folder: Folder name (Photos, Videos, etc.)
+
+    Returns:
+        str: Formatted caption "Folder | YYYY-MM-DD | #msg_id"
+
+    Example:
+        make_caption(msg, "Videos") → "Videos | 2024-01-15 | #123"
+    """
+    date_str = msg.date.strftime("%Y-%m-%d") if msg.date else "unknown"
+    return f"{folder} | {date_str} | #{msg.id}"
+
+
+def get_folder(msg_type):
+    """Get folder name for media type.
+
+    Args:
+        msg_type: Media type string
+
+    Returns:
+        str: Folder name
+    """
+    folders = {
+        "photo": "Photos", "video": "Videos", "audio": "Audios",
+        "voice": "Voice", "animation": "GIFs", "sticker": "Stickers",
+        "document": "Documents",
+    }
+    return folders.get(msg_type, "Other")
+
+
+def get_ext(msg_type):
+    """Get file extension for media type.
+
+    Args:
+        msg_type: Media type string
+
+    Returns:
+        str: File extension
+    """
+    exts = {
+        "photo": "jpg", "video": "mp4", "audio": "mp3",
+        "voice": "ogg", "animation": "mp4", "document": "",
+    }
+    return exts.get(msg_type, "")
+
+# ===========================================================================
 #   MESSAGE TEMPLATES
 # ---------------------------------------------------------------------------
 #   All user-facing messages as constants

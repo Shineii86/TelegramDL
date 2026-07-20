@@ -38,9 +38,10 @@ from bot import bot, user_client, start_user_client
 from database.db import db
 from utils.progress import DownloadProgress
 from utils.checkpoint import load_checkpoint, save_checkpoint
+from utils.ui import make_caption, get_folder
 from config import (
     API_ID, API_HASH, LOGIN_SYSTEM, OUTPUT_DIR, CHANNEL_ID,
-    WAITING_TIME, ERROR_MESSAGE, MAX_FILE_SIZE_MB
+    WAITING_TIME, MAX_FILE_SIZE_MB
 )
 
 logger = logging.getLogger(__name__)
@@ -48,39 +49,6 @@ logger = logging.getLogger(__name__)
 # ===========================================================================
 #   HELPER FUNCTIONS
 # ===========================================================================
-
-
-def get_folder(msg_type):
-    """Get folder name for media type.
-
-    Args:
-        msg_type: Media type string
-
-    Returns:
-        str: Folder name
-    """
-    folders = {
-        "photo": "Photos", "video": "Videos", "audio": "Audios",
-        "voice": "Voice", "animation": "GIFs", "sticker": "Stickers",
-        "document": "Documents",
-    }
-    return folders.get(msg_type, "Other")
-
-
-def get_ext(msg_type):
-    """Get file extension for media type.
-
-    Args:
-        msg_type: Media type string
-
-    Returns:
-        str: File extension
-    """
-    exts = {
-        "photo": "jpg", "video": "mp4", "audio": "mp3",
-        "voice": "ogg", "animation": "mp4", "document": "",
-    }
-    return exts.get(msg_type, "")
 
 
 def get_media_type(msg):
@@ -107,20 +75,6 @@ def get_media_type(msg):
     elif msg.media == MessageMediaType.STICKER:
         return "sticker"
     return None
-
-
-def make_caption(msg, folder):
-    """Generate caption for backup message.
-
-    Args:
-        msg: Telegram message
-        folder: Folder name
-
-    Returns:
-        str: Formatted caption
-    """
-    date_str = msg.date.strftime("%Y-%m-%d") if msg.date else "unknown"
-    return f"{folder} | {date_str} | #{msg.id}"
 
 # ===========================================================================
 #   DOWNLOAD/SEND HELPERS
@@ -286,7 +240,7 @@ async def backup_cmd(client, message: Message):
         if CHANNEL_ID:
             try:
                 backup_channel = await client.get_chat(int(CHANNEL_ID))
-            except:
+            except Exception:
                 pass
 
         if not backup_channel:
@@ -354,7 +308,7 @@ async def backup_cmd(client, message: Message):
                         # Cleanup
                         try:
                             os.remove(file_path)
-                        except:
+                        except Exception:
                             pass
 
                         # Save checkpoint
@@ -388,7 +342,7 @@ async def backup_cmd(client, message: Message):
         if acc and acc != user_client:
             try:
                 await acc.stop()
-            except:
+            except Exception:
                 pass
 
 # ===========================================================================

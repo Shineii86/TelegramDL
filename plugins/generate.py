@@ -50,16 +50,16 @@ from ftmgram.types import Message, CallbackQuery
 from ftmgram.enums import MessageMediaType
 from ftmgram.errors import (
     FloodWait, UserNotParticipant, ChannelPrivate,
-    UsernameNotOccupied, UsernameInvalid, PeerIdInvalid
+    UsernameNotOccupied, UsernameInvalid
 )
 
 from bot import bot, user_client, start_user_client
 from database.db import db
 from utils.progress import DownloadProgress
-from utils.ui import stop_keyboard, main_menu_keyboard
+from utils.ui import stop_keyboard, main_menu_keyboard, make_caption, get_folder, get_ext
 from config import (
     API_ID, API_HASH, LOGIN_SYSTEM, OUTPUT_DIR,
-    WAITING_TIME, ERROR_MESSAGE, CHANNEL_ID, MAX_FILE_SIZE_MB,
+    WAITING_TIME, ERROR_MESSAGE, MAX_FILE_SIZE_MB,
     KEEP_ORIGINAL_CAPTION, FREE_MAX_FILE_SIZE_MB, PREMIUM_MAX_FILE_SIZE_MB,
     FREE_DAILY_LIMIT
 )
@@ -118,61 +118,6 @@ def get_message_type(msg):
         return "text"
     return None
 
-
-def get_folder(msg_type):
-    """Get folder name for media type.
-
-    Args:
-        msg_type: Media type string
-
-    Returns:
-        str: Folder name (Photos, Videos, Audios, etc.)
-
-    Example:
-        get_folder("video") → "Videos"
-    """
-    folders = {
-        "photo": "Photos", "video": "Videos", "audio": "Audios",
-        "voice": "Voice", "animation": "GIFs", "sticker": "Stickers",
-        "document": "Documents",
-    }
-    return folders.get(msg_type, "Other")
-
-
-def get_ext(msg_type):
-    """Get file extension for media type.
-
-    Args:
-        msg_type: Media type string
-
-    Returns:
-        str: File extension (jpg, mp4, mp3, etc.)
-
-    Example:
-        get_ext("video") → "mp4"
-    """
-    exts = {
-        "photo": "jpg", "video": "mp4", "audio": "mp3",
-        "voice": "ogg", "animation": "mp4", "document": "",
-    }
-    return exts.get(msg_type, "")
-
-
-def make_caption(msg, folder):
-    """Generate default caption for a message.
-
-    Args:
-        msg: Telegram message object
-        folder: Folder name (Photos, Videos, etc.)
-
-    Returns:
-        str: Formatted caption "Folder | YYYY-MM-DD | #msg_id"
-
-    Example:
-        make_caption(msg, "Videos") → "Videos | 2024-01-15 | #123"
-    """
-    date_str = msg.date.strftime("%Y-%m-%d") if msg.date else "unknown"
-    return f"{folder} | {date_str} | #{msg.id}"
 
 # ===========================================================================
 #   FEATURE: LINK_PARSER
@@ -342,7 +287,7 @@ async def auto_join_channel(client, channel):
     try:
         await client.join_chat(channel)
         return True
-    except:
+    except Exception:
         return False
 
 # ===========================================================================
@@ -478,7 +423,7 @@ async def send_with_metadata(client, chat_id, file_path, caption, msg, caption_e
                         thumb = await client.download_media(msg.document.thumbs[0].file_id)
                     elif msg.media == MessageMediaType.AUDIO and msg.audio.thumbs:
                         thumb = await client.download_media(msg.audio.thumbs[0].file_id)
-                except:
+                except Exception:
                     thumb = None
 
             # Apply custom caption if set
@@ -551,7 +496,7 @@ async def send_with_metadata(client, chat_id, file_path, caption, msg, caption_e
             if thumb and not custom_thumb and isinstance(thumb, str) and os.path.exists(thumb):
                 try:
                     os.remove(thumb)
-                except:
+                except Exception:
                     pass
 
             return True
@@ -654,7 +599,7 @@ async def handle_single(client, acc, message, chat_id, msg_id, forward=False, pr
                 if dump_chat:
                     try:
                         await client.forward_messages(dump_chat, msg.chat.id, msg.id)
-                    except:
+                    except Exception:
                         pass
                 return
 
@@ -684,12 +629,12 @@ async def handle_single(client, acc, message, chat_id, msg_id, forward=False, pr
             if dump_chat:
                 try:
                     await send_with_metadata(client, dump_chat, file_path, caption, msg, caption_entities, user_id=user_id)
-                except:
+                except Exception:
                     pass
 
         try:
             os.remove(file_path)
-        except:
+        except Exception:
             pass
 
         if not sent:
@@ -832,7 +777,7 @@ async def batch_cmd(client, message: Message):
     if LOGIN_SYSTEM and acc != user_client:
         try:
             await acc.stop()
-        except:
+        except Exception:
             pass
 
 # ===========================================================================
@@ -951,7 +896,7 @@ async def save(client, message: Message):
                         
                         try:
                             os.remove(file_path)
-                        except:
+                        except Exception:
                             pass
                     else:
                         await message.reply(
@@ -972,7 +917,7 @@ async def save(client, message: Message):
                     if LOGIN_SYSTEM and acc != user_client:
                         try:
                             await acc.stop()
-                        except:
+                        except Exception:
                             pass
             else:
                 await message.reply(
@@ -1046,7 +991,7 @@ async def save(client, message: Message):
                     if LOGIN_SYSTEM and acc != user_client:
                         try:
                             await acc.stop()
-                        except:
+                        except Exception:
                             pass
             else:
                 await message.reply(
@@ -1089,13 +1034,13 @@ async def save(client, message: Message):
 
                 try:
                     os.remove(file_path)
-                except:
+                except Exception:
                     pass
                 return
             elif msg_type == "text":
                 await client.send_message(message.chat.id, msg.text)
                 return
-    except:
+    except Exception:
         # Auto-join if bot can't access
         try:
             acc = await get_auth_client(user_id)
@@ -1106,15 +1051,15 @@ async def save(client, message: Message):
                     try:
                         if acc != client:
                             await acc.stop()
-                    except:
+                    except Exception:
                         pass
                     return
                 try:
                     if acc != client:
                         await acc.stop()
-                except:
+                except Exception:
                     pass
-        except:
+        except Exception:
             pass
         pass
 
@@ -1164,7 +1109,7 @@ async def save(client, message: Message):
     if LOGIN_SYSTEM and acc != user_client:
         try:
             await acc.stop()
-        except:
+        except Exception:
             pass
 
 # ===========================================================================

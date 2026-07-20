@@ -10,7 +10,6 @@ jobs:
   lint:
     name: Lint & Format
     runs-on: ubuntu-latest
-    continue-on-error: true
     
     steps:
       - name: Checkout code
@@ -19,7 +18,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.10'
           
       - name: Install dependencies
         run: |
@@ -28,20 +27,19 @@ jobs:
           
       - name: Run flake8 (errors only)
         run: |
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           
       - name: Check formatting with black
         run: |
-          black --check . || true
+          black --check .
           
       - name: Check import order with isort
         run: |
-          isort --check-only . || true
+          isort --check-only .
           
   security:
     name: Security Scan
     runs-on: ubuntu-latest
-    continue-on-error: true
     
     steps:
       - name: Checkout code
@@ -50,7 +48,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.10'
           
       - name: Install dependencies
         run: |
@@ -59,13 +57,12 @@ jobs:
           
       - name: Run bandit security linter
         run: |
-          bandit -r . -ll || true
+          bandit -r . -ll
           
   build:
     name: Build & Test
     runs-on: ubuntu-latest
     needs: [lint, security]
-    continue-on-error: true
     
     steps:
       - name: Checkout code
@@ -74,7 +71,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.10'
           
       - name: Install dependencies
         run: |
@@ -83,41 +80,42 @@ jobs:
           
       - name: Verify Python syntax
         run: |
-          python -m py_compile bot.py || true
-          python -m py_compile config.py || true
-          python -m py_compile app.py || true
-          python -m py_compile gen_session.py || true
+          python -m py_compile bot.py
+          python -m py_compile config.py
+          python -m py_compile app.py
+          python -m py_compile gen_session.py
           
       - name: Verify plugin syntax
         run: |
-          python -m py_compile plugins/start.py || true
-          python -m py_compile plugins/generate.py || true
-          python -m py_compile plugins/backup.py || true
-          python -m py_compile plugins/broadcast.py || true
-          python -m py_compile plugins/payment.py || true
-          python -m py_compile plugins/logger.py || true
-          python -m py_compile plugins/ytdl.py || true
-          python -m py_compile plugins/custom_bot.py || true
-          python -m py_compile plugins/settings.py || true
+          python -m py_compile plugins/start.py
+          python -m py_compile plugins/generate.py
+          python -m py_compile plugins/backup.py
+          python -m py_compile plugins/broadcast.py
+          python -m py_compile plugins/payment.py
+          python -m py_compile plugins/logger.py
+          python -m py_compile plugins/ytdl.py
+          python -m py_compile plugins/custom_bot.py
+          python -m py_compile plugins/settings.py
           
       - name: Verify utils syntax
         run: |
-          python -m py_compile utils/ui.py || true
-          python -m py_compile utils/progress.py || true
-          python -m py_compile utils/session.py || true
-          python -m py_compile utils/keepalive.py || true
-          python -m py_compile utils/checkpoint.py || true
-          python -m py_compile utils/media.py || true
-          python -m py_compile utils/filters.py || true
-          python -m py_compile utils/archive.py || true
-          python -m py_compile utils/splitter.py || true
-          python -m py_compile utils/ytdl.py || true
-          python -m py_compile utils/audio_metadata.py || true
+          python -m py_compile utils/ui.py
+          python -m py_compile utils/progress.py
+          python -m py_compile utils/session.py
+          python -m py_compile utils/keepalive.py
+          python -m py_compile utils/checkpoint.py
+          python -m py_compile utils/media.py
+          python -m py_compile utils/filters.py
+          python -m py_compile utils/archive.py
+          python -m py_compile utils/splitter.py
+          python -m py_compile utils/ytdl.py
+          python -m py_compile utils/audio_metadata.py
+          python -m py_compile utils/rich_message.py
           
       - name: Verify database syntax
         run: |
-          python -m py_compile database/db.py || true
+          python -m py_compile database/db.py
           
       - name: Build Docker image
         run: |
-          docker build -t telegramdl-test . || true
+          docker build -t telegramdl-test .

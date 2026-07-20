@@ -101,7 +101,7 @@ async def broadcast_cmd(client, message: Message):
             try:
                 await message.reply_to_message.copy(user_id)
                 success += 1
-            except:
+            except Exception:
                 failed += 1
         except UserIsBlocked:
             await db.delete_user(user_id)
@@ -126,7 +126,7 @@ async def broadcast_cmd(client, message: Message):
                     f"Blocked: {blocked}\n"
                     f"Deleted: {deleted}"
                 )
-            except:
+            except Exception:
                 pass
 
     elapsed = time.time() - start_time

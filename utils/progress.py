@@ -27,7 +27,6 @@
 # ===========================================================================
 
 import time
-import os
 from ftmgram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 # ===========================================================================

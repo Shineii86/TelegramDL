@@ -28,10 +28,9 @@
 # ===========================================================================
 
 import os
-import asyncio
 import logging
 from ftmgram import filters, Client
-from ftmgram.types import Message, CallbackQuery
+from ftmgram.types import Message
 from bot import bot
 from database.db import db
 
@@ -92,6 +91,11 @@ async def get_user_bot(user_id):
         return client
     except Exception as e:
         logger.error(f"Failed to start custom bot for {user_id}: {e}")
+        # Cleanup: stop and remove the client if start() failed
+        try:
+            await client.stop()
+        except Exception:
+            pass
         return None
 
 
@@ -110,7 +114,7 @@ async def stop_user_bot(user_id):
     if user_id in custom_bot_clients:
         try:
             await custom_bot_clients[user_id].stop()
-        except:
+        except Exception:
             pass
         del custom_bot_clients[user_id]
 
@@ -282,7 +286,7 @@ async def mybot_cmd(client, message: Message):
                 f"Status: ✅ Active\n\n"
                 f"Use /delbot to remove."
             )
-        except:
+        except Exception:
             await message.reply(
                 f"**🤖 Your Custom Bot**\n\n"
                 f"**Token:** `{bot_token[:10]}...{bot_token[-5:]}`\n\n"

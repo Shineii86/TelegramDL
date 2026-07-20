@@ -314,7 +314,8 @@ async def set_topic_cmd(client, message: Message):
     chat_id = parts[0]
     topic_id = parts[1]
 
-    # Store topic_id for topic-enabled groups
+    # Store both dump_chat (chat_id) and topic_id for topic-enabled groups
+    await db.set_dump_chat(user_id, chat_id)
     await db.set_topic_id(user_id, topic_id)
 
     await message.reply(
@@ -336,7 +337,9 @@ async def del_topic_cmd(client, message: Message):
     Returns:
         None
     """
-    await db.delete_topic_id(message.from_user.id)
+    user_id = message.from_user.id
+    await db.delete_dump_chat(user_id)
+    await db.delete_topic_id(user_id)
     await message.reply("**✅ Topic Group Removed**")
 
 # ===========================================================================
