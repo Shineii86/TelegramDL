@@ -1044,6 +1044,254 @@ def ERROR_RICH(error_type: str, message: str, suggestion: str = "") -> InputRich
     return InputRichMessage(html=html.strip())
 
 
+def HELP_DOWNLOAD_RICH() -> InputRichMessage:
+    html = """
+<h2>📥 Download Help</h2>
+<blockquote>Send any Telegram link or username to download</blockquote>
+
+<h3>Supported Formats</h3>
+<table>
+<tr><td>📢 <b>Public Channel</b></td><td><code>t.me/username/123</code></td></tr>
+<tr><td>🔒 <b>Private Channel</b></td><td><code>t.me/c/1234567890/123</code></td></tr>
+<tr><td>📖 <b>Story</b></td><td><code>t.me/username/s/123</code></td></tr>
+<tr><td>📦 <b>Batch Range</b></td><td><code>t.me/username/1001-1010</code></td></tr>
+<tr><td>🤖 <b>Bot Chat</b></td><td><code>t.me/b/botusername/123</code></td></tr>
+<tr><td>🔗 <b>Invite Link</b></td><td><code>t.me/+invitehash</code></td></tr>
+<tr><td>👥 <b>Group</b></td><td><code>t.me/groupname/123</code></td></tr>
+<tr><td>🆔 <b>Numeric ID</b></td><td><code>-1001234567890/123</code></td></tr>
+</table>
+
+<blockquote>💡 For bot chats, use Plus Messenger to get message ID</blockquote>
+"""
+    return InputRichMessage(html=html.strip())
+
+
+def HELP_BACKUP_RICH() -> InputRichMessage:
+    html = """
+<h2>☁️ Backup Help</h2>
+<p><code>/backup &lt;channel_url&gt;</code> — Backup channel to a new channel.</p>
+<h3>Features</h3>
+<ul>
+<li>Auto-creates backup channel</li>
+<li>Preserves captions</li>
+<li>Resume after disconnect</li>
+<li>Progress tracking</li>
+</ul>
+"""
+    return InputRichMessage(html=html.strip())
+
+
+def HELP_BATCH_RICH() -> InputRichMessage:
+    html = """
+<h2>📦 Batch Help</h2>
+<p><code>/batch &lt;channel_url&gt;</code> — Download all media from channel.</p>
+<h3>Features</h3>
+<ul>
+<li>Process message ID ranges</li>
+<li>Forward mode (fastest)</li>
+<li>Cancel anytime</li>
+<li>Progress bar with ETA</li>
+</ul>
+"""
+    return InputRichMessage(html=html.strip())
+
+
+def HELP_LOGIN_RICH() -> InputRichMessage:
+    html = """
+<h2>🔐 Login Help</h2>
+<p><code>/login</code> — Login with your phone number.</p>
+<h3>Why login?</h3>
+<ul>
+<li>Access restricted channels</li>
+<li>Download private content</li>
+<li>Your session stays secure</li>
+</ul>
+<h3>Steps</h3>
+<ol>
+<li>Click Login button</li>
+<li>Enter phone number</li>
+<li>Enter OTP code</li>
+</ol>
+"""
+    return InputRichMessage(html=html.strip())
+
+
+def HELP_THUMBNAIL_RICH() -> InputRichMessage:
+    html = """
+<h2>🖼 Thumbnail Help</h2>
+<p>Set a custom thumbnail for your uploads.</p>
+<h3>Commands</h3>
+<table>
+<tr><td><code>/set_thumb</code></td><td>Reply to a photo to set as thumbnail</td></tr>
+<tr><td><code>/view_thumb</code></td><td>View your current thumbnail</td></tr>
+<tr><td><code>/del_thumb</code></td><td>Delete your thumbnail</td></tr>
+</table>
+<blockquote>Note: Custom thumbnail is used for all your uploads. If not set, original thumbnail is used.</blockquote>
+"""
+    return InputRichMessage(html=html.strip())
+
+
+def HELP_CAPTION_RICH() -> InputRichMessage:
+    html = """
+<h2>📝 Caption Help</h2>
+<p>Set a custom caption for your uploads.</p>
+<h3>Commands</h3>
+<table>
+<tr><td><code>/set_caption &lt;text&gt;</code></td><td>Set custom caption</td></tr>
+<tr><td><code>/view_caption</code></td><td>View your current caption</td></tr>
+<tr><td><code>/del_caption</code></td><td>Delete your caption</td></tr>
+</table>
+<h3>Placeholders</h3>
+<table>
+<tr><td><code>{filename}</code></td><td>Original filename</td></tr>
+<tr><td><code>{size}</code></td><td>File size</td></tr>
+<tr><td><code>{date}</code></td><td>Upload date</td></tr>
+</table>
+<p><b>Example:</b> <code>📁 {filename} | Size: {size} | Date: {date}</code></p>
+"""
+    return InputRichMessage(html=html.strip())
+
+
+def HELP_SETTINGS_RICH() -> InputRichMessage:
+    html = """
+<h2>⚙️ Settings Help</h2>
+<p>Adjust bot behavior:</p>
+<table>
+<tr><td><b>Delay</b></td><td>Time between downloads (flood protection)</td></tr>
+<tr><td><b>File Size</b></td><td>Max file size limit</td></tr>
+<tr><td><b>Type Filter</b></td><td>Download only specific media</td></tr>
+<tr><td><b>Forward Mode</b></td><td>Use forwarding (faster)</td></tr>
+<tr><td><b>Checkpoint</b></td><td>Save progress for resume</td></tr>
+<tr><td><b>Dump Chat</b></td><td>Auto-forward downloads to a channel</td></tr>
+</table>
+"""
+    return InputRichMessage(html=html.strip())
+
+
+def HELP_FORMATS_RICH() -> InputRichMessage:
+    html = """
+<h2>🔗 All Supported Formats</h2>
+<h3>Channels</h3>
+<table>
+<tr><td><code>t.me/username/123</code></td><td>Public channel</td></tr>
+<tr><td><code>t.me/c/1234567890/123</code></td><td>Private channel</td></tr>
+<tr><td><code>t.me/+invitehash</code></td><td>Invite link</td></tr>
+<tr><td><code>t.me/joinchat/hash</code></td><td>Old invite format</td></tr>
+</table>
+<h3>Stories</h3>
+<table>
+<tr><td><code>t.me/username/s/123</code></td><td>Download story</td></tr>
+</table>
+<h3>Groups & Supergroups</h3>
+<table>
+<tr><td><code>t.me/groupname/123</code></td><td>Public group</td></tr>
+<tr><td><code>t.me/c/GROUP_ID/123</code></td><td>Private group</td></tr>
+<tr><td><code>-1001234567890/123</code></td><td>Numeric group ID</td></tr>
+</table>
+<h3>Bots</h3>
+<table>
+<tr><td><code>t.me/b/botusername/123</code></td><td>Bot chat</td></tr>
+<tr><td><code>t.me/b/botusername</code></td><td>Bot chat (no specific message)</td></tr>
+<tr><td><code>t.me/botusername</code></td><td>Bot link</td></tr>
+</table>
+<h3>Users</h3>
+<table>
+<tr><td><code>t.me/username</code></td><td>User profile</td></tr>
+<tr><td><code>username</code></td><td>Plain username</td></tr>
+</table>
+<h3>Batch</h3>
+<table>
+<tr><td><code>t.me/username/1001-1010</code></td><td>ID range</td></tr>
+</table>
+"""
+    return InputRichMessage(html=html.strip())
+
+
+def SETTINGS_INFO_RICH(delay: int, size: int, type_filter: str,
+                       forward: str, checkpoint: str, dump_chat: str) -> InputRichMessage:
+    html = f"""
+<h2>⚙️ Current Settings</h2>
+<table>
+<tr><td><b>Delay</b></td><td>{delay}s between downloads</td></tr>
+<tr><td><b>File Size</b></td><td>{size}MB max</td></tr>
+<tr><td><b>Type Filter</b></td><td>{type_filter}</td></tr>
+<tr><td><b>Forward Mode</b></td><td>{forward}</td></tr>
+<tr><td><b>Checkpoint</b></td><td>{checkpoint}</td></tr>
+<tr><td><b>Dump Chat</b></td><td>{dump_chat}</td></tr>
+</table>
+"""
+    return InputRichMessage(html=html.strip())
+
+
+def BACKUP_START_RICH(channel: str, total: int) -> InputRichMessage:
+    html = f"""
+<h2>☁️ Starting Backup</h2>
+<table>
+<tr><td><b>Source</b></td><td><code>{channel}</code></td></tr>
+<tr><td><b>Total</b></td><td>{total} files</td></tr>
+</table>
+<p>Processing...</p>
+"""
+    return InputRichMessage(html=html.strip())
+
+
+def BACKUP_COMPLETE_RICH(downloaded: int, skipped: int, failed: int,
+                         total: int, time: str) -> InputRichMessage:
+    html = f"""
+<h2>✅ Backup Complete!</h2>
+<table>
+<tr><td><b>Downloaded</b></td><td>{downloaded}</td></tr>
+<tr><td><b>Skipped</b></td><td>{skipped}</td></tr>
+<tr><td><b>Failed</b></td><td>{failed}</td></tr>
+<tr><td><b>Total</b></td><td>{total}</td></tr>
+<tr><td><b>Time</b></td><td>{time}</td></tr>
+</table>
+"""
+    return InputRichMessage(html=html.strip())
+
+
+def THUMBNAIL_SET_RICH() -> InputRichMessage:
+    html = """
+<h3>🖼 Thumbnail Updated!</h3>
+<p>Your custom thumbnail has been set.</p>
+<p>All future uploads will use this thumbnail.</p>
+"""
+    return InputRichMessage(html=html.strip())
+
+
+def THUMBNAIL_DELETED_RICH() -> InputRichMessage:
+    html = """
+<h3>🗑 Thumbnail Deleted!</h3>
+<p>Your custom thumbnail has been removed.</p>
+<p>Original thumbnails will be used.</p>
+"""
+    return InputRichMessage(html=html.strip())
+
+
+def CAPTION_SET_RICH(caption: str) -> InputRichMessage:
+    html = f"""
+<h3>📝 Caption Updated!</h3>
+<p>Your custom caption has been set.</p>
+<p><b>Preview:</b> {caption}</p>
+<h4>Placeholders</h4>
+<table>
+<tr><td><code>{{filename}}</code></td><td>Original filename</td></tr>
+<tr><td><code>{{size}}</code></td><td>File size</td></tr>
+<tr><td><code>{{date}}</code></td><td>Upload date</td></tr>
+</table>
+"""
+    return InputRichMessage(html=html.strip())
+
+
+def CAPTION_DELETED_RICH() -> InputRichMessage:
+    html = """
+<h3>🗑 Caption Deleted!</h3>
+<p>Your custom caption has been removed.</p>
+<p>Original captions will be used.</p>
+"""
+    return InputRichMessage(html=html.strip())
+
+
 # ===========================================================================
 #   END OF UI MODULE
 # ===========================================================================

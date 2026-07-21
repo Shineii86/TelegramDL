@@ -79,7 +79,11 @@ from utils.ui import (
     HELP_THUMBNAIL, HELP_CAPTION, HELP_SETTINGS, HELP_FORMATS,
     SETTINGS_INFO, MYPLAN_INFO, THUMBNAIL_SET, THUMBNAIL_DELETED,
     CAPTION_SET, CAPTION_DELETED, ABOUT_MSG,
-    WELCOME_RICH, ABOUT_RICH, MYPLAN_RICH
+    WELCOME_RICH, ABOUT_RICH, MYPLAN_RICH,
+    HELP_DOWNLOAD_RICH, HELP_BACKUP_RICH, HELP_BATCH_RICH, HELP_LOGIN_RICH,
+    HELP_THUMBNAIL_RICH, HELP_CAPTION_RICH, HELP_SETTINGS_RICH, HELP_FORMATS_RICH,
+    SETTINGS_INFO_RICH, BACKUP_START_RICH, BACKUP_COMPLETE_RICH,
+    THUMBNAIL_SET_RICH, THUMBNAIL_DELETED_RICH, CAPTION_SET_RICH, CAPTION_DELETED_RICH,
 )
 
 # ===========================================================================
@@ -169,15 +173,20 @@ async def settings_cmd(client, message: Message):
         - Dump chat
     """
     dump_chat = await db.get_dump_chat(message.from_user.id)
-    text = SETTINGS_INFO.format(
-        delay=WAITING_TIME,
-        size=MAX_FILE_SIZE_MB,
-        type_filter=TYPE_FILTER,
-        forward="ON" if FORWARD_MODE else "OFF",
-        checkpoint="ON" if USE_CHECKPOINT else "OFF",
-        dump_chat=dump_chat or "Not set",
-    )
-    await message.reply(text, reply_markup=settings_keyboard())
+    try:
+        rich_msg = SETTINGS_INFO_RICH(
+            delay=WAITING_TIME, size=MAX_FILE_SIZE_MB,
+            type_filter=TYPE_FILTER, forward="ON" if FORWARD_MODE else "OFF",
+            checkpoint="ON" if USE_CHECKPOINT else "OFF", dump_chat=dump_chat or "Not set",
+        )
+        await client.send_rich_message(message.chat.id, rich_msg, reply_markup=settings_keyboard(), disable_web_page_preview=True)
+    except Exception:
+        text = SETTINGS_INFO.format(
+            delay=WAITING_TIME, size=MAX_FILE_SIZE_MB,
+            type_filter=TYPE_FILTER, forward="ON" if FORWARD_MODE else "OFF",
+            checkpoint="ON" if USE_CHECKPOINT else "OFF", dump_chat=dump_chat or "Not set",
+        )
+        await message.reply(text, reply_markup=settings_keyboard(), disable_web_page_preview=True)
 
 # ===========================================================================
 #   FEATURE: LOGIN_COMMAND
@@ -370,7 +379,10 @@ async def set_thumb_cmd(client, message: Message):
         return
     file_id = message.reply_to_message.photo.file_id
     await db.set_thumbnail(message.from_user.id, file_id)
-    await message.reply(THUMBNAIL_SET)
+    try:
+        await client.send_rich_message(message.chat.id, THUMBNAIL_SET_RICH(), disable_web_page_preview=True)
+    except Exception:
+        await message.reply(THUMBNAIL_SET, disable_web_page_preview=True)
 
 
 @bot.on_message(filters.command("view_thumb") & filters.private)
@@ -403,7 +415,10 @@ async def del_thumb_cmd(client, message: Message):
         None
     """
     await db.delete_thumbnail(message.from_user.id)
-    await message.reply(THUMBNAIL_DELETED)
+    try:
+        await client.send_rich_message(message.chat.id, THUMBNAIL_DELETED_RICH(), disable_web_page_preview=True)
+    except Exception:
+        await message.reply(THUMBNAIL_DELETED, disable_web_page_preview=True)
 
 # ===========================================================================
 #   FEATURE: CAPTION_COMMANDS
@@ -452,7 +467,10 @@ async def set_caption_cmd(client, message: Message):
         return
     caption = args[1]
     await db.set_caption(message.from_user.id, caption)
-    await message.reply(CAPTION_SET.format(caption=caption))
+    try:
+        await client.send_rich_message(message.chat.id, CAPTION_SET_RICH(caption=caption), disable_web_page_preview=True)
+    except Exception:
+        await message.reply(CAPTION_SET.format(caption=caption), disable_web_page_preview=True)
 
 
 @bot.on_message(filters.command("view_caption") & filters.private)
@@ -485,7 +503,10 @@ async def del_caption_cmd(client, message: Message):
         None
     """
     await db.delete_caption(message.from_user.id)
-    await message.reply(CAPTION_DELETED)
+    try:
+        await client.send_rich_message(message.chat.id, CAPTION_DELETED_RICH(), disable_web_page_preview=True)
+    except Exception:
+        await message.reply(CAPTION_DELETED, disable_web_page_preview=True)
 
 # ===========================================================================
 #   FEATURE: ADMIN_COMMANDS
@@ -1012,15 +1033,20 @@ async def menu_callbacks(client, callback: CallbackQuery):
 
     elif data == "menu_settings":
         dump_chat = await db.get_dump_chat(callback.from_user.id)
-        text = SETTINGS_INFO.format(
-            delay=WAITING_TIME,
-            size=MAX_FILE_SIZE_MB,
-            type_filter=TYPE_FILTER,
-            forward="ON" if FORWARD_MODE else "OFF",
-            checkpoint="ON" if USE_CHECKPOINT else "OFF",
-            dump_chat=dump_chat or "Not set",
-        )
-        await callback.message.edit_text(text, reply_markup=settings_keyboard())
+        try:
+            rich_msg = SETTINGS_INFO_RICH(
+                delay=WAITING_TIME, size=MAX_FILE_SIZE_MB,
+                type_filter=TYPE_FILTER, forward="ON" if FORWARD_MODE else "OFF",
+                checkpoint="ON" if USE_CHECKPOINT else "OFF", dump_chat=dump_chat or "Not set",
+            )
+            await callback.message.edit_text(rich_msg, reply_markup=settings_keyboard(), disable_web_page_preview=True)
+        except Exception:
+            text = SETTINGS_INFO.format(
+                delay=WAITING_TIME, size=MAX_FILE_SIZE_MB,
+                type_filter=TYPE_FILTER, forward="ON" if FORWARD_MODE else "OFF",
+                checkpoint="ON" if USE_CHECKPOINT else "OFF", dump_chat=dump_chat or "Not set",
+            )
+            await callback.message.edit_text(text, reply_markup=settings_keyboard(), disable_web_page_preview=True)
 
     elif data == "menu_myplan":
         user_id = callback.from_user.id
@@ -1076,13 +1102,11 @@ async def menu_callbacks(client, callback: CallbackQuery):
         )
 
     elif data == "menu_about":
-        # Use rich message with fallback to plain text
         try:
-            from ftmgram.types import InputRichMessage
             rich_msg = ABOUT_RICH(version=__version__)
-            await callback.message.edit_text(ABOUT_MSG.format(version=__version__), reply_markup=about_keyboard())
+            await callback.message.edit_text(rich_msg, reply_markup=about_keyboard(), disable_web_page_preview=True)
         except Exception:
-            await callback.message.edit_text(ABOUT_MSG.format(version=__version__), reply_markup=about_keyboard())
+            await callback.message.edit_text(ABOUT_MSG.format(version=__version__), reply_markup=about_keyboard(), disable_web_page_preview=True)
 
     elif data == "menu_help":
         await callback.message.edit_text("**❓ Help Menu**\n\nChoose a topic:", reply_markup=help_keyboard())
@@ -1311,10 +1335,10 @@ async def thumbnail_callbacks(client, callback: CallbackQuery):
 
     elif data == "thumb_delete":
         await db.delete_thumbnail(callback.from_user.id)
-        await callback.message.edit_text(
-            THUMBNAIL_DELETED,
-            reply_markup=back_keyboard("menu_thumbnail")
-        )
+        try:
+            await callback.message.edit_text(THUMBNAIL_DELETED_RICH(), reply_markup=back_keyboard("menu_thumbnail"), disable_web_page_preview=True)
+        except Exception:
+            await callback.message.edit_text(THUMBNAIL_DELETED, reply_markup=back_keyboard("menu_thumbnail"), disable_web_page_preview=True)
 
     await callback.answer()
 
@@ -1357,10 +1381,10 @@ async def caption_callbacks(client, callback: CallbackQuery):
 
     elif data == "caption_delete":
         await db.delete_caption(callback.from_user.id)
-        await callback.message.edit_text(
-            CAPTION_DELETED,
-            reply_markup=back_keyboard("menu_caption")
-        )
+        try:
+            await callback.message.edit_text(CAPTION_DELETED_RICH(), reply_markup=back_keyboard("menu_caption"), disable_web_page_preview=True)
+        except Exception:
+            await callback.message.edit_text(CAPTION_DELETED, reply_markup=back_keyboard("menu_caption"), disable_web_page_preview=True)
 
     await callback.answer()
 
@@ -1417,21 +1441,45 @@ async def help_callbacks(client, callback: CallbackQuery):
     data = callback.data
 
     if data == "help_download":
-        await callback.message.edit_text(HELP_DOWNLOAD, reply_markup=back_keyboard("menu_help"))
+        try:
+            await callback.message.edit_text(HELP_DOWNLOAD_RICH(), reply_markup=back_keyboard("menu_help"), disable_web_page_preview=True)
+        except Exception:
+            await callback.message.edit_text(HELP_DOWNLOAD, reply_markup=back_keyboard("menu_help"), disable_web_page_preview=True)
     elif data == "help_backup":
-        await callback.message.edit_text(HELP_BACKUP, reply_markup=back_keyboard("menu_help"))
+        try:
+            await callback.message.edit_text(HELP_BACKUP_RICH(), reply_markup=back_keyboard("menu_help"), disable_web_page_preview=True)
+        except Exception:
+            await callback.message.edit_text(HELP_BACKUP, reply_markup=back_keyboard("menu_help"), disable_web_page_preview=True)
     elif data == "help_batch":
-        await callback.message.edit_text(HELP_BATCH, reply_markup=back_keyboard("menu_help"))
+        try:
+            await callback.message.edit_text(HELP_BATCH_RICH(), reply_markup=back_keyboard("menu_help"), disable_web_page_preview=True)
+        except Exception:
+            await callback.message.edit_text(HELP_BATCH, reply_markup=back_keyboard("menu_help"), disable_web_page_preview=True)
     elif data == "help_login":
-        await callback.message.edit_text(HELP_LOGIN, reply_markup=back_keyboard("menu_help"))
+        try:
+            await callback.message.edit_text(HELP_LOGIN_RICH(), reply_markup=back_keyboard("menu_help"), disable_web_page_preview=True)
+        except Exception:
+            await callback.message.edit_text(HELP_LOGIN, reply_markup=back_keyboard("menu_help"), disable_web_page_preview=True)
     elif data == "help_thumbnail":
-        await callback.message.edit_text(HELP_THUMBNAIL, reply_markup=back_keyboard("menu_help"))
+        try:
+            await callback.message.edit_text(HELP_THUMBNAIL_RICH(), reply_markup=back_keyboard("menu_help"), disable_web_page_preview=True)
+        except Exception:
+            await callback.message.edit_text(HELP_THUMBNAIL, reply_markup=back_keyboard("menu_help"), disable_web_page_preview=True)
     elif data == "help_caption":
-        await callback.message.edit_text(HELP_CAPTION, reply_markup=back_keyboard("menu_help"))
+        try:
+            await callback.message.edit_text(HELP_CAPTION_RICH(), reply_markup=back_keyboard("menu_help"), disable_web_page_preview=True)
+        except Exception:
+            await callback.message.edit_text(HELP_CAPTION, reply_markup=back_keyboard("menu_help"), disable_web_page_preview=True)
     elif data == "help_settings":
-        await callback.message.edit_text(HELP_SETTINGS, reply_markup=back_keyboard("menu_help"))
+        try:
+            await callback.message.edit_text(HELP_SETTINGS_RICH(), reply_markup=back_keyboard("menu_help"), disable_web_page_preview=True)
+        except Exception:
+            await callback.message.edit_text(HELP_SETTINGS, reply_markup=back_keyboard("menu_help"), disable_web_page_preview=True)
     elif data == "help_formats":
-        await callback.message.edit_text(HELP_FORMATS, reply_markup=back_keyboard("menu_help"))
+        try:
+            await callback.message.edit_text(HELP_FORMATS_RICH(), reply_markup=back_keyboard("menu_help"), disable_web_page_preview=True)
+        except Exception:
+            await callback.message.edit_text(HELP_FORMATS, reply_markup=back_keyboard("menu_help"), disable_web_page_preview=True)
 
     await callback.answer()
 
