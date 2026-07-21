@@ -237,20 +237,20 @@ async def get_auth_client(user_id):
         Client: Authenticated Pyrogram client or None
 
     Priority:
-        1. Custom bot (user's own bot token)
+        1. Custom bot (user's own bot token) — REQUIRED
         2. User session (per-user login)
-        3. Global user client (shared session)
 
     Note:
-        Returns None if no authentication available
+        Custom bot is mandatory for restricted content access.
+        Returns None if no custom bot set.
     """
-    # First try custom bot
+    # Custom bot is required
     from plugins.custom_bot import get_user_bot
     custom_bot = await get_user_bot(user_id)
     if custom_bot:
         return custom_bot
 
-    # Then try user session
+    # If no custom bot, check user session as fallback
     if LOGIN_SYSTEM:
         session = await db.get_session(user_id)
         if session:
@@ -258,10 +258,24 @@ async def get_auth_client(user_id):
             client = Client(":memory:", api_id=API_ID, api_hash=API_HASH, session_string=session)
             await client.start()
             return client
-        return None
-    else:
-        await start_user_client()
-        return user_client
+
+    return None
+
+
+async def refresh_dialogs(client):
+    """Refresh dialog cache to fix stale channel references.
+
+    Args:
+        client: Pyrogram client
+
+    Note:
+        Call before fetching restricted content to resolve cached chats
+    """
+    try:
+        async for _ in client.get_dialogs(limit=50):
+            pass
+    except Exception:
+        pass
 
 # ===========================================================================
 #   FEATURE: AUTO_JOIN
@@ -565,6 +579,8 @@ async def handle_single(client, acc, message, chat_id, msg_id, forward=False, pr
         if isinstance(chat_id, str) and (chat_id.isdigit() or chat_id.startswith("-100")):
             chat_id = int(chat_id)
 
+        # Refresh dialog cache before fetching restricted content
+        await refresh_dialogs(acc)
         msg = await acc.get_messages(chat_id, msg_id)
         if not msg or msg.empty:
             return
@@ -1075,11 +1091,14 @@ async def save(client, message: Message):
     if not acc:
         await message.reply(
             "**🔐 Restricted Content**\n\n"
-            "Cannot access this content via bot.\n"
-            "Use /login to authenticate.",
+            "Custom bot is required for restricted content.\n"
+            "Use /setbot to add your bot token.",
             reply_markup=main_menu_keyboard()
         )
         return
+
+    # Refresh dialog cache before fetching restricted content
+    await refresh_dialogs(acc)
 
     if msg_start == msg_end:
         await handle_single(client, acc, message, chat_username, msg_start, forward=True)

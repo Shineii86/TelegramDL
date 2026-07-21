@@ -85,6 +85,16 @@ ERROR_MESSAGE = environ.get("ERROR_MESSAGE", "true").lower() == "true"
 ADMIN_CONTACT = environ.get("ADMIN_CONTACT", "https://t.me/Shineii86")
 
 # ===========================================================================
+#   SECURITY KEYS
+# ---------------------------------------------------------------------------
+#   MASTER_KEY: Encryption key for session strings
+#   IV_KEY:     Salt for PBKDF2 key derivation
+# ===========================================================================
+
+MASTER_KEY = environ.get("MASTER_KEY", "TelegramDL_SecureKey_2024_Change_Me!")
+IV_KEY = environ.get("IV_KEY", "TDLSalt2024!")
+
+# ===========================================================================
 #   DOWNLOAD SETTINGS
 # ---------------------------------------------------------------------------
 #   OUTPUT_DIR:          Download directory

@@ -35,6 +35,7 @@ import json
 # ---------------------------------------------------------------------------
 
 CHECKPOINT_FILE = "checkpoint.json"
+ACTIVE_USERS_FILE = "active_users.json"
 
 # ===========================================================================
 #   FEATURE: CHECKPOINT_LOAD
@@ -109,6 +110,48 @@ def clear_checkpoint():
     """
     if os.path.exists(CHECKPOINT_FILE):
         os.remove(CHECKPOINT_FILE)
+
+# ===========================================================================
+#   FEATURE: ACTIVE_USERS_PERSISTENCE
+# ---------------------------------------------------------------------------
+#   Persists active batch/backup state to JSON file
+#   Enables recovery across bot restarts
+# ===========================================================================
+
+
+def load_active_users():
+    """Load active users state.
+
+    Returns:
+        dict: Active users with their batch/backup state
+    """
+    if os.path.exists(ACTIVE_USERS_FILE):
+        with open(ACTIVE_USERS_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+
+def save_active_users(data):
+    """Save active users state.
+
+    Args:
+        data: Active users state to save
+
+    Returns:
+        None
+    """
+    with open(ACTIVE_USERS_FILE, "w") as f:
+        json.dump(data, f)
+
+
+def clear_active_users():
+    """Clear active users state.
+
+    Returns:
+        None
+    """
+    if os.path.exists(ACTIVE_USERS_FILE):
+        os.remove(ACTIVE_USERS_FILE)
 
 # ===========================================================================
 #   END OF CHECKPOINT MODULE

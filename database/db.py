@@ -153,7 +153,7 @@ class Database:
     # =======================================================================
 
     async def set_session(self, id, session):
-        """Set user session string.
+        """Set user session string (encrypted).
 
         Args:
             id: Telegram user ID
@@ -162,10 +162,12 @@ class Database:
         Returns:
             None
         """
-        await self.users.update_one({"id": id}, {"$set": {"session": session}})
+        from utils.encrypt import encrypt_session
+        encrypted = encrypt_session(session) if session else None
+        await self.users.update_one({"id": id}, {"$set": {"session": encrypted}})
 
     async def get_session(self, id):
-        """Get user session string.
+        """Get user session string (decrypted).
 
         Args:
             id: Telegram user ID
@@ -175,7 +177,13 @@ class Database:
         """
         user = await self.users.find_one({"id": id})
         if user:
-            return user.get("session")
+            encrypted = user.get("session")
+            if encrypted:
+                from utils.encrypt import decrypt_session
+                try:
+                    return decrypt_session(encrypted)
+                except Exception:
+                    return encrypted
         return None
 
     # =======================================================================
