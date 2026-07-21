@@ -79,7 +79,7 @@ from utils.ui import (
     HELP_THUMBNAIL, HELP_CAPTION, HELP_SETTINGS, HELP_FORMATS,
     SETTINGS_INFO, MYPLAN_INFO, THUMBNAIL_SET, THUMBNAIL_DELETED,
     CAPTION_SET, CAPTION_DELETED, ABOUT_MSG,
-    WELCOME_RICH, ABOUT_RICH
+    WELCOME_RICH, ABOUT_RICH, MYPLAN_RICH
 )
 
 # ===========================================================================
@@ -328,7 +328,17 @@ async def myplan_cmd(client, message: Message):
         free_size=FREE_MAX_FILE_SIZE_MB,
         premium_size=PREMIUM_MAX_FILE_SIZE_MB,
     )
-    await message.reply(text, reply_markup=myplan_keyboard())
+    try:
+        from ftmgram.types import InputRichMessage
+        rich_msg = MYPLAN_RICH(
+            plan_type=plan_type, expiry=expiry,
+            daily_used=daily_usage, daily_limit="∞" if is_premium else FREE_DAILY_LIMIT,
+            total_saves=total_saves, free_size=FREE_MAX_FILE_SIZE_MB,
+            premium_size=PREMIUM_MAX_FILE_SIZE_MB,
+        )
+        await client.send_rich_message(message.chat.id, rich_msg, reply_markup=myplan_keyboard(), disable_web_page_preview=True)
+    except Exception:
+        await message.reply(text, reply_markup=myplan_keyboard(), disable_web_page_preview=True)
 
 # ===========================================================================
 #   FEATURE: THUMBNAIL_COMMANDS
@@ -1041,7 +1051,17 @@ async def menu_callbacks(client, callback: CallbackQuery):
             free_size=FREE_MAX_FILE_SIZE_MB,
             premium_size=PREMIUM_MAX_FILE_SIZE_MB,
         )
-        await callback.message.edit_text(text, reply_markup=myplan_keyboard())
+        try:
+            from ftmgram.types import InputRichMessage
+            rich_msg = MYPLAN_RICH(
+                plan_type=plan_type, expiry=expiry,
+                daily_used=daily_usage, daily_limit="∞" if is_premium else FREE_DAILY_LIMIT,
+                total_saves=total_saves, free_size=FREE_MAX_FILE_SIZE_MB,
+                premium_size=PREMIUM_MAX_FILE_SIZE_MB,
+            )
+            await callback.message.edit_text(rich_msg, reply_markup=myplan_keyboard(), disable_web_page_preview=True)
+        except Exception:
+            await callback.message.edit_text(text, reply_markup=myplan_keyboard(), disable_web_page_preview=True)
 
     elif data == "menu_thumbnail":
         await callback.message.edit_text(
