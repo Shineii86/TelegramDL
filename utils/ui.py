@@ -52,34 +52,25 @@ def main_menu_keyboard():
     """Main menu keyboard.
 
     Returns:
-        InlineKeyboardMarkup: 5 rows of buttons
+        InlineKeyboardMarkup: 4 rows of buttons (7 total)
 
-    Buttons:
-        Download, Backup, Batch, Login,
-        Settings, My Plan, Thumbnail, Caption,
-        About, Help
+    Layout:
+        Download (full width)
+        Backup | Batch
+        Settings | My Plan
+        Help (full width)
     """
     return InlineKeyboardMarkup([
+        [InlineKeyboardButton("📥 Download", callback_data="menu_download")],
         [
-            InlineKeyboardButton("📥 Download", callback_data="menu_download"),
             InlineKeyboardButton("☁️ Backup", callback_data="menu_backup"),
-        ],
-        [
             InlineKeyboardButton("📦 Batch", callback_data="menu_batch"),
-            InlineKeyboardButton("🔐 Login", callback_data="menu_login"),
         ],
         [
             InlineKeyboardButton("⚙️ Settings", callback_data="menu_settings"),
             InlineKeyboardButton("👤 My Plan", callback_data="menu_myplan"),
         ],
-        [
-            InlineKeyboardButton("🖼 Thumbnail", callback_data="menu_thumbnail"),
-            InlineKeyboardButton("📝 Caption", callback_data="menu_caption"),
-        ],
-        [
-            InlineKeyboardButton("ℹ️ About", callback_data="menu_about"),
-            InlineKeyboardButton("❓ Help", callback_data="menu_help"),
-        ],
+        [InlineKeyboardButton("❓ Help", callback_data="menu_help")],
     ])
 
 
@@ -139,7 +130,7 @@ def settings_keyboard():
     """Settings menu keyboard.
 
     Returns:
-        InlineKeyboardMarkup: Setting options
+        InlineKeyboardMarkup: Setting options + Thumbnail/Caption
     """
     return InlineKeyboardMarkup([
         [
@@ -153,6 +144,10 @@ def settings_keyboard():
         [
             InlineKeyboardButton("💾 Checkpoint", callback_data="set_checkpoint"),
             InlineKeyboardButton("📢 Dump Chat", callback_data="set_dump"),
+        ],
+        [
+            InlineKeyboardButton("🖼 Thumbnail", callback_data="menu_thumbnail"),
+            InlineKeyboardButton("📝 Caption", callback_data="menu_caption"),
         ],
         [InlineKeyboardButton("🔙 Back", callback_data="menu_back")],
     ])
@@ -288,7 +283,7 @@ def help_keyboard():
     """Help topics keyboard.
 
     Returns:
-        InlineKeyboardMarkup: Help topic buttons
+        InlineKeyboardMarkup: Help topic buttons + About/Login
     """
     return InlineKeyboardMarkup([
         [
@@ -307,7 +302,10 @@ def help_keyboard():
             InlineKeyboardButton("⚙️ Settings", callback_data="help_settings"),
             InlineKeyboardButton("🔗 Formats", callback_data="help_formats"),
         ],
-        [InlineKeyboardButton("🔙 Back", callback_data="menu_back")],
+        [
+            InlineKeyboardButton("ℹ️ About", callback_data="menu_about"),
+            InlineKeyboardButton("🔙 Back", callback_data="menu_back"),
+        ],
     ])
 
 
