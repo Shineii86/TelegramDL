@@ -853,7 +853,7 @@ Send any Telegram link → Bot downloads → Files sent to you</blockquote>
 </ol>
 
 <p>🔗 <b>Supported:</b> Channels · Groups · Bots · Stories · Invite Links</p>
-<footer>Use the buttons below to navigate</footer>
+<blockquote>Use the buttons below to navigate</blockquote>
 """
     return InputRichMessage(html=html.strip())
 
@@ -898,7 +898,7 @@ def ABOUT_RICH(version: str = "2.0.0") -> InputRichMessage:
 <li>✅ YouTube, Instagram, Facebook, TikTok</li>
 </ul>
 
-<footer>Built with ❤️ by <a href="https://t.me/Shineii86">@Shineii86</a></footer>
+<blockquote>Built with ❤️ by <a href="https://t.me/Shineii86">@Shineii86</a></blockquote>
 """
     return InputRichMessage(html=html.strip())
 
@@ -940,7 +940,7 @@ def MYPLAN_RICH(plan_type: str, expiry: str, daily_used: int, daily_limit: int,
 <tr><td>⭐ <b>Premium</b></td><td>Unlimited, {premium_size}MB</td></tr>
 </table>
 
-<footer>💡 Upgrade with /premium for unlimited access!</footer>
+<blockquote>💡 Upgrade with /premium for unlimited access!</blockquote>
 """
     return InputRichMessage(html=html.strip())
 
@@ -977,7 +977,7 @@ def PROGRESS_RICH(bar: str, percent: float, speed: str, done: str, total: str,
 </table>
 
 <p>⏱ <b>Elapsed:</b> <code>{elapsed}</code> | 📡 <b>ETA:</b> <code>{eta}</code></p>
-<footer>📄 {current}</footer>
+<blockquote>📄 {current}</blockquote>
 """
     return InputRichMessage(html=html.strip())
 
@@ -1019,7 +1019,7 @@ def HELP_RICH() -> InputRichMessage:
 <li><code>/about</code> — About the bot</li>
 </ul>
 
-<footer>Supported: YouTube, Instagram, TikTok, Facebook + 100 sites via yt-dlp</footer>
+<blockquote>Supported: YouTube, Instagram, TikTok, Facebook + 100 sites via yt-dlp</blockquote>
 """
     return InputRichMessage(html=html.strip())
 
@@ -1039,7 +1039,7 @@ def ERROR_RICH(error_type: str, message: str, suggestion: str = "") -> InputRich
 <h3>❌ {error_type}</h3>
 <blockquote>{message}</blockquote>
 {"<p>💡 <b>Suggestion:</b> " + suggestion + "</p>" if suggestion else ""}
-<footer>Need help? Use /help</footer>
+<blockquote>Need help? Use /help</blockquote>
 """
     return InputRichMessage(html=html.strip())
 
